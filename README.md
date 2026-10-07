@@ -1,8 +1,8 @@
 # FinBrain OS
 
-**Privacy-first customer intelligence and process optimization for Malaysian MSMEs.**
+**The secure operating system that makes an SME financeable.**
 
-> _One customer memory. The right answer for every role. Proof behind every answer._
+> _AI agents run the finance back office. People review every action. Lenders can verify the result._
 
 ![Python](https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=white)
 ![Backend](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
@@ -15,12 +15,17 @@
 
 **Live site: <https://finbrainos.vercel.app/>**
 
-FinBrain OS unifies scattered business knowledge — email, Telegram, uploaded documents,
-structured invoice spreadsheets, CRM-style records, bank exports, meeting notes, support
-tickets, and LHDN e-invoices — behind a single protected query and workflow interface. It
-answers questions with citations, proves exactly what external AI was allowed to see,
-adapts every answer to the requester's permissions, and turns insight into human-approved,
-auditable action.
+FinBrain OS is our entry for the **2026 Shenzhen International FinTech Competition
+(FinTechathon), International Track — Topic E: SME Finance Copilot**. It gives a small
+business an AI finance team that works under human control: agents forecast cash flow, chase
+receivables and match financing; owners and staff review what the agents propose; and the
+outcome is a privacy-preserving, tamper-evident record that a lender can verify.
+
+It is built on a privacy core that already runs in this repository. Business knowledge from
+email, Telegram, uploaded documents, invoice spreadsheets, bank exports and LHDN e-invoices
+passes through one protected pipeline: sensitive values are tokenized and encrypted before
+any AI model sees them, every answer cites its evidence and adapts to the requester's role,
+and every disclosure and decision lands in a hash-chained audit log.
 
 | Briefing | Customers |
 | --- | --- |
@@ -30,6 +35,7 @@ auditable action.
 
 ## Table of contents
 
+- [FinTechathon 2026: Topic E](#fintechathon-2026-topic-e)
 - [Overview](#overview)
 - [How it works](#how-it-works)
 - [Features](#features)
@@ -49,14 +55,96 @@ auditable action.
 
 ---
 
+## FinTechathon 2026: Topic E
+
+**Theme:** "AI as a Financial Participant." **Topic E brief:** a finance copilot for
+small-business owners that matches financing options, manages cash flow with alerts, and
+analyses the business's finances.
+
+### Our answer
+
+| Loop | What the SME gets | How it works |
+| --- | --- | --- |
+| **Operate** | A 30/60/90-day cash-flow forecast with shortfall alerts, and collections that run under review | A deterministic forecast over receivables, payables and bank-statement patterns; the receivables agent drafts reminders that staff approve |
+| **Finance** | Financing options matched to the business, each with the reasons it does or does not qualify | Rule-based eligibility over the company's own records, with an application pack drafted for the owner |
+| **Trust** | A record a lender can rely on, without exposing customer data | The Financing Readiness Passport: hashed, anchored to a public audit trail, and shared with a lender through a consented, expiring grant |
+
+Three design rules run through all of it:
+
+1. **Code computes, the model narrates.** Forecasts, eligibility and thresholds are
+   deterministic code. The language model only routes requests and explains results, and it
+   only ever sees tokenized data.
+2. **People own decisions.** Every agent action has an autonomy level: read, draft, external
+   action (owner approval with a second factor), or money movement (never executed by an
+   agent; two different people approve). Agents earn wider autonomy only from their measured
+   approval record.
+3. **Everything is evidence.** Proposals, reviews, promotions, blocked attacks and lender
+   access are entries in a hash-chained, externally anchored audit log.
+
+Why it matters: Malaysia's MSME funding gap is estimated at RM90 billion
+([The Edge](https://theedgemalaysia.com/node/697990)), and since 1 September 2026
+e-invoicing is mandatory only above RM3 million in annual sales
+([The Star](https://thestar.com.my/news/nation/2026/08/30/over-11-million-businesses-to-benefit-from-higher-e-invoicing-threshold-says-lhdn)).
+FinBrain therefore treats a validated e-invoice as a credit signal — tamper-proof evidence of
+a receivable — and not only as a compliance task.
+
+### Build status
+
+Status as of 2026-10-08. The demo company and its data are synthetic and labelled as such.
+
+| Capability | Status |
+| --- | --- |
+| Protected ingestion, tokenization, encrypted vault, role-aware disclosure, AI Exposure Receipt | **Built and tested** — see [Features](#features) |
+| Cited questions and answers, conversation context, customer intelligence | **Built and tested** |
+| Governed outreach, approvals, overdue reminders, e-invoice readiness and PDFs, receivables aging | **Built and tested** |
+| Dual hash-chained audit logs with daily external anchoring, PDPA access and erasure, vault rotation | **Built and tested** |
+| Topic E API contract served as tested stub endpoints | Planned — target Oct 9 |
+| Cash-flow forecast, scenarios and alerts; financing matching with explanations | Planned — target Oct 16 |
+| Supervisor agent, review inbox, autonomy ladder and earned autonomy | Planned — target Oct 16 |
+| Financing Readiness Passport and lender access | Planned — target Oct 16 |
+| Email OTP and TOTP sign-in, Team page, agent guardrails, security posture dashboard | Planned — target Oct 16 |
+| Evaluation harness and OWASP Agentic Top 10 control map | Planned — target Oct 16 |
+| Compliance, payables, sales and HR agents; SMS one-time passwords; data classification and retention | Designed, not built |
+
+### How the entry maps to the scoring criteria
+
+| Criterion | Weight | What we will submit as evidence |
+| --- | --- | --- |
+| Task completion | 40% | An evaluation harness of scripted financial tasks that runs offline in CI, and the live demonstration |
+| Security & compliance | 30% | The privacy core, multi-factor sign-in, agent guardrails mapped to the OWASP Top 10 for Agentic Applications (2026), a STRIDE threat model, and the security self-assessment |
+| Innovation & interaction | 30% | The review inbox and earned autonomy, the Financing Readiness Passport, and Malaysia and China jurisdiction packs |
+
+### Submission map
+
+| Deliverable | Where it lives |
+| --- | --- |
+| Technical documentation | This README and the [program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) |
+| Presentation deck | Added by Oct 19 |
+| Demo video | Added by Oct 19, as an MP4 plus a mirror reachable from mainland China |
+| Source code, deployment instructions and tests | This repository — see [Setup](#setup), [Deployment](#deployment) and [Testing](#testing) |
+| Security self-assessment | Added by Oct 18 |
+| Execution evidence | Evaluation report and audit-chain evidence bundle, added by Oct 19 |
+
+### Program documents
+
+- [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md)
+  — positioning, agents, finance engine, security, China reachability, schedule, demo script
+  and claims policy.
+- [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md)
+  — the API contract as tested stub endpoints; later plans replace each stub with a real
+  service.
+
+---
+
 ## Overview
 
 ### The problem
 
-Small Malaysian businesses keep customer knowledge scattered across Gmail, WhatsApp and
-Telegram chats, spreadsheets, invoices, and meeting notes. Generic AI chatbots can read
-that information, but they create three unacceptable risks for a business handling
-customer PII:
+Small Malaysian businesses run their finances from Gmail, WhatsApp and Telegram chats,
+spreadsheets, invoices and bank exports. They see cash problems late, chase payments by
+hand, and find financing hard to get because their records are scattered, private and hard
+to verify. Generic AI chatbots can read that information, but they create three
+unacceptable risks for a business handling customer personal data:
 
 | Risk | Consequence |
 | --- | --- |
@@ -122,6 +210,10 @@ at a time.
 ---
 
 ## Features
+
+Everything in this section is built and covered by the offline test suite. The Topic E
+finance-copilot capabilities and their status are listed under
+[FinTechathon 2026: Topic E](#fintechathon-2026-topic-e).
 
 ### Ingestion
 
@@ -899,6 +991,11 @@ The `demo/` directory contains synthetic, clearly-labeled fixtures:
 
 ### Suggested demonstration flow
 
+This flow uses features that are built today. The Topic E demonstration — six acts in about
+six minutes — is scripted in section 13 of the
+[program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md)
+and replaces this flow once those features land.
+
 1. Sign in as finance/operations; sync unread Gmail.
 2. Upload `chat_upload_invoice_register.csv`; inspect the protected preview; confirm.
 3. Ask `Show all email sources` — deterministic citation cards, no model call.
@@ -913,6 +1010,8 @@ The `demo/` directory contains synthetic, clearly-labeled fixtures:
 
 | Document | Contents |
 | --- | --- |
+| [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) | FinTechathon 2026 Topic E: positioning, scope tiers, agents, finance engine, security, China reachability, schedule, demo script, claims policy |
+| [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md) | Test-first plan that serves the frozen Topic E API contract as stub endpoints |
 | [SUPABASE_ARCHITECTURE.md](./SUPABASE_ARCHITECTURE.md) | **Required reading for database contributors** — schema contract, RLS boundaries, change rules, emergency procedure |
 | [SUPABASE_SCHEMA_REFERENCE.md](./SUPABASE_SCHEMA_REFERENCE.md) | Column-level disaster-recovery snapshot of the live schema |
 | [AUTH_SETUP.md](./AUTH_SETUP.md) | Supabase Auth, JWT signing, custom token hook, user provisioning |
@@ -950,6 +1049,14 @@ This is a proof of concept. The following boundaries are deliberate and document
 - **Deferred connectors**: WhatsApp Business, banking APIs, Google Drive/SharePoint.
   Scanned-image OCR runs locally (RapidOCR); cloud OCR providers are deferred.
 - **The web-search control** in the chat UI is visual only.
+- **Reachability from mainland China**: the live frontend is served from `vercel.app`, which
+  is mostly blocked in mainland China; the browser signs in directly against `supabase.co`,
+  which is intermittently disrupted there; and the page loads Google Fonts, which is
+  blocked. Custom domains, self-hosted fonts and backend-mediated sign-in are planned
+  (program spec, section 9).
+- **E-invoice business names**: `einvoice_records` stores supplier and buyer business names
+  in clear. A sole proprietor's business name can be a person's name, so this is listed as a
+  known risk to tokenize or to document.
 
 ---
 
@@ -984,9 +1091,8 @@ This is a proof of concept. The following boundaries are deliberate and document
 
 <div align="center">
 
-**FinBrain OS** - unifies scattered customer knowledge, produces evidence-backed answers,
-protects sensitive data before AI processing, adapts every answer to the requester's
-permissions, and turns intelligence into controlled, auditable action.
+**FinBrain OS** - AI agents run the finance back office, people review every action, and
+lenders can verify the result, with customer data protected before any AI sees it.
 
 [finbrainos.vercel.app](https://finbrainos.vercel.app/)
 
