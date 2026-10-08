@@ -21,6 +21,13 @@ const DESTINATION_ICONS: Record<string, ReactNode> = {
   approvals: <path d="M9 12l2 2 4-4M12 3l8 4v5c0 4.5-3.2 8.5-8 10-4.8-1.5-8-5.5-8-10V7z" />,
   ingestion: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 9l5-5 5 5M12 4v13" />,
   audit: <path d="M12 3 20 6.5v5.3c0 4.7-3.2 8.9-8 10.2-4.8-1.3-8-5.5-8-10.2V6.5z" />,
+  inbox: <path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />,
+  positions: <path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18" />,
+  autonomy: <path d="M12 2v3M5 8h14v11H5zM9 13h.01M15 13h.01M9 17h6" />,
+  cashflow: <path d="M3 17l6-6 4 4 8-8M15 7h6v6" />,
+  financing: <path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6" />,
+  team: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
+  trust: <path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4" />,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
 };
 
@@ -53,6 +60,13 @@ function PaletteBody() {
     { screen: "approvals", key: "nav.approvals" },
     { screen: "ingestion", key: "nav.ingestion" },
     { screen: "audit", key: "nav.audit" },
+    { screen: "inbox", key: "nav.inbox" },
+    { screen: "positions", key: "nav.positions" },
+    { screen: "autonomy", key: "nav.autonomy" },
+    { screen: "cashflow", key: "nav.cashflow" },
+    { screen: "financing", key: "nav.financing" },
+    { screen: "team", key: "nav.team" },
+    { screen: "trust", key: "nav.trust" },
     { screen: "settings", key: "nav.settings" },
   ];
 

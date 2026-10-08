@@ -28,6 +28,8 @@ const Audit = lazy(() => import("./screens/Audit"));
 const Approvals = lazy(() => import("./screens/Approvals"));
 const Ingestion = lazy(() => import("./screens/Ingestion"));
 const Settings = lazy(() => import("./screens/Settings"));
+const ReviewInbox = lazy(() => import("./screens/ReviewInbox"));
+const ComingSoon = lazy(() => import("./screens/ComingSoon"));
 
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
@@ -64,6 +66,14 @@ function Screens() {
     case "approvals": return <Approvals />;
     case "ingestion": return <Ingestion />;
     case "settings": return <Settings />;
+    case "inbox": return <ReviewInbox />;
+    case "positions":
+    case "autonomy":
+    case "cashflow":
+    case "financing":
+    case "team":
+    case "trust":
+      return <ComingSoon key={screen} screen={screen} titleKey={`nav.${screen}`} />;
     default: return <Landing />;
   }
 }

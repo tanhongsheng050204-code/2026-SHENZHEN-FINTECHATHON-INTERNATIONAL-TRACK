@@ -15,10 +15,10 @@ import {
 } from "../data/sampleData";
 import { PERSONAS } from "./personas";
 import { fetchEinvoiceOutreachDrafts, fetchOutreachActions, fetchRecommendations } from "../api/client";
+import { decidableCount, fetchReviewInbox } from "../api/topicE";
+import { SCREENS, type Screen } from "./screens";
 
-export type Screen =
-  | "landing" | "login" | "signup" | "onboarding" | "security" | "legal"
-  | "home" | "agents" | "customers" | "einvoice" | "einvoice-detail" | "finance" | "audit" | "approvals" | "ingestion" | "settings";
+export type { Screen };
 
 interface AppStateValue {
   screen: Screen;
@@ -76,6 +76,8 @@ interface AppStateValue {
   rejectAction: (id: string) => void;
 
   approvalsCount: number;
+  reviewInboxCount: number;
+  setReviewInboxCount: (count: number) => void;
   focusedRecommendationId: number | null;
   openApprovalRecommendation: (id: number) => void;
   clearFocusedRecommendation: () => void;
@@ -142,10 +144,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setScreen(stateScreen);
       } else {
         const pathname = window.location.pathname.replace(/^\//, "");
-        const matchedScreen: Screen = pathname && [
-          "landing", "login", "signup", "onboarding", "security", "legal",
-          "home", "agents", "customers", "einvoice", "einvoice-detail", "finance", "audit", "approvals", "ingestion", "settings"
-        ].includes(pathname) ? (pathname as Screen) : "landing";
+        const matchedScreen: Screen = pathname && (SCREENS as readonly string[]).includes(pathname)
+          ? (pathname as Screen)
+          : "landing";
         setScreen(matchedScreen);
       }
     };
@@ -373,6 +374,22 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => { active = false; };
   }, [askRole, screen]);
 
+  // Topic E review inbox: items this person can approve now (can_decide).
+  const [reviewInboxCount, setReviewInboxCount] = useState(0);
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const inbox = await fetchReviewInbox();
+        if (active) setReviewInboxCount(decidableCount(inbox.actions));
+      } catch {
+        if (active) setReviewInboxCount(0);
+      }
+    };
+    void load();
+    return () => { active = false; };
+  }, [askRole, screen]);
+
   const value: AppStateValue = {
     screen, show,
     returnTo, goToSecurity, goToLegal, legalSection, contextBack,
@@ -388,6 +405,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     auditRows, auditBaseCount: 122, pushAuditRow,
     pendingActions, approveAction, rejectAction,
     approvalsCount,
+    reviewInboxCount, setReviewInboxCount,
     focusedRecommendationId, openApprovalRecommendation, clearFocusedRecommendation,
     displayName, setDisplayName,
   };

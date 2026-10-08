@@ -316,7 +316,7 @@ export class ApiError extends Error {
   }
 }
 
-async function parse<T>(response: Response): Promise<T> {
+export async function parse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     throw new ApiError(
@@ -337,7 +337,7 @@ export function friendlyLoadError(message: string): string {
   return "Couldn't load this page right now — try refreshing.";
 }
 
-async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
+export async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const token = await accessToken();
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);

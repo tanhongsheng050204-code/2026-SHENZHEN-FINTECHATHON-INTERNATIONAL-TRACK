@@ -121,14 +121,20 @@ const NAV_ICONS: Record<string, ReactNode> = {
   audit: <path d="M12 3 20 6.5v5.3c0 4.7-3.2 8.9-8 10.2-4.8-1.3-8-5.5-8-10.2V6.5z" />,
   approvals: <path d="M9 12l2 2 4-4M12 3l8 4v5c0 4.5-3.2 8.5-8 10-4.8-1.5-8-5.5-8-10V7z" />,
   ingestion: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 9l5-5 5 5M12 4v13" />,
+  inbox: <path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />,
+  positions: <path d="M3 7h18v13H3zM8 7V4h8v3M3 12h18" />,
+  autonomy: <path d="M12 2v3M5 8h14v11H5zM9 13h.01M15 13h.01M9 17h6" />,
+  cashflow: <path d="M3 17l6-6 4 4 8-8M15 7h6v6" />,
+  financing: <path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6" />,
+  team: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
+  trust: <path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4" />,
 };
 
-// Primary application navigation — Briefing, Ask, Customers, e-Invoicing,
-// Financial Intelligence, Workflows, Sources, Audit & Access. e-Invoicing
-// stays a normal nav item (kept alongside the spec's Track 2 restructure
-// rather than folded away) so the existing all-invoices/readiness-check
-// workflow doesn't lose its own discoverable entry point.
-const NAV_GROUPS: { label: string | null; items: { screen: Screen; key: string }[] }[] = [
+// Primary application navigation. The first group is the original app —
+// Briefing, Ask, Customers, e-Invoicing, Financial Intelligence, Workflows,
+// Sources, Audit & Access — kept as it was. The labelled groups below add
+// the Topic E pages, one page per feature.
+const NAV_GROUPS: { label: string | null; items: { screen: Screen; key: string; isNew?: boolean }[] }[] = [
   { label: null, items: [
     { screen: "home", key: "nav.home" },
     { screen: "agents", key: "nav.aiAgents" },
@@ -139,10 +145,23 @@ const NAV_GROUPS: { label: string | null; items: { screen: Screen; key: string }
     { screen: "ingestion", key: "nav.ingestion" },
     { screen: "audit", key: "nav.audit" },
   ] },
+  { label: "nav.group.workforce", items: [
+    { screen: "inbox", key: "nav.inbox" },
+    { screen: "positions", key: "nav.positions", isNew: true },
+    { screen: "autonomy", key: "nav.autonomy", isNew: true },
+  ] },
+  { label: "nav.group.cash", items: [
+    { screen: "cashflow", key: "nav.cashflow", isNew: true },
+    { screen: "financing", key: "nav.financing", isNew: true },
+  ] },
+  { label: "nav.group.company", items: [
+    { screen: "team", key: "nav.team", isNew: true },
+    { screen: "trust", key: "nav.trust", isNew: true },
+  ] },
 ];
 
 export function Sidebar({ current, backTo, backLabel }: { current?: Screen; backTo?: () => void; backLabel?: string }) {
-  const { show, approvalsCount } = useAppState();
+  const { show, approvalsCount, reviewInboxCount } = useAppState();
   const { t } = useI18n();
   const { sidebarOpen, openSidebar, closeSidebar } = useUiChrome();
 
@@ -183,7 +202,7 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
           <nav className="fb-sidebar-nav">
             {NAV_GROUPS.map((group) => (
               <div className="fb-sidebar-group" key={group.label ?? "primary"}>
-                {group.label && <div className="fb-sidebar-group-label">{group.label}</div>}
+                {group.label && <div className="fb-sidebar-group-label">{t(group.label)}</div>}
                 {group.items.map((link) => (
                   <button
                     key={link.screen}
@@ -198,6 +217,10 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
                     {link.screen === "approvals" && approvalsCount > 0 && (
                       <span className="fb-nav-badge">{approvalsCount}</span>
                     )}
+                    {link.screen === "inbox" && reviewInboxCount > 0 && (
+                      <span className="fb-nav-badge" aria-label={`${reviewInboxCount} waiting for you`}>{reviewInboxCount}</span>
+                    )}
+                    {link.isNew && <span className="fb-nav-new">{t("nav.new")}</span>}
                   </button>
                 ))}
               </div>
@@ -238,6 +261,13 @@ const SCREEN_TITLES: Partial<Record<Screen, string>> = {
   approvals: "Workflows",
   ingestion: "Sources",
   settings: "Settings",
+  inbox: "Review inbox",
+  positions: "Positions",
+  autonomy: "Agents & autonomy",
+  cashflow: "Cash flow",
+  financing: "Financing & Passport",
+  team: "Team",
+  trust: "Trust center",
 };
 
 export function AppTopBar({ current }: { current: Screen }) {
