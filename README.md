@@ -136,8 +136,8 @@ Status as of 2026-10-08. The demo company and its data are synthetic and labelle
   — positioning, agents, finance engine, security, China reachability, schedule, demo script
   and claims policy.
 - [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md)
-  — the API contract as tested stub endpoints; later plans replace each stub with a real
-  service.
+  — revision 2: 48 tested stub endpoints covering every position, customization and external
+  sharing; later plans replace each stub with a real service.
 
 ---
 
