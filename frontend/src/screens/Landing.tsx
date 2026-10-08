@@ -18,14 +18,14 @@ const HERO_NAV_ICONS: Record<string, ReactNode> = {
 
 const HERO_NAV_GROUPS: { label: string | null; items: { key: string; label: string }[] }[] = [
   { label: null, items: [
-    { key: "home", label: "Briefing" },
-    { key: "agents", label: "Ask" },
+    { key: "home", label: "Today" },
+    { key: "agents", label: "Ask FinBrain" },
+    { key: "approvals", label: "Review inbox" },
+    { key: "finance", label: "Cash & finance" },
     { key: "customers", label: "Customers" },
     { key: "einvoice", label: "e-Invoicing" },
-    { key: "finance", label: "Financial Intelligence" },
-    { key: "approvals", label: "Workflows" },
-    { key: "ingestion", label: "Sources" },
-    { key: "audit", label: "Audit & Access" },
+    { key: "ingestion", label: "Data sources" },
+    { key: "audit", label: "Trust & audit" },
   ] },
 ];
 

@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { SectionTabs } from "../components/SectionTabs";
 import { EmptyState } from "../components/EmptyState";
+import { useAuth } from "../auth/AuthProvider";
+import { canOpen } from "../lib/access";
 import { useAppState } from "../lib/appState";
+import type { Screen } from "../lib/screens";
 import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import { ApiError, friendlyLoadError } from "../api/client";
@@ -70,9 +74,30 @@ function ApprovalSteps({ action }: { action: ReviewAction }) {
   );
 }
 
+// Where a piece of evidence lives, from the prefix of its source reference.
+function evidenceScreen(source: string): Screen | null {
+  const prefix = source.split(":")[0];
+  const map: Record<string, Screen> = {
+    einvoice: "einvoice",
+    cashflow: "cashflow",
+    finance: "finance",
+    financing: "financing",
+    payables: "cashflow",
+    payroll: "positions",
+    pipeline: "customers",
+    email: "ingestion",
+    stock: "positions",
+    team: "team",
+    review: "inbox",
+  };
+  return map[prefix] ?? null;
+}
+
 export default function ReviewInbox() {
   const { t } = useI18n();
-  const { setReviewInboxCount } = useAppState();
+  const { setReviewInboxCount, show, askRole } = useAppState();
+  const { identity } = useAuth();
+  const role = identity?.role ?? askRole;
   const [actions, setActions] = useState<ReviewAction[]>([]);
   const [jobFunctions, setJobFunctions] = useState<JobFunction[]>([]);
   const [dataMode, setDataMode] = useState<DataMode>("live");
@@ -149,6 +174,7 @@ export default function ReviewInbox() {
         <div className="fb-eyebrow">{t("inbox.eyebrow")}</div>
         <h1>{t("inbox.title")}</h1>
         <p>{t("inbox.desc")}</p>
+        <SectionTabs section="inbox" current="inbox" />
       </header>
 
       <div className="fb-page-body">
@@ -217,7 +243,14 @@ export default function ReviewInbox() {
                       <div>
                         <div className="fb-inbox-label">{t("inbox.evidence")}</div>
                         <div className="fb-inbox-chips">
-                          {selected.evidence.map((e) => <span key={e.source} className="fb-inbox-chip" title={e.source}>{e.label}</span>)}
+                          {selected.evidence.map((e) => {
+                            const target = evidenceScreen(e.source);
+                            return target && canOpen(target, role) ? (
+                              <button key={e.source} type="button" className="fb-inbox-chip fb-inbox-chip-link" title={e.source} onClick={() => show(target)}>{e.label} →</button>
+                            ) : (
+                              <span key={e.source} className="fb-inbox-chip" title={e.source}>{e.label}</span>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useI18n } from "../lib/i18n";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { ImportMappingsCard } from "../components/ImportMappingsCard";
 import { PersonaSelector } from "../components/PersonaSelector";
 import { useAppState } from "../lib/appState";
 import { PERSONAS } from "../lib/personas";
@@ -510,6 +511,8 @@ export default function Ingestion() {
         <PersonaSelector />
 
         <ProtectedFilePanel />
+
+        <ImportMappingsCard />
 
         <button className="fb-link-toggle" type="button" onClick={() => setManualOpen((v) => !v)} aria-expanded={manualOpen} style={{ marginBottom: manualOpen ? "1rem" : "2rem" }}>
           <span className={"fb-link-toggle-caret" + (manualOpen ? " is-open" : "")}>▸</span>

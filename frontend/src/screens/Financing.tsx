@@ -329,7 +329,7 @@ export default function Financing() {
       <Sidebar current="financing" />
       <AppTopBar current="financing" />
       <header className="fb-app-header">
-        <div className="fb-eyebrow">{t("nav.group.cash")}</div>
+        <div className="fb-eyebrow">{t("nav.group.money")}</div>
         <h1>{t("nav.financing")}</h1>
         <p>{t("fin.desc")}</p>
       </header>

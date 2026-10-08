@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { AgentCardView } from "../components/AgentCardView";
+import { useAuth } from "../auth/AuthProvider";
+import { canOpen } from "../lib/access";
 import { useAppState } from "../lib/appState";
+import type { Screen } from "../lib/screens";
 import { useI18n } from "../lib/i18n";
 import { friendlyLoadError } from "../api/client";
 import {
@@ -13,9 +16,26 @@ import {
   type PositionWorkspace,
 } from "../api/topicE";
 
+// The existing pages each position works in, so a workspace leads straight to its tools.
+const POSITION_TOOLS: Record<JobFunction, { screen: Screen; label: string }[]> = {
+  owner: [{ screen: "cashflow", label: "Cash & finance" }, { screen: "financing", label: "Financing & Passport" }, { screen: "company", label: "Company settings" }],
+  operations: [{ screen: "inbox", label: "Review inbox" }, { screen: "autonomy", label: "Agents & autonomy" }],
+  finance: [{ screen: "cashflow", label: "Cash & finance" }, { screen: "einvoice", label: "e-Invoicing" }, { screen: "financing", label: "Financing & Passport" }],
+  sales: [{ screen: "customers", label: "Customers" }],
+  customer_service: [{ screen: "customers", label: "Customers" }, { screen: "ingestion", label: "Data sources" }],
+  marketing: [{ screen: "customers", label: "Customers" }],
+  procurement: [{ screen: "ingestion", label: "Data sources" }, { screen: "cashflow", label: "Cash & finance" }],
+  logistics: [{ screen: "ingestion", label: "Data sources" }],
+  production: [],
+  hr: [{ screen: "team", label: "Team" }, { screen: "cashflow", label: "Cash & finance" }],
+  compliance: [{ screen: "trust", label: "Trust & audit" }, { screen: "team", label: "Team" }],
+};
+
 export default function Positions() {
   const { t } = useI18n();
-  const { show } = useAppState();
+  const { show, askRole } = useAppState();
+  const { identity } = useAuth();
+  const role = identity?.role ?? askRole;
   const [positions, setPositions] = useState<PositionSummary[]>([]);
   const [selected, setSelected] = useState<JobFunction | null>(null);
   const [workspace, setWorkspace] = useState<PositionWorkspace | null>(null);
@@ -55,7 +75,7 @@ export default function Positions() {
       <Sidebar current="positions" />
       <AppTopBar current="positions" />
       <header className="fb-app-header">
-        <div className="fb-eyebrow">{t("nav.group.workforce")}</div>
+        <div className="fb-eyebrow">{t("nav.group.work")}</div>
         <h1>{t("nav.positions")}</h1>
         <p>{t("pos.desc")}</p>
       </header>
@@ -99,6 +119,15 @@ export default function Positions() {
                   <span className="fb-cash-kpi-sub">Open review inbox →</span>
                 </button>
               </div>
+
+              {POSITION_TOOLS[workspace.job_function].some((tool) => canOpen(tool.screen, role)) && (
+                <nav className="fb-pos-tools" aria-label={`Tools for ${workspace.display_name}`}>
+                  <span className="fb-inbox-label">Where this work happens</span>
+                  {POSITION_TOOLS[workspace.job_function].filter((tool) => canOpen(tool.screen, role)).map((tool) => (
+                    <button key={tool.screen} type="button" className="fb-pos-tool" onClick={() => show(tool.screen)}>{tool.label} →</button>
+                  ))}
+                </nav>
+              )}
 
               {workspace.skill_results.length > 0 && (
                 <section className="fb-cash-card">

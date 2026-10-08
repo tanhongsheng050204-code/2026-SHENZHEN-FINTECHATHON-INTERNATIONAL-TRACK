@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../lib/i18n";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { SectionTabs } from "../components/SectionTabs";
 import { PersonaSelector } from "../components/PersonaSelector";
 import { useAppState } from "../lib/appState";
 import { PERSONAS } from "../lib/personas";
@@ -265,6 +266,7 @@ export default function Audit() {
           </div>
           <button className="fb-btn fb-btn-outline" type="button" onClick={exportCsv} disabled={!canViewAudit}>Export audit CSV</button>
         </div>
+        <SectionTabs section="trust" current="audit" />
       </header>
 
       <main className="fb-audit-main">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "../lib/i18n";
 import { useAppState } from "../lib/appState";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { SectionTabs } from "../components/SectionTabs";
 import { PersonaSelector } from "../components/PersonaSelector";
 import { PERSONAS } from "../lib/personas";
 import { EmptyState } from "../components/EmptyState";
@@ -271,6 +272,7 @@ export default function Approvals() {
             )}
           </div>
         </div>
+        <SectionTabs section="inbox" current="approvals" />
       </header>
 
       {summary.length > 0 && (

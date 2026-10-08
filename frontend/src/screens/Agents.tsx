@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AgentRunPanel } from "../components/AgentRunPanel";
 import { useAuth } from "../auth/AuthProvider";
 import { useAppState } from "../lib/appState";
 import { useI18n, FB_UI_STRINGS } from "../lib/i18n";
@@ -366,6 +367,7 @@ export default function Agents() {
   };
 
   const hasConversation = messages.length > 1;
+  const canRunAgents = askRole === "finance_ops" || askRole === "owner_director";
 
   return (
     <div className="fb-root fb-shell fb-chat-shell">
@@ -386,6 +388,7 @@ export default function Agents() {
               <h1 className="fb-chat-welcome-title"><LogoMark large /> {t("agents.title")}</h1>
               <p>{t("agents.desc")}</p>
             </header>
+            {canRunAgents && <AgentRunPanel compact />}
           </div>
         )}
 

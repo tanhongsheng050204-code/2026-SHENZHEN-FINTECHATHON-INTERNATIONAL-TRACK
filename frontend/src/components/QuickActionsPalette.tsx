@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAppState, type Screen } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
+import { canOpen } from "../lib/access";
 import { useI18n } from "../lib/i18n";
 import { useUiChrome } from "../lib/uiChrome";
 
@@ -43,8 +44,9 @@ export function QuickActionsPalette() {
 
 function PaletteBody() {
   const { closePalette, openAsk } = useUiChrome();
-  const { show } = useAppState();
-  const { signOut } = useAuth();
+  const { show, askRole } = useAppState();
+  const { signOut, identity } = useAuth();
+  const role = identity?.role ?? askRole;
   const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
@@ -52,25 +54,25 @@ function PaletteBody() {
 
   // Same screens, same order, and the same i18n keys as the sidebar (Nav.tsx's
   // NAV_GROUPS), so this list can't drift out of sync with real navigation again.
-  const destinations: { screen: Screen; key: string }[] = [
+  const destinations: { screen: Screen; key: string }[] = ([
     { screen: "home", key: "nav.home" },
     { screen: "agents", key: "nav.aiAgents" },
+    { screen: "inbox", key: "nav.inbox" },
+    { screen: "approvals", key: "tabs.recommendations" },
+    { screen: "cashflow", key: "nav.cashFinance" },
+    { screen: "finance", key: "tabs.intelligence" },
     { screen: "customers", key: "nav.customers" },
     { screen: "einvoice", key: "nav.einvoicing" },
-    { screen: "finance", key: "nav.financeDashboard" },
-    { screen: "approvals", key: "nav.approvals" },
-    { screen: "ingestion", key: "nav.ingestion" },
-    { screen: "audit", key: "nav.audit" },
-    { screen: "inbox", key: "nav.inbox" },
-    { screen: "positions", key: "nav.positions" },
-    { screen: "autonomy", key: "nav.autonomy" },
-    { screen: "cashflow", key: "nav.cashflow" },
     { screen: "financing", key: "nav.financing" },
-    { screen: "company", key: "nav.company" },
+    { screen: "positions", key: "nav.positions" },
+    { screen: "ingestion", key: "nav.ingestion" },
     { screen: "team", key: "nav.team" },
-    { screen: "trust", key: "nav.trust" },
+    { screen: "autonomy", key: "nav.autonomy" },
+    { screen: "company", key: "nav.company" },
+    { screen: "trust", key: "nav.trustAudit" },
+    { screen: "audit", key: "tabs.audit" },
     { screen: "settings", key: "nav.settings" },
-  ];
+  ] as { screen: Screen; key: string }[]).filter((d) => canOpen(d.screen, role));
 
   const commands: Command[] = useMemo(() => [
     ...destinations.map((d) => ({
@@ -83,7 +85,7 @@ function PaletteBody() {
     { id: "ask", label: "Ask FinBrain", hint: "Open the AI assistant", icon: DESTINATION_ICONS.agents, run: () => openAsk() },
     { id: "logout", label: "Log out", hint: "Account", icon: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /></>, run: () => { void signOut().then(() => show("landing")); } },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [show, openAsk, signOut, t]);
+  ], [show, openAsk, signOut, t, role]);
 
   const filtered = commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()));
 

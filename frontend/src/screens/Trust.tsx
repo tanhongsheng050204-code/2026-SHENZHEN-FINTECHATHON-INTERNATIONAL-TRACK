@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { SectionTabs } from "../components/SectionTabs";
 import { useAppState } from "../lib/appState";
 import { useI18n } from "../lib/i18n";
 import { friendlyLoadError } from "../api/client";
@@ -47,8 +48,9 @@ export default function Trust() {
       <AppTopBar current="trust" />
       <header className="fb-app-header">
         <div className="fb-eyebrow">{t("nav.group.company")}</div>
-        <h1>{t("nav.trust")}</h1>
+        <h1>{t("nav.trustAudit")}</h1>
         <p>{t("trust.desc")}</p>
+        <SectionTabs section="trust" current="trust" />
       </header>
       <div className="fb-page-body">
         <div className="fb-cash">

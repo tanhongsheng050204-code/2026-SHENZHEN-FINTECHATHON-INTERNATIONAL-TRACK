@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useAppState, type Screen } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
+import { PARENT_SCREEN, canOpen } from "../lib/access";
 import { useI18n } from "../lib/i18n";
 import { PERSONAS } from "../lib/personas";
 import { useActiveSection, useScrollY } from "../lib/interactivity";
@@ -131,39 +132,43 @@ const NAV_ICONS: Record<string, ReactNode> = {
   company: <path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4" />,
 };
 
-// Primary application navigation. The first group is the original app —
-// Briefing, Ask, Customers, e-Invoicing, Financial Intelligence, Workflows,
-// Sources, Audit & Access — kept as it was. The labelled groups below add
-// the Topic E pages, one page per feature.
-const NAV_GROUPS: { label: string | null; items: { screen: Screen; key: string; isNew?: boolean }[] }[] = [
+// Primary navigation, organised around the owner's day: today, asking and
+// approving first, then money, daily work and the company. Pages that belong
+// together (Workflows inside Review inbox, Financial intelligence inside Cash &
+// finance, Audit & access inside Trust & audit) are tabs of their parent page.
+const NAV_GROUPS: { label: string | null; items: { screen: Screen; key: string }[] }[] = [
   { label: null, items: [
     { screen: "home", key: "nav.home" },
     { screen: "agents", key: "nav.aiAgents" },
+    { screen: "inbox", key: "nav.inbox" },
+  ] },
+  { label: "nav.group.money", items: [
+    { screen: "cashflow", key: "nav.cashFinance" },
     { screen: "customers", key: "nav.customers" },
     { screen: "einvoice", key: "nav.einvoicing" },
-    { screen: "finance", key: "nav.financeDashboard" },
-    { screen: "approvals", key: "nav.approvals" },
+    { screen: "financing", key: "nav.financing" },
+  ] },
+  { label: "nav.group.work", items: [
+    { screen: "positions", key: "nav.positions" },
     { screen: "ingestion", key: "nav.ingestion" },
-    { screen: "audit", key: "nav.audit" },
-  ] },
-  { label: "nav.group.workforce", items: [
-    { screen: "inbox", key: "nav.inbox" },
-    { screen: "positions", key: "nav.positions", isNew: true },
-    { screen: "autonomy", key: "nav.autonomy", isNew: true },
-  ] },
-  { label: "nav.group.cash", items: [
-    { screen: "cashflow", key: "nav.cashflow", isNew: true },
-    { screen: "financing", key: "nav.financing", isNew: true },
   ] },
   { label: "nav.group.company", items: [
-    { screen: "company", key: "nav.company", isNew: true },
-    { screen: "team", key: "nav.team", isNew: true },
-    { screen: "trust", key: "nav.trust", isNew: true },
+    { screen: "team", key: "nav.team" },
+    { screen: "autonomy", key: "nav.autonomy" },
+    { screen: "company", key: "nav.company" },
+    { screen: "trust", key: "nav.trustAudit" },
   ] },
 ];
 
 export function Sidebar({ current, backTo, backLabel }: { current?: Screen; backTo?: () => void; backLabel?: string }) {
-  const { show, approvalsCount, reviewInboxCount } = useAppState();
+  const { show, approvalsCount, reviewInboxCount, askRole } = useAppState();
+  const { identity } = useAuth();
+  const role = identity?.role ?? askRole;
+  const active = current ? (PARENT_SCREEN[current] ?? current) : undefined;
+  const waiting = approvalsCount + reviewInboxCount;
+  const groups = NAV_GROUPS
+    .map((group) => ({ ...group, items: group.items.filter((item) => canOpen(item.screen, role)) }))
+    .filter((group) => group.items.length > 0);
   const { t } = useI18n();
   const { sidebarOpen, openSidebar, closeSidebar } = useUiChrome();
 
@@ -202,13 +207,14 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
           </button>
         ) : (
           <nav className="fb-sidebar-nav">
-            {NAV_GROUPS.map((group) => (
+            {groups.map((group) => (
               <div className="fb-sidebar-group" key={group.label ?? "primary"}>
                 {group.label && <div className="fb-sidebar-group-label">{t(group.label)}</div>}
                 {group.items.map((link) => (
                   <button
                     key={link.screen}
-                    className={"fb-sidebar-link" + (current === link.screen ? " is-current" : "")}
+                    className={"fb-sidebar-link" + (active === link.screen ? " is-current" : "")}
+                    aria-current={active === link.screen ? "page" : undefined}
                     type="button"
                     onClick={() => navigate(link.screen)}
                   >
@@ -216,13 +222,9 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{NAV_ICONS[link.screen]}</svg>
                     </span>
                     <span className="fb-sidebar-label">{t(link.key)}</span>
-                    {link.screen === "approvals" && approvalsCount > 0 && (
-                      <span className="fb-nav-badge">{approvalsCount}</span>
+                    {link.screen === "inbox" && waiting > 0 && (
+                      <span className="fb-nav-badge" aria-label={`${waiting} waiting for you`}>{waiting}</span>
                     )}
-                    {link.screen === "inbox" && reviewInboxCount > 0 && (
-                      <span className="fb-nav-badge" aria-label={`${reviewInboxCount} waiting for you`}>{reviewInboxCount}</span>
-                    )}
-                    {link.isNew && <span className="fb-nav-new">{t("nav.new")}</span>}
                   </button>
                 ))}
               </div>
@@ -233,7 +235,7 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
         {!backTo && (
           <div className="fb-sidebar-footer">
             <button
-              className={"fb-sidebar-link" + (current === "settings" ? " is-current" : "")}
+              className={"fb-sidebar-link" + (active === "settings" ? " is-current" : "")}
               type="button"
               onClick={() => navigate("settings")}
             >
@@ -253,23 +255,23 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
 }
 
 const SCREEN_TITLES: Partial<Record<Screen, string>> = {
-  home: "Briefing",
-  agents: "Ask",
+  home: "Today",
+  agents: "Ask FinBrain",
   customers: "Customers",
   einvoice: "e-Invoicing",
   "einvoice-detail": "e-Invoicing",
-  finance: "Financial Intelligence",
-  audit: "Audit & Access",
-  approvals: "Workflows",
-  ingestion: "Sources",
-  settings: "Settings",
+  finance: "Cash & finance",
+  audit: "Trust & audit",
+  approvals: "Review inbox",
+  ingestion: "Data sources",
+  settings: "My preferences",
   inbox: "Review inbox",
   positions: "Positions",
   autonomy: "Agents & autonomy",
-  cashflow: "Cash flow",
+  cashflow: "Cash & finance",
   financing: "Financing & Passport",
   team: "Team",
-  trust: "Trust center",
+  trust: "Trust & audit",
   company: "Company settings",
 };
 

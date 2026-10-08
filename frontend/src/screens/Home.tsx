@@ -3,6 +3,7 @@ import { useI18n, type Lang } from "../lib/i18n";
 import { useAppState } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { TodayStrip } from "../components/TodayStrip";
 import { EmptyState } from "../components/EmptyState";
 import { PERSONAS } from "../lib/personas";
 import { displayCase, formatRm, isPlaceholderName } from "../lib/customerAggregation";
@@ -329,7 +330,7 @@ function CaptureCard() {
   return (
     <CardShell
       tone="capture"
-      label="Message Capture"
+      label="Data sources"
       desc="Emails and Telegram messages captured"
       onClick={() => show("ingestion")}
       icon={<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 9l5-5 5 5M12 4v13" />}
@@ -399,7 +400,7 @@ function FinanceCard() {
   return (
     <CardShell
       tone="finance"
-      label="Financial Intelligence"
+      label="Receivables & intelligence"
       desc="Revenue and receivables this period"
       onClick={() => show("finance")}
       icon={<path d="M4 19V9M10 19V5M16 19v-7M22 19H2" />}
@@ -626,6 +627,8 @@ export default function Home() {
       </header>
 
       <div className="fb-page-body">
+        <TodayStrip />
+
         <AttentionSection needsAttention={needsAttention} state={customersState} onRetry={retryCustomers} />
 
         <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>At a glance</div>

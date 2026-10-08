@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { SectionTabs } from "../components/SectionTabs";
 import { useAuth } from "../auth/AuthProvider";
 import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
@@ -182,9 +183,10 @@ export default function CashFlow() {
       <AppTopBar current="cashflow" />
 
       <header className="fb-app-header">
-        <div className="fb-eyebrow">{t("nav.group.cash")}</div>
-        <h1>{t("nav.cashflow")}</h1>
+        <div className="fb-eyebrow">{t("nav.group.money")}</div>
+        <h1>{t("nav.cashFinance")}</h1>
         <p>{t("cash.desc")}</p>
+        <SectionTabs section="money" current="cashflow" />
       </header>
 
       <div className="fb-page-body">

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useI18n } from "../lib/i18n";
 import { useAppState } from "../lib/appState";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { SectionTabs } from "../components/SectionTabs";
 import {
   fetchCustomers,
   fetchEinvoiceRecords,
@@ -546,6 +547,7 @@ export default function Finance() {
             aria-label="Next period"
           >›</button>
         </div>
+        <SectionTabs section="money" current="finance" />
       </header>
 
       {loading && <div className="fb-callout">Loading finance summary…</div>}
