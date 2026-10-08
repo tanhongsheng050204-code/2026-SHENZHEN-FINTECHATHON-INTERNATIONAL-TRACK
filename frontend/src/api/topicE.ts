@@ -1,6 +1,6 @@
 // Topic E endpoints. Shapes mirror docs/api/topic-e-contract.json; every
 // response says whether its data is a canned stub or computed live.
-import { authenticatedFetch, parse } from "./client";
+import { authenticatedFetch, parse, type Role } from "./client";
 
 export type DataMode = "stub" | "live";
 
@@ -364,4 +364,257 @@ export async function revokeGrant(kind: GrantKind, scopeId: string, grantId: str
       await authenticatedFetch(`${grantsPath(kind, scopeId)}/${encodeURIComponent(grantId)}`, { method: "DELETE" }),
     )
   ).grant;
+}
+
+// ── Agents ──────────────────────────────────────────────────────────────────
+
+export interface AgentSkill {
+  id: string;
+  name: string;
+  wave: "W1" | "W2";
+  availability: "available" | "planned";
+  side_effect: "read" | "draft" | "external" | "money";
+}
+
+export interface ScopedAutonomy {
+  action: string;
+  level: AutonomyLevel;
+  max_amount: string | null;
+}
+
+export interface AgentMetrics {
+  proposals: number;
+  approved_unedited: number;
+  approved_edited: number;
+  rejected: number;
+  unedited_approval_rate: number | null;
+  promotion_recommended: boolean;
+}
+
+export interface AgentCard {
+  id: string;
+  name: string;
+  purpose: string;
+  job_function: JobFunction | null;
+  reviewer_job_function: JobFunction | null;
+  build_status: "built" | "designed";
+  autonomy_level: AutonomyLevel;
+  scoped_autonomy: ScopedAutonomy[];
+  skills: AgentSkill[];
+  kill_switch_engaged: boolean;
+  metrics: AgentMetrics | null;
+}
+
+export interface AgentListResponse {
+  data_mode: DataMode;
+  global_kill_switch_engaged: boolean;
+  agents: AgentCard[];
+}
+
+export interface JourneyAgent {
+  agent_id: string;
+  name: string;
+  autonomy_level: AutonomyLevel;
+  build_status: "built" | "designed";
+  override_rate: number | null;
+  estimated_hours_saved: number;
+}
+
+export interface JourneyResponse {
+  data_mode: DataMode;
+  estimate_note: string;
+  functions: { job_function: JobFunction; agents: JourneyAgent[] }[];
+}
+
+export interface AgentRunEvent {
+  run_id: string;
+  sequence: number;
+  type: "run_started" | "tool_called" | "proposal_created" | "waiting_for_review" | "run_completed";
+  agent_id: string;
+  message: string;
+  action_id: string | null;
+}
+
+export async function fetchAgents(): Promise<AgentListResponse> {
+  return parse<AgentListResponse>(await authenticatedFetch("/agents"));
+}
+
+export async function fetchJourney(): Promise<JourneyResponse> {
+  return parse<JourneyResponse>(await authenticatedFetch("/agents/journey"));
+}
+
+export async function setKillSwitch(engaged: boolean, agentId: string | null = null): Promise<AgentListResponse> {
+  return parse<AgentListResponse>(await authenticatedFetch("/agents/kill-switch", json({ agent_id: agentId, engaged })));
+}
+
+/** Grants (or lowers) autonomy for one action, optionally capped by amount. L3 is never delegable. */
+export async function changeAutonomy(
+  agentId: string,
+  action: string,
+  level: AutonomyLevel,
+  maxAmount: string | null = null,
+): Promise<AgentCard> {
+  return (
+    await parse<{ agent: AgentCard }>(
+      await authenticatedFetch(
+        `/agents/${encodeURIComponent(agentId)}/autonomy`,
+        json({ action, level, max_amount: maxAmount }),
+      ),
+    )
+  ).agent;
+}
+
+/**
+ * Starts a supervised run and calls onEvent for each server-sent event.
+ * Uses fetch rather than EventSource because EventSource cannot send the
+ * Authorization header.
+ */
+export async function runAgents(goal: string, onEvent: (event: AgentRunEvent) => void): Promise<void> {
+  const created = await parse<{ run_id: string; events_url: string }>(
+    await authenticatedFetch("/agents/runs", json({ goal })),
+  );
+  const response = await authenticatedFetch(created.events_url);
+  if (!response.ok || !response.body) {
+    await parse(response);
+    return;
+  }
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value;
+    const blocks = buffer.split(/\r?\n\r?\n/);
+    buffer = blocks.pop() ?? "";
+    for (const block of blocks) {
+      const data = block
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => line.slice(5).trimStart())
+        .join("\n");
+      if (data) onEvent(JSON.parse(data) as AgentRunEvent);
+    }
+  }
+}
+
+// ── Positions ───────────────────────────────────────────────────────────────
+
+export interface PositionSummary {
+  job_function: JobFunction;
+  display_name: string;
+  enabled: boolean;
+  build_status: "built" | "designed";
+  agent_ids: string[];
+}
+
+export interface SkillResult {
+  skill_id: string;
+  title: string;
+  value: string | null;
+  summary: string;
+  status: "ok" | "attention" | "risk" | "planned";
+  evidence: EvidenceRef[];
+}
+
+export interface PositionWorkspace {
+  data_mode: DataMode;
+  job_function: JobFunction;
+  display_name: string;
+  build_status: "built" | "designed";
+  agents: AgentCard[];
+  skill_results: SkillResult[];
+  cash_contribution: { role: string; inflow_total: string; outflow_total: string; at_risk_total: string; signal_ids: string[] };
+  inbox_count: number;
+}
+
+export async function fetchPositions(): Promise<PositionSummary[]> {
+  return (await parse<{ positions: PositionSummary[] }>(await authenticatedFetch("/positions"))).positions;
+}
+
+export async function fetchWorkspace(job: JobFunction): Promise<PositionWorkspace> {
+  return parse<PositionWorkspace>(await authenticatedFetch(`/positions/${job}/workspace`));
+}
+
+// ── Team ────────────────────────────────────────────────────────────────────
+
+
+export interface TeamMember {
+  user_id: string;
+  display_name: string;
+  email_masked: string;
+  role: Role;
+  job_functions: JobFunction[];
+  active: boolean;
+  mfa_enrolled: boolean;
+  last_active_at: string | null;
+}
+
+export async function fetchTeam(): Promise<TeamMember[]> {
+  return (await parse<{ members: TeamMember[] }>(await authenticatedFetch("/team/members"))).members;
+}
+
+export async function inviteMember(email: string, role: Role, jobFunctions: JobFunction[]): Promise<TeamMember> {
+  return (
+    await parse<{ member: TeamMember }>(
+      await authenticatedFetch("/team/invitations", json({ email, role, job_functions: jobFunctions })),
+    )
+  ).member;
+}
+
+export async function updateMember(
+  userId: string,
+  changes: { role?: Role; job_functions?: JobFunction[]; active?: boolean },
+): Promise<TeamMember> {
+  return (
+    await parse<{ member: TeamMember }>(
+      await authenticatedFetch(`/team/members/${encodeURIComponent(userId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(changes),
+      }),
+    )
+  ).member;
+}
+
+export async function signOutMember(userId: string): Promise<number> {
+  return (
+    await parse<{ sessions_revoked: number }>(
+      await authenticatedFetch(`/team/members/${encodeURIComponent(userId)}/sign-out`, { method: "POST" }),
+    )
+  ).sessions_revoked;
+}
+
+// ── Trust center ────────────────────────────────────────────────────────────
+
+export interface PostureMetric {
+  key: string;
+  label: string;
+  value: string;
+  status: "good" | "attention" | "risk";
+  detail: string;
+}
+
+export interface GuardrailEvent {
+  id: string;
+  occurred_at: string;
+  agent_id: string | null;
+  owasp_code: string;
+  title: string;
+  detail: string;
+  outcome: "blocked" | "quarantined" | "escalated";
+}
+
+export interface PostureResponse {
+  data_mode: DataMode;
+  score: number;
+  metrics: PostureMetric[];
+  recent_events: GuardrailEvent[];
+}
+
+export async function fetchPosture(): Promise<PostureResponse> {
+  return parse<PostureResponse>(await authenticatedFetch("/trust/posture"));
+}
+
+export async function fetchGuardrailEvents(): Promise<GuardrailEvent[]> {
+  return (await parse<{ events: GuardrailEvent[] }>(await authenticatedFetch("/trust/guardrail-events"))).events;
 }

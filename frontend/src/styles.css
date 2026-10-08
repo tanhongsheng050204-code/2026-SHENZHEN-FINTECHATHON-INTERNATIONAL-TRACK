@@ -1631,3 +1631,72 @@ html{scroll-behavior:smooth;}
 .fb-fin-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
 .fb-fin-items li{display:flex;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.8rem;}
 .fb-fin-items code{color:var(--ink-soft);flex:0 0 auto;align-self:center;}
+
+/* ── Topic E: shared helpers, agents, positions, team, trust ─────────────── */
+.fb-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.fb-inbox-tabs button.is-designed{border-style:dashed;}
+.fb-agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.9rem;}
+.fb-agent{display:flex;flex-direction:column;gap:.6rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:14px;background:var(--card);}
+.fb-agent.is-designed{border-style:dashed;background:var(--bg);}
+.fb-agent.is-stopped{box-shadow:inset 3px 0 0 var(--danger);}
+.fb-agent-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem;}
+.fb-agent-head h3{margin:0;font-family:var(--font-display);font-size:.98rem;font-weight:800;}
+.fb-agent-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.74rem;color:var(--ink-soft);}
+.fb-agent-meta strong{color:var(--ink);}
+.fb-agent-record{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4rem;padding:.6rem .7rem;border-radius:10px;background:var(--bg);font-size:.66rem;color:var(--ink-soft);}
+.fb-agent-record strong{display:block;font-family:'Inter Tight','Inter',sans-serif;font-size:.95rem;color:var(--ink);font-variant-numeric:tabular-nums;}
+.fb-agent-skills{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.35rem;font-size:.76rem;}
+.fb-agent-skills li{display:flex;justify-content:space-between;align-items:center;gap:.6rem;}
+.fb-agent-skills li.is-planned{color:var(--ink-soft);}
+.fb-agent-foot{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-top:auto;padding-top:.5rem;border-top:1px solid var(--line);font-size:.74rem;}
+.fb-agent-promote{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem;padding:.7rem .8rem;border-radius:12px;background:var(--accent-soft);font-size:.76rem;}
+.fb-agent-promote .fb-cash-field{flex:0 1 120px;}
+.fb-agent-promote .fb-btn{min-height:44px;}
+.fb-agent-killswitch{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.8rem;padding:.9rem 1.1rem;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:.8rem;}
+.fb-agent-killswitch.is-engaged{background:var(--danger-soft);border-color:color-mix(in srgb, var(--danger) 30%, transparent);}
+.fb-agent-killswitch .fb-btn{min-height:44px;}
+.fb-agent-ladder{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.6rem;}
+.fb-agent-ladder li{display:flex;flex-direction:column;gap:.2rem;padding:.75rem .85rem;border-radius:12px;font-size:.76rem;color:var(--ink-soft);}
+.fb-agent-ladder li strong{color:var(--ink);font-size:.82rem;}
+.fb-agent-ladder li.is-l0{background:var(--bg);}
+.fb-agent-ladder li.is-l1{background:color-mix(in srgb, var(--viz-1) 12%, transparent);}
+.fb-agent-ladder li.is-l2{background:color-mix(in srgb, var(--viz-2) 12%, transparent);}
+.fb-agent-ladder li.is-l3{background:var(--danger-soft);}
+.fb-agent-goal{flex:3 1 320px;}
+.fb-agent-run{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:.4rem;font-size:.78rem;line-height:1.45;}
+.fb-agent-run strong{text-transform:capitalize;}
+.fb-agent-run li.is-waiting_for_review,.fb-agent-run li.is-run_completed{color:var(--accent);font-weight:600;}
+.fb-pos-inbox{font:inherit;text-align:left;cursor:pointer;border-left-color:var(--purple);}
+.fb-pos-inbox:hover{border-color:var(--accent);}
+.fb-pos-inbox:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.fb-pos-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.8rem;}
+.fb-pos-result{display:flex;flex-direction:column;gap:.3rem;padding:.85rem 1rem;border:1px solid var(--line);border-left-width:3px;border-radius:12px;font-size:.76rem;}
+.fb-pos-result.is-ok{border-left-color:var(--chart-good);}
+.fb-pos-result.is-attention{border-left-color:var(--chart-attn);}
+.fb-pos-result.is-risk{border-left-color:var(--danger);}
+.fb-pos-result.is-planned{border-left-color:var(--line);background:var(--bg);}
+.fb-pos-value{font-family:'Inter Tight','Inter',sans-serif;font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.fb-team-table td{vertical-align:top;}
+.fb-team-table tr.is-inactive td{color:var(--ink-soft);}
+.fb-team-actions{text-align:right;}
+.fb-team-edit td{background:var(--bg);}
+.fb-team-edit .fb-inbox-actions{margin-top:.6rem;}
+.fb-team-jobs{display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin:.6rem 0 0;padding:.7rem .8rem;border:1px solid var(--line);border-radius:12px;font-size:.76rem;}
+.fb-team-jobs legend{padding:0 .3rem;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.fb-team-jobs label{display:flex;align-items:center;gap:.35rem;min-height:32px;}
+.fb-team-submit{align-self:flex-start;min-height:44px;}
+.fb-trust-top{display:grid;grid-template-columns:minmax(200px,260px) minmax(0,1fr);gap:1rem;align-items:start;}
+@media (max-width:900px){ .fb-trust-top{grid-template-columns:minmax(0,1fr);} }
+.fb-trust-score .fb-cash-kpi-value{font-size:2.6rem;}
+.fb-trust-score .fb-cash-kpi-value small{font-size:.9rem;color:var(--ink-soft);font-weight:600;}
+.fb-trust-metrics ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.fb-trust-metrics li{display:flex;align-items:flex-start;gap:.7rem;padding:.65rem 0;border-bottom:1px solid var(--line);font-size:.8rem;}
+.fb-trust-metric{flex:1;display:flex;flex-direction:column;gap:.15rem;}
+.fb-trust-dot{flex:0 0 auto;width:10px;height:10px;margin-top:.3rem;border-radius:50%;background:var(--chart-good);}
+.fb-trust-metrics li.is-attention .fb-trust-dot{background:var(--chart-attn);}
+.fb-trust-metrics li.is-risk .fb-trust-dot{background:var(--danger);}
+.fb-trust-events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem;}
+.fb-trust-events li{display:flex;flex-direction:column;gap:.25rem;padding:.85rem 1rem;border:1px solid var(--line);border-radius:12px;font-size:.8rem;}
+.fb-trust-event-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;}
+.fb-trust-code{padding:.1rem .5rem;border-radius:6px;background:var(--ink);color:var(--card);font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-size:.68rem;font-weight:700;}
+.fb-cash .fb-callout{margin:0;max-width:none;}

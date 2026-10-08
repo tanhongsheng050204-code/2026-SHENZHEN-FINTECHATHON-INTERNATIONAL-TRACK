@@ -72,11 +72,25 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
     ms: "Pembiayaan yang sesuai dengan jurang, setiap padanan diterangkan mengikut peraturan, dan Pasport boleh disahkan untuk dikongsi dengan pemberi pinjaman atau juruaudit.",
     zh: "匹配资金缺口的融资方案，逐条说明匹配规则，并提供可验证的融资护照，可分享给贷款方或审计师。",
   },
-  "soon.title": { en: "Coming next", ms: "Akan datang", zh: "即将推出" },
-  "soon.desc": {
-    en: "This page is designed and its API is ready; it is being built next.",
-    ms: "Halaman ini telah direka dan API-nya sedia; ia sedang dibina seterusnya.",
-    zh: "此页面已完成设计，接口也已就绪，接下来将开发。",
+  "pos.desc": {
+    en: "One workspace per job: what its agents found, what it adds to the cash forecast, and what is waiting for review.",
+    ms: "Satu ruang kerja bagi setiap jawatan: dapatan ejen, sumbangannya kepada ramalan tunai, dan perkara yang menunggu semakan.",
+    zh: "每个岗位一个工作台：智能体的发现、对现金流预测的影响，以及待审核事项。",
+  },
+  "auto.desc": {
+    en: "Every agent, how much it may do on its own, and the switch that stops them all.",
+    ms: "Setiap ejen, sejauh mana ia boleh bertindak sendiri, dan suis untuk menghentikan semuanya.",
+    zh: "所有智能体、各自可自主执行的范围，以及一键停止全部智能体的开关。",
+  },
+  "team.desc": {
+    en: "Who has access, which positions they cover, and whether their sign-in is protected.",
+    ms: "Siapa yang mempunyai akses, jawatan yang mereka liputi, dan sama ada log masuk mereka dilindungi.",
+    zh: "谁拥有访问权限、负责哪些岗位，以及其登录是否受到保护。",
+  },
+  "trust.desc": {
+    en: "Your security posture and every attack the agent guardrails stopped.",
+    ms: "Postur keselamatan anda dan setiap serangan yang dihalang oleh kawalan ejen.",
+    zh: "您的安全态势，以及智能体防护拦截的每一次攻击。",
   },
   "home.title": { en: "Briefing", ms: "Taklimat", zh: "简报" },
   "home.desc": {

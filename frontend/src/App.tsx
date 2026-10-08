@@ -31,7 +31,10 @@ const Settings = lazy(() => import("./screens/Settings"));
 const ReviewInbox = lazy(() => import("./screens/ReviewInbox"));
 const CashFlow = lazy(() => import("./screens/CashFlow"));
 const Financing = lazy(() => import("./screens/Financing"));
-const ComingSoon = lazy(() => import("./screens/ComingSoon"));
+const Positions = lazy(() => import("./screens/Positions"));
+const Autonomy = lazy(() => import("./screens/Autonomy"));
+const Team = lazy(() => import("./screens/Team"));
+const Trust = lazy(() => import("./screens/Trust"));
 
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
@@ -71,11 +74,10 @@ function Screens() {
     case "inbox": return <ReviewInbox />;
     case "cashflow": return <CashFlow />;
     case "financing": return <Financing />;
-    case "positions":
-    case "autonomy":
-    case "team":
-    case "trust":
-      return <ComingSoon key={screen} screen={screen} titleKey={`nav.${screen}`} />;
+    case "positions": return <Positions />;
+    case "autonomy": return <Autonomy />;
+    case "team": return <Team />;
+    case "trust": return <Trust />;
     default: return <Landing />;
   }
 }
