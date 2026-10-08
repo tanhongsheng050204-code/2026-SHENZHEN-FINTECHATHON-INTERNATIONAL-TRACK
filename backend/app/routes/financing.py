@@ -8,6 +8,7 @@ from app.contracts.financing import (
     ApplicationPackResponse,
     FinancingMatchesResponse,
     Jurisdiction,
+    ScorecardResponse,
 )
 from app.schemas import UserRole
 from app.stubs import financing as stub
@@ -36,3 +37,11 @@ def create_application_pack(
     except stub.PackError as error:
         raise HTTPException(status_code=error.status_code, detail=error.code) from error
     return ApplicationPackResponse(data_mode=DataMode.STUB, action=action)
+
+
+@router.get("/financing/scorecard", response_model=ScorecardResponse)
+def financing_scorecard(
+    principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+) -> ScorecardResponse:
+    """A points scorecard a lender can read line by line, with public signals as one factor."""
+    return stub.scorecard()

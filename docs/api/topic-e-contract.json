@@ -2700,6 +2700,56 @@
         "title": "PostureResponse",
         "type": "object"
       },
+      "PublicSignal": {
+        "properties": {
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "google_maps",
+              "shopee",
+              "grabfood",
+              "lazada"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "watch",
+              "risk"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "description": "True for demo data; real signals come only from official APIs or owner exports",
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "trend": {
+            "title": "Trend",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "metric",
+          "value",
+          "trend",
+          "status",
+          "synthetic"
+        ],
+        "title": "PublicSignal",
+        "type": "object"
+      },
       "ReviewAction": {
         "properties": {
           "agent_id": {
@@ -3011,6 +3061,139 @@
           "level"
         ],
         "title": "ScopedAutonomy",
+        "type": "object"
+      },
+      "ScoreFactor": {
+        "properties": {
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "points": {
+            "title": "Points",
+            "type": "integer"
+          },
+          "reason": {
+            "description": "Which band the input falls in and why it earns these points",
+            "title": "Reason",
+            "type": "string"
+          },
+          "value": {
+            "description": "The input as a person reads it, e.g. '72%'",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "points",
+          "max_points",
+          "reason",
+          "evidence"
+        ],
+        "title": "ScoreFactor",
+        "type": "object"
+      },
+      "ScorecardResponse": {
+        "properties": {
+          "base_points": {
+            "title": "Base Points",
+            "type": "integer"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreFactor"
+            },
+            "title": "Factors",
+            "type": "array"
+          },
+          "grade": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E"
+            ],
+            "title": "Grade",
+            "type": "string"
+          },
+          "max_score": {
+            "title": "Max Score",
+            "type": "integer"
+          },
+          "method": {
+            "description": "expert_weights: published bins set by hand; calibrated: fitted on outcome data",
+            "enum": [
+              "expert_weights",
+              "calibrated"
+            ],
+            "title": "Method",
+            "type": "string"
+          },
+          "method_note": {
+            "title": "Method Note",
+            "type": "string"
+          },
+          "min_score": {
+            "title": "Min Score",
+            "type": "integer"
+          },
+          "public_data_note": {
+            "title": "Public Data Note",
+            "type": "string"
+          },
+          "public_signals": {
+            "items": {
+              "$ref": "#/components/schemas/PublicSignal"
+            },
+            "title": "Public Signals",
+            "type": "array"
+          },
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data_mode",
+          "method",
+          "method_note",
+          "score",
+          "min_score",
+          "max_score",
+          "grade",
+          "base_points",
+          "factors",
+          "public_signals",
+          "public_data_note",
+          "disclaimer"
+        ],
+        "title": "ScorecardResponse",
         "type": "object"
       },
       "SecuritySettings": {
@@ -4502,6 +4685,33 @@
           }
         ],
         "summary": "Financing Matches",
+        "tags": [
+          "financing"
+        ]
+      }
+    },
+    "/financing/scorecard": {
+      "get": {
+        "description": "A points scorecard a lender can read line by line, with public signals as one factor.",
+        "operationId": "financing_scorecard_financing_scorecard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScorecardResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Financing Scorecard",
         "tags": [
           "financing"
         ]

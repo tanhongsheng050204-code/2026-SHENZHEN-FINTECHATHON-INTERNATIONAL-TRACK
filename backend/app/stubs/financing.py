@@ -15,7 +15,10 @@ from app.contracts.financing import (
     FinancingMatchesResponse,
     FinancingProduct,
     Jurisdiction,
+    PublicSignal,
     RuleResult,
+    ScorecardResponse,
+    ScoreFactor,
 )
 
 DISCLAIMER = (
@@ -335,4 +338,209 @@ def application_pack(product_id: str) -> ReviewAction:
         draft=f"Requesting RM60,000.00 under {entry.product.name}. {match.explanation}",
         evidence=[evidence for result in match.rules for evidence in result.evidence],
         created_at=dt.datetime.now(dt.UTC),
+    )
+
+
+# ── Credit scorecard ─────────────────────────────────────────────────────────
+# A points scorecard a lender can read line by line: each input falls in a
+# published band, each band earns fixed points, and the total maps to a grade.
+# The weights are set by hand (method "expert_weights"); fitting them on real
+# repayment outcomes with logistic regression replaces them once that data exists.
+
+SCORE_BASE = 300
+SCORE_MAX = 800
+SCORE_METHOD_NOTE = (
+    "Points come from published bands set by hand, not from a model fitted on repayment "
+    "outcomes. Calibrating the weights with logistic regression on real outcomes is planned."
+)
+PUBLIC_DATA_NOTE = (
+    "Public signals come only from official platform APIs or exports the business owner "
+    "provides; FinBrain does not scrape. The signals shown here are synthetic demo data."
+)
+
+# (label, unit, evidence, max points, bands). A band is (lower bound, points):
+# the first band whose lower bound the value reaches wins. For "lower is better"
+# inputs the bands are upper bounds instead.
+_BANDS: dict[str, tuple[str, str, EvidenceRef, int, str, tuple[tuple[Decimal, int], ...]]] = {
+    "validated_einvoice_share": (
+        "Validated e-invoice share",
+        "share",
+        EvidenceRef(label="Invoice validation status", source="einvoice:validation-status"),
+        90,
+        "higher",
+        ((Decimal("0.70"), 90), (Decimal("0.50"), 60), (Decimal("0.30"), 30), (Decimal("0"), 0)),
+    ),
+    "receivables_over_90_share": (
+        "Receivables over 90 days",
+        "share",
+        EvidenceRef(label="Receivables aging", source="finance:ar-aging"),
+        80,
+        "lower",
+        ((Decimal("0.10"), 80), (Decimal("0.20"), 50), (Decimal("0.35"), 20), (Decimal("1"), 0)),
+    ),
+    "months_trading": (
+        "Months trading",
+        "months",
+        EvidenceRef(label="Company registration date", source="profile:registration"),
+        70,
+        "higher",
+        ((Decimal("48"), 70), (Decimal("24"), 50), (Decimal("12"), 25), (Decimal("0"), 0)),
+    ),
+    "top_customer_share": (
+        "Largest customer's share of revenue",
+        "share",
+        EvidenceRef(label="Revenue by customer", source="finance:top-customers"),
+        70,
+        "lower",
+        ((Decimal("0.20"), 70), (Decimal("0.35"), 45), (Decimal("0.50"), 20), (Decimal("1"), 0)),
+    ),
+    "bank_lines_matched_share": (
+        "Bank lines matched to records",
+        "share",
+        EvidenceRef(label="Reconciliation", source="bank_statement:reconciliation"),
+        60,
+        "higher",
+        ((Decimal("0.90"), 60), (Decimal("0.75"), 35), (Decimal("0"), 10)),
+    ),
+}
+
+_SCORE_INPUTS: dict[str, Decimal] = {
+    "validated_einvoice_share": _PROFILE["validated_einvoice_share"],
+    "receivables_over_90_share": _PROFILE["receivables_over_90_share"],
+    "months_trading": _PROFILE["months_trading"],
+    "top_customer_share": _PROFILE["top_customer_share"],
+    "bank_lines_matched_share": Decimal("0.94"),
+}
+_SHORTFALL_DAY = 23
+_RATING_NOW = Decimal("4.4")
+_RATING_90_DAYS_AGO = Decimal("4.5")
+
+_PUBLIC_SIGNALS = (
+    PublicSignal(
+        source="google_maps",
+        metric="Shop rating (212 reviews)",
+        value="4.4 / 5",
+        trend="4.5 → 4.4 over 90 days",
+        status="ok",
+        synthetic=True,
+    ),
+    PublicSignal(
+        source="shopee",
+        metric="Store rating (1,940 ratings)",
+        value="4.8 / 5",
+        trend="Steady; replies to 96% of chats",
+        status="ok",
+        synthetic=True,
+    ),
+)
+
+
+def factor_points(key: str, value: Decimal) -> int:
+    """Points for one input, from the published bands."""
+    _label, _unit, _evidence, _max, direction, bands = _BANDS[key]
+    for bound, points in bands:
+        if (value >= bound) if direction == "higher" else (value <= bound):
+            return points
+    return 0
+
+
+def runway_points(shortfall_day: int | None) -> int:
+    """Fewer points the sooner cash falls below the minimum; None means no shortfall in 90 days."""
+    if shortfall_day is None:
+        return 80
+    if shortfall_day > 60:
+        return 60
+    if shortfall_day > 30:
+        return 40
+    return 20
+
+
+def reputation_points(rating_now: Decimal, rating_before: Decimal) -> int:
+    """Public rating level and 90-day trend; a warning sign, never a cash movement."""
+    drop = rating_before - rating_now
+    if rating_now >= Decimal("4.2") and drop < Decimal("0.2"):
+        return 50
+    if rating_now >= Decimal("3.8") and drop <= Decimal("0.4"):
+        return 30
+    return 0
+
+
+def grade_for(score: int) -> str:
+    for floor, grade in ((720, "A"), (650, "B"), (580, "C"), (500, "D")):
+        if score >= floor:
+            return grade
+    return "E"
+
+
+def _band_factor(key: str) -> ScoreFactor:
+    label, unit, evidence, max_points, direction, bands = _BANDS[key]
+    value = _SCORE_INPUTS[key]
+    points = factor_points(key, value)
+    bound = next(b for b, p in bands if p == points)
+    if direction == "higher":
+        reason = f"At least {_format(bound, unit)} earns {points} of {max_points} points."
+    else:
+        reason = f"At most {_format(bound, unit)} earns {points} of {max_points} points."
+    return ScoreFactor(
+        key=key,
+        label=label,
+        value=_format(value, unit),
+        points=points,
+        max_points=max_points,
+        reason=reason,
+        evidence=[evidence],
+    )
+
+
+def scorecard() -> ScorecardResponse:
+    factors = [
+        _band_factor(key)
+        for key in (
+            "validated_einvoice_share",
+            "receivables_over_90_share",
+            "months_trading",
+        )
+    ]
+    runway = runway_points(_SHORTFALL_DAY)
+    factors.append(
+        ScoreFactor(
+            key="cash_runway",
+            label="Cash runway",
+            value=f"Shortfall on day {_SHORTFALL_DAY}",
+            points=runway,
+            max_points=80,
+            reason="Cash falls below the minimum within 30 days, even though matched invoice "
+            "financing covers the gap.",
+            evidence=[EvidenceRef(label="90-day forecast", source="cashflow:forecast")],
+        )
+    )
+    factors += [_band_factor(key) for key in ("top_customer_share", "bank_lines_matched_share")]
+    reputation = reputation_points(_RATING_NOW, _RATING_90_DAYS_AGO)
+    factors.append(
+        ScoreFactor(
+            key="public_reputation",
+            label="Public reputation",
+            value=f"Rating {_RATING_NOW} (was {_RATING_90_DAYS_AGO} 90 days ago)",
+            points=reputation,
+            max_points=50,
+            reason="A rating of 4.2 or more that fell by less than 0.2 earns full points.",
+            evidence=[
+                EvidenceRef(label="Public ratings (synthetic demo)", source="public:ratings")
+            ],
+        )
+    )
+    score = SCORE_BASE + sum(f.points for f in factors)
+    return ScorecardResponse(
+        data_mode=DataMode.STUB,
+        method="expert_weights",
+        method_note=SCORE_METHOD_NOTE,
+        score=score,
+        min_score=SCORE_BASE,
+        max_score=SCORE_MAX,
+        grade=grade_for(score),
+        base_points=SCORE_BASE,
+        factors=factors,
+        public_signals=list(_PUBLIC_SIGNALS),
+        public_data_note=PUBLIC_DATA_NOTE,
+        disclaimer=DISCLAIMER,
     )

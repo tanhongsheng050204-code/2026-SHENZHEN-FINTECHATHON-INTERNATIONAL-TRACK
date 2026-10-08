@@ -16,6 +16,7 @@ CONTRACT_OPERATIONS = {
     ("get", "/positions/{job_function}/workspace"),
     ("get", "/financing/matches"),
     ("post", "/financing/application-packs"),
+    ("get", "/financing/scorecard"),
     ("get", "/passports"),
     ("post", "/passports"),
     ("get", "/passports/{passport_id}"),

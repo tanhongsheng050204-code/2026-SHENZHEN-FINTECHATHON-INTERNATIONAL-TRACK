@@ -50,3 +50,41 @@ class ApplicationPackRequest(BaseModel):
 class ApplicationPackResponse(BaseModel):
     data_mode: DataMode
     action: ReviewAction
+
+
+class ScoreFactor(BaseModel):
+    key: str
+    label: str
+    value: str = Field(description="The input as a person reads it, e.g. '72%'")
+    points: int
+    max_points: int
+    reason: str = Field(description="Which band the input falls in and why it earns these points")
+    evidence: list[EvidenceRef]
+
+
+class PublicSignal(BaseModel):
+    source: Literal["google_maps", "shopee", "grabfood", "lazada"]
+    metric: str
+    value: str
+    trend: str
+    status: Literal["ok", "watch", "risk"]
+    synthetic: bool = Field(
+        description="True for demo data; real signals come only from official APIs or owner exports"
+    )
+
+
+class ScorecardResponse(BaseModel):
+    data_mode: DataMode
+    method: Literal["expert_weights", "calibrated"] = Field(
+        description="expert_weights: published bins set by hand; calibrated: fitted on outcome data"
+    )
+    method_note: str
+    score: int
+    min_score: int
+    max_score: int
+    grade: Literal["A", "B", "C", "D", "E"]
+    base_points: int
+    factors: list[ScoreFactor]
+    public_signals: list[PublicSignal]
+    public_data_note: str
+    disclaimer: str
