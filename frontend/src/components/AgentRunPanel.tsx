@@ -3,6 +3,9 @@ import { useAppState } from "../lib/appState";
 import { friendlyLoadError } from "../api/client";
 import { errorCode, runAgents, type AgentRunEvent } from "../api/topicE";
 
+// Goals the built agents can route: cash, collections and financing.
+const EXAMPLE_GOALS = ["Can I cover payroll this month?", "Which customers are late paying?", "Which loans can we apply for?"];
+
 /**
  * Hand a goal to the agents: the supervisor plans, the agents propose, and the
  * steps stream in as they happen. Proposals land in the review inbox; nothing
@@ -42,7 +45,12 @@ export function AgentRunPanel({ compact = false }: { compact?: boolean }) {
         </label>
         <button className="fb-btn fb-btn-solid" type="submit" disabled={running || goal.trim() === ""}>{running ? "Working…" : "Run"}</button>
       </form>
-      {error && <div className="fb-inbox-error" role="alert">{error}</div>}
+      <div className="fb-pos-tools" aria-label="Example goals">
+        {EXAMPLE_GOALS.map((example) => (
+          <button key={example} type="button" className="fb-pos-tool" disabled={running} onClick={() => setGoal(example)}>{example}</button>
+        ))}
+      </div>
+      {error &&<div className="fb-inbox-error" role="alert">{error}</div>}
       {events.length > 0 && (
         <ol className="fb-agent-run" aria-live="polite">
           {events.map((e) => (

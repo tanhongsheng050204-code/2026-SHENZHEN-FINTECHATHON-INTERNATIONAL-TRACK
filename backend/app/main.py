@@ -12,6 +12,7 @@ from app.config import get_settings
 from app.db import get_db, initialize_local_schema
 from app.observability import configure_logging, init_sentry
 from app.routes import (
+    agent_runs,
     agents,
     audit_log,
     auth,
@@ -128,6 +129,7 @@ app.include_router(customers.router)
 app.include_router(privacy.router)
 app.include_router(health.router)
 app.include_router(cashflow.router)
+app.include_router(agent_runs.router)  # before agents: serves the run endpoints
 app.include_router(agents.router)
 app.include_router(inbox.router)
 app.include_router(positions.router)

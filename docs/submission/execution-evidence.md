@@ -27,7 +27,7 @@ CI (`.github/workflows/ci.yml`) runs the backend lint and tests and the frontend
 | Passport | Documents with fields that were never issued are rejected; verification recomputes the SHA-256 |
 | Settings | Safety floors (owner alerts, MFA for privileged roles, 60-minute idle cap); security changes and security rollbacks wait for Compliance; equivalent submissions are not changes |
 | Templates and imports | Unknown or malformed placeholders and personal numbers refused; import mappings match on every header regardless of order, case and byte-order mark |
-| Agent runs | Events stream in order and are documented as `AgentRunEvent` items in the contract |
+| Agent runs | The Supervisor routes English, Malay and Chinese goals; each agent calls the real forecast, late-receivables scenario and financing rule engine, and every message is built from their results; off-topic goals get an honest refusal; every tool call is checked against the agent manifest; run ids are HMAC-bound to tenant and person, so tampered or foreign ids return 404 (`tests/test_agent_runtime.py`) |
 
 ## Live demonstrations
 

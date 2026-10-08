@@ -118,7 +118,7 @@ FinBrain is not certified under any standard, and we do not claim partnerships w
 ## 9. Known limitations (residual risk)
 
 - Plan 2 identity and session controls have passed static checks only; end-to-end tests against real Supabase (email delivery, TOTP, refresh, revocation, RLS triggers) are outstanding.
-- Agent runs, the review inbox and Passport issuance still run on synthetic stub data; persistence comes in Plans 5 and 6.
+- Agent runs compute over the synthetic company's cash data, and their proposals point at existing review-inbox items rather than creating new ones; the review inbox and Passport issuance still run on synthetic stub data. Persistence comes in Plans 5 and 6.
 - Guardrails are deterministic patterns; they will miss paraphrased injections until adversarial evaluation (Plan 7) tunes them.
 - Share-link expiry is not yet enforced by the server.
 - The backend is currently reached through a temporary tunnel; production needs a fixed HTTPS hostname under the app's parent domain.
