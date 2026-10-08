@@ -3,30 +3,18 @@ import { Sidebar, AppTopBar } from "../components/Nav";
 import { EmptyState } from "../components/EmptyState";
 import { useAppState } from "../lib/appState";
 import { useI18n } from "../lib/i18n";
+import { JOB_LABELS } from "../lib/jobFunctions";
 import { ApiError, friendlyLoadError } from "../api/client";
 import {
   decidableCount,
   decideReviewAction,
   fetchReviewInbox,
+  ringgit,
   type DataMode,
   type JobFunction,
   type ReviewAction,
   type ReviewDecisionRequest,
 } from "../api/topicE";
-
-const JOB_LABELS: Record<JobFunction, string> = {
-  owner: "Owner",
-  operations: "Operations",
-  finance: "Finance",
-  sales: "Sales",
-  customer_service: "Customer service",
-  marketing: "Marketing",
-  procurement: "Purchasing",
-  logistics: "Logistics",
-  production: "Production",
-  hr: "HR",
-  compliance: "Compliance",
-};
 
 const LEVEL_HINT: Record<ReviewAction["autonomy_level"], string> = {
   L0: "Read only",
@@ -44,13 +32,6 @@ const DECISION_ERRORS: Record<string, string> = {
   not_your_job_function: "This item belongs to a position you don't hold.",
   action_not_found: "This item no longer exists. Refresh the inbox.",
 };
-
-function ringgit(amount: string | null): string | null {
-  if (amount === null) return null;
-  const value = Number(amount);
-  if (!Number.isFinite(value)) return `RM${amount}`;
-  return "RM" + value.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 function isOpen(action: ReviewAction): boolean {
   return action.status === "pending" || action.status === "awaiting_second_approval";

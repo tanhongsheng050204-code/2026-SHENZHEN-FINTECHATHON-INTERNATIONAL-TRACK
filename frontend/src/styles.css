@@ -1535,3 +1535,61 @@ html{scroll-behavior:smooth;}
 .fb-inbox-actions .fb-btn{min-height:44px;}
 .fb-inbox-actions .fb-btn:disabled{opacity:.45;cursor:not-allowed;}
 .fb-inbox-muted{margin:0;font-size:.72rem;color:var(--ink-soft);}
+
+/* ── Topic E: cash flow ─────────────────────────────────────────────────── */
+.fb-cash{display:flex;flex-direction:column;gap:1rem;font-family:'Inter',-apple-system,sans-serif;}
+.fb-cash .fb-inbox-tabs{margin-bottom:0;}
+.fb-cash-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;}
+.fb-cash-kpi{display:flex;flex-direction:column;gap:.35rem;padding:1.1rem 1.3rem;border:1px solid var(--line);border-left-width:3px;border-radius:16px;background:var(--card);}
+.fb-cash-kpi.is-good{border-left-color:var(--chart-good);}
+.fb-cash-kpi.is-attn{border-left-color:var(--chart-attn);}
+.fb-cash-kpi.is-danger{border-left-color:var(--danger);}
+.fb-cash-kpi-label{font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
+.fb-cash-kpi-value{font-family:'Inter Tight','Inter',sans-serif;font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);}
+.fb-cash-kpi.is-danger .fb-cash-kpi-value{color:var(--danger);}
+.fb-cash-kpi-sub{font-size:.72rem;color:var(--ink-soft);}
+.fb-cash-alert{display:flex;flex-direction:column;gap:.2rem;padding:.85rem 1.1rem;border-radius:14px;font-size:.78rem;line-height:1.5;border:1px solid transparent;}
+.fb-cash-alert strong{font-size:.82rem;}
+.fb-cash-alert.is-critical{background:var(--danger-soft);border-color:color-mix(in srgb, var(--danger) 30%, transparent);}
+.fb-cash-alert.is-warning{background:color-mix(in srgb, var(--viz-2) 12%, transparent);border-color:color-mix(in srgb, var(--viz-2) 30%, transparent);}
+.fb-cash-alert.is-info{background:var(--accent-soft);}
+.fb-cash-card{display:flex;flex-direction:column;gap:.8rem;padding:1.2rem 1.3rem;border:1px solid var(--line);border-radius:16px;background:var(--card);min-width:0;}
+.fb-cash-card h2{margin:0;font-family:var(--font-display);font-size:1.05rem;font-weight:800;}
+.fb-cash-card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.6rem;}
+.fb-cash-legend{display:flex;flex-wrap:wrap;gap:.9rem;font-size:.72rem;color:var(--ink-soft);}
+.fb-cash-legend span{display:inline-flex;align-items:center;gap:.35rem;}
+.fb-cash-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;}
+.fb-cash-legend i.is-likely{background:var(--chart-good);}
+.fb-cash-legend i.is-band{height:9px;background:color-mix(in srgb, var(--chart-good) 18%, transparent);}
+.fb-cash-legend i.is-min{height:0;border-top:2px dashed var(--chart-attn);}
+.fb-cash-legend i.is-scenario{height:0;border-top:2px dashed var(--accent);}
+.fb-cash-chart{width:100%;height:auto;display:block;}
+.fb-cash-grid{stroke:var(--line);stroke-width:1;}
+.fb-cash-zero{stroke:var(--ink-soft);stroke-width:1;}
+.fb-cash-axis{fill:var(--ink-soft);font-size:11px;font-family:'Inter',sans-serif;}
+.fb-cash-band{fill:color-mix(in srgb, var(--chart-good) 15%, transparent);stroke:none;}
+.fb-cash-likely{fill:none;stroke:var(--chart-good);stroke-width:2.5;stroke-linejoin:round;}
+.fb-cash-scenario{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-dasharray:6 5;stroke-linejoin:round;}
+.fb-cash-minimum{stroke:var(--chart-attn);stroke-width:2;stroke-dasharray:6 5;}
+.fb-cash-minimum-label{fill:var(--chart-attn);font-size:11px;font-weight:700;font-family:'Inter',sans-serif;}
+.fb-cash-dot{fill:var(--danger);stroke:var(--card);stroke-width:2;}
+.fb-cash-dot-label{fill:var(--danger);font-size:12px;font-weight:700;font-family:'Inter',sans-serif;}
+.fb-cash-table-toggle summary{cursor:pointer;font-size:.76rem;font-weight:600;color:var(--accent);}
+.fb-cash-scroll{overflow-x:auto;}
+.fb-cash-table{width:100%;border-collapse:collapse;font-size:.78rem;font-variant-numeric:tabular-nums;}
+.fb-cash-table th{text-align:left;font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:.5rem .6rem;border-bottom:1px solid var(--line);white-space:nowrap;}
+.fb-cash-table td{padding:.6rem;border-bottom:1px solid var(--line);}
+.fb-cash-table .is-num{text-align:right;white-space:nowrap;}
+.fb-cash-amount.is-inflow{color:var(--chart-good);font-weight:600;}
+.fb-cash-amount.is-outflow{color:var(--danger);font-weight:600;}
+.fb-cash-kind.is-risk{display:inline-flex;padding:.1rem .5rem;border-radius:99px;background:color-mix(in srgb, var(--viz-2) 14%, transparent);color:var(--viz-2);font-size:.66rem;font-weight:700;}
+.fb-cash-fx{color:var(--ink-soft);font-size:.7rem;}
+.fb-cash-whatif{display:flex;flex-wrap:wrap;gap:.8rem;align-items:flex-end;}
+.fb-cash-field{display:flex;flex-direction:column;gap:.35rem;font-size:.72rem;font-weight:600;color:var(--ink-soft);flex:1 1 200px;}
+.fb-cash-field select,.fb-cash-field input{font:inherit;font-size:.8rem;font-weight:400;padding:.65rem .8rem;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:44px;}
+.fb-cash-field select:focus-visible,.fb-cash-field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.fb-cash-whatif .fb-btn{min-height:44px;}
+.fb-cash-compare{margin:0;padding:.8rem 1rem;border-radius:12px;background:var(--accent-soft);font-size:.8rem;line-height:1.55;}
+.fb-cash-table td.is-label{min-width:180px;}
+.fb-cash-more{align-self:flex-start;font:inherit;font-size:.76rem;font-weight:600;color:var(--accent);background:none;border:0;padding:.4rem 0;cursor:pointer;min-height:36px;}
+.fb-cash-more:hover{text-decoration:underline;}

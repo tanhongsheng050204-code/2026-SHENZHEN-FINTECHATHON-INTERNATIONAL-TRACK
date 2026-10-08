@@ -57,6 +57,16 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
     ms: "Data demo: keputusan dipaparkan tetapi belum disimpan.",
     zh: "演示数据：决定会显示，但尚未保存。",
   },
+  "cash.desc": {
+    en: "A 90-day forecast built from every position's signals, with the best–worst range and your minimum balance.",
+    ms: "Ramalan 90 hari daripada isyarat setiap jawatan, dengan julat terbaik–terburuk dan baki minimum anda.",
+    zh: "根据各岗位信号生成的 90 天现金流预测，含最好与最差区间及您的最低余额。",
+  },
+  "cash.stub": {
+    en: "Demo data: a synthetic trading company, not your books.",
+    ms: "Data demo: syarikat perdagangan sintetik, bukan akaun anda.",
+    zh: "演示数据：虚构的贸易公司，并非您的账目。",
+  },
   "soon.title": { en: "Coming next", ms: "Akan datang", zh: "即将推出" },
   "soon.desc": {
     en: "This page is designed and its API is ready; it is being built next.",

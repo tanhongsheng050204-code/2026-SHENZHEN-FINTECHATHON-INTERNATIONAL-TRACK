@@ -88,3 +88,111 @@ export function decidableCount(actions: ReviewAction[]): number {
     (a) => a.can_decide && (a.status === "pending" || a.status === "awaiting_second_approval"),
   ).length;
 }
+
+// ── Cash flow ───────────────────────────────────────────────────────────────
+
+export type ForecastHorizon = 30 | 60 | 90;
+
+export interface ForecastPoint {
+  day: number;
+  date: string;
+  best: string;
+  likely: string;
+  worst: string;
+}
+
+export interface Shortfall {
+  day: number;
+  date: string;
+  likely_balance: string;
+  minimum_balance: string;
+  gap: string;
+}
+
+export interface ForecastAlert {
+  id: string;
+  severity: "info" | "warning" | "critical";
+  title: string;
+  detail: string;
+  day: number;
+  date: string;
+}
+
+export interface CashSignal {
+  id: string;
+  source_agent: string;
+  job_function: JobFunction;
+  /** "risk" signals annotate the forecast; they never move the balance. */
+  kind: "inflow" | "outflow" | "risk";
+  label: string;
+  amount_myr: string;
+  source_currency: string;
+  source_amount: string | null;
+  fx_rate: string | null;
+  best_day: number;
+  likely_day: number | null;
+  worst_day: number | null;
+  probability: number;
+  affects: string | null;
+}
+
+export interface ForecastResponse {
+  data_mode: DataMode;
+  as_of: string;
+  currency: "MYR";
+  horizon_days: number;
+  opening_balance: string;
+  minimum_balance: string;
+  points: ForecastPoint[];
+  shortfall: Shortfall | null;
+  alerts: ForecastAlert[];
+  drivers: CashSignal[];
+}
+
+export interface AgentCashTotal {
+  agent_id: string;
+  job_function: JobFunction;
+  inflow_total: string;
+  outflow_total: string;
+  at_risk_total: string;
+  signal_count: number;
+}
+
+export interface CashSignalsResponse {
+  data_mode: DataMode;
+  horizon_days: number;
+  signals: CashSignal[];
+  by_agent: AgentCashTotal[];
+}
+
+export interface EventShift {
+  event_id: string;
+  shift_days: number;
+}
+
+export async function fetchForecast(horizonDays: ForecastHorizon = 90): Promise<ForecastResponse> {
+  return parse<ForecastResponse>(await authenticatedFetch(`/cashflow/forecast?horizon_days=${horizonDays}`));
+}
+
+export async function runScenario(horizonDays: ForecastHorizon, shifts: EventShift[]): Promise<ForecastResponse> {
+  return parse<ForecastResponse>(
+    await authenticatedFetch("/cashflow/scenarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ horizon_days: horizonDays, shifts }),
+    }),
+  );
+}
+
+export async function fetchCashSignals(horizonDays: ForecastHorizon = 90): Promise<CashSignalsResponse> {
+  return parse<CashSignalsResponse>(await authenticatedFetch(`/cashflow/signals?horizon_days=${horizonDays}`));
+}
+
+/** Ringgit with two decimals, e.g. "RM20,560.00". */
+export function ringgit(amount: string | number | null): string {
+  if (amount === null) return "—";
+  const value = typeof amount === "number" ? amount : Number(amount);
+  if (!Number.isFinite(value)) return `RM${amount}`;
+  const sign = value < 0 ? "−" : "";
+  return sign + "RM" + Math.abs(value).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
