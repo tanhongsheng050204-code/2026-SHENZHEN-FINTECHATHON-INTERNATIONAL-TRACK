@@ -12,22 +12,32 @@ from app.config import get_settings
 from app.db import get_db, initialize_local_schema
 from app.observability import configure_logging, init_sentry
 from app.routes import (
+    agents,
     audit_log,
     auth,
+    cashflow,
     conversations,
     customers,
+    customization,
     einvoice,
     finance,
+    financing,
     health,
+    inbox,
     ingestion,
     integrations,
     outreach,
+    passports,
+    positions,
     privacy,
     query,
     query_artifacts,
     recommendations,
+    team,
+    trust,
     uploads,
 )
+from app.routes import settings as settings_routes
 from app.security.detect import warm_detector
 
 settings = get_settings()
@@ -117,6 +127,16 @@ app.include_router(conversations.router)
 app.include_router(customers.router)
 app.include_router(privacy.router)
 app.include_router(health.router)
+app.include_router(cashflow.router)
+app.include_router(agents.router)
+app.include_router(inbox.router)
+app.include_router(positions.router)
+app.include_router(financing.router)
+app.include_router(passports.router)
+app.include_router(trust.router)
+app.include_router(team.router)
+app.include_router(settings_routes.router)
+app.include_router(customization.router)
 
 
 @app.get("/health", tags=["system"])
