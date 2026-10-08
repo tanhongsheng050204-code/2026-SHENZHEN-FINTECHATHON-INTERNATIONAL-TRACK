@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
+import { authMode } from "../api/session";
+import { AuthFlow, type AuthFlowMode } from "../components/AuthFlow";
 import { LogoMark } from "../components/Logo";
 import { useAppState } from "../lib/appState";
 import { useParallax } from "../lib/interactivity";
@@ -13,6 +15,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [shakeToken, setShakeToken] = useState(0);
+  const [flowMode, setFlowMode] = useState<AuthFlowMode>("signin");
   const { ref: storyRef, offset: storyOffset, onMouseMove: onStoryMouseMove, onMouseLeave: onStoryMouseLeave } = useParallax<HTMLDivElement>(16);
 
   const hasError = Boolean(error || authError);
@@ -52,7 +55,7 @@ export default function Login() {
           <div className="fb-mkt-auth-copy">
             <div className="fb-mkt-eyebrow" style={{ position: "relative", zIndex: 1 }}>Verified access</div>
             <h1>Ask your business.<br />Get answers you can prove.</h1>
-            <p>Supabase verifies your identity. FinBrain applies your assigned role to every protected API call.</p>
+            <p>{authMode === "backend" ? "Password, an emailed code and an authenticator app protect every sign-in. FinBrain applies your assigned role to every request." : "Supabase verifies your identity. FinBrain applies your assigned role to every protected API call."}</p>
           </div>
           <div className="fb-mkt-trust-list">
             <div className="fb-mkt-trust-row">
@@ -71,6 +74,9 @@ export default function Login() {
           <span className="fb-mkt-auth-link" tabIndex={0} role="button" onClick={() => goToSecurity("login")}>Learn more about our security and compliance approach →</span>
         </div>
         <div className="fb-mkt-auth-form-wrap">
+          {authMode === "backend" ? (
+            <AuthFlow mode={flowMode} onModeChange={setFlowMode} />
+          ) : (
           <form className="fb-mkt-auth-form" onSubmit={submit}>
             <div className="fb-mkt-eyebrow is-plain">Welcome back</div>
             <h2>Enter the secure workspace</h2>
@@ -126,6 +132,7 @@ export default function Login() {
             </button>
             <div className="fb-mkt-fine">Accounts and roles are provisioned by the FinBrain administrator.</div>
           </form>
+          )}
         </div>
       </div>
     </div>

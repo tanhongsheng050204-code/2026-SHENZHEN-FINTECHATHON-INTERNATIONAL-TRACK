@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { LogoMark } from "../components/Logo";
+import { authMode } from "../api/session";
+import { AuthFlow, type AuthFlowMode } from "../components/AuthFlow";
 import { useAppState } from "../lib/appState";
 import { useParallax } from "../lib/interactivity";
 
 export default function Signup() {
   const { show, goToSecurity } = useAppState();
+  const [flowMode, setFlowMode] = useState<AuthFlowMode>("signup");
   const { ref: storyRef, offset: storyOffset, onMouseMove: onStoryMouseMove, onMouseLeave: onStoryMouseLeave } = useParallax<HTMLDivElement>(16);
   return (
     <div className="fb-root fb-mkt">
@@ -30,12 +34,16 @@ export default function Signup() {
           <button className="fb-mkt-btn is-outline" style={{ position: "relative", zIndex: 1, alignSelf: "flex-start" }} type="button" onClick={() => goToSecurity("signup")}>Review the security model</button>
         </div>
         <div className="fb-mkt-auth-form-wrap">
+          {authMode === "backend" ? (
+            <AuthFlow mode={flowMode} onModeChange={setFlowMode} />
+          ) : (
           <div className="fb-mkt-auth-form">
             <div className="fb-mkt-eyebrow is-plain">Request access</div>
             <h2>Ask the FinBrain administrator to provision your account.</h2>
             <p className="fb-mkt-fine">The administrator creates your Supabase Auth user and assigns one backend-controlled FinBrain role.</p>
             <button className="fb-mkt-btn is-accent is-lg" style={{ width: "100%", justifyContent: "center" }} type="button" onClick={() => show("login")}>Return to login</button>
           </div>
+          )}
         </div>
       </div>
     </div>

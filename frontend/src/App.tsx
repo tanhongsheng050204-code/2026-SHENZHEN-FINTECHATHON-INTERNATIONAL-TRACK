@@ -6,6 +6,7 @@ import { ThemeProvider } from "./lib/theme";
 import { UiChromeProvider } from "./lib/uiChrome";
 import { AskDrawer } from "./components/AskDrawer";
 import { QuickActionsPalette } from "./components/QuickActionsPalette";
+import { StepUpPrompt } from "./components/StepUpPrompt";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LogoMark } from "./components/Logo";
 import { sharedRouteFor } from "./lib/sharedRoutes";
@@ -110,6 +111,7 @@ export default function App() {
                 </Suspense>
                 <AskDrawer />
                 <QuickActionsPalette />
+                <StepUpPrompt />
               </UiChromeProvider>
             </AuthProvider>
           </AppStateProvider>

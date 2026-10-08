@@ -2,6 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { User } from "@supabase/supabase-js";
 import type { Role } from "../api/client";
 import { authConfigured, supabase } from "./supabase";
+import {
+  authMode,
+  fetchMe,
+  getSession,
+  sessionMessage,
+  signInWithPassword,
+  signOutSession,
+  type SessionResponse,
+} from "../api/session";
 
 interface AuthIdentity {
   user_id: string;
@@ -16,6 +25,10 @@ interface AuthContextValue {
   authError: string | null;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Backend sessions only: where the sign-in flow stands (email code, MFA, company setup). */
+  session: SessionResponse | null;
+  /** Backend sessions only: record the latest step of the sign-in flow. */
+  applySession: (session: SessionResponse | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -77,7 +90,7 @@ async function loadIdentity(token: string): Promise<AuthIdentity> {
   return body as AuthIdentity;
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+function SupabaseAuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(authConfigured);
   const [user, setUser] = useState<User | null>(null);
   const [identity, setIdentity] = useState<AuthIdentity | null>(null);
@@ -163,11 +176,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthError(null);
   }, []);
 
+  const applySession = useCallback(async () => undefined, []);
   const value = useMemo(
-    () => ({ loading, user, identity, authError, signIn, signOut }),
-    [authError, identity, loading, signIn, signOut, user],
+    () => ({ loading, user, identity, authError, signIn, signOut, session: null, applySession }),
+    [applySession, authError, identity, loading, signIn, signOut, user],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+
+// Plan 2: the API owns the session (HttpOnly cookie). The browser only learns
+// which step of sign-in comes next and, once authenticated, who it is.
+function BackendAuthProvider({ children }: { children: ReactNode }) {
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<SessionResponse | null>(null);
+  const [identity, setIdentity] = useState<AuthIdentity | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const applySession = useCallback(async (next: SessionResponse | null) => {
+    setSession(next);
+    if (next?.state !== "authenticated" || !next.role || !next.user_id) {
+      setIdentity(null);
+      return;
+    }
+    let email: string | null = null;
+    try {
+      email = (await fetchMe()).email;
+    } catch {
+      // The session is valid; a missing display email is not worth failing sign-in.
+    }
+    setIdentity({ user_id: next.user_id, email, role: next.role });
+    setAuthError(null);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getSession()
+      .then(async (s) => { if (active) await applySession(s); })
+      .catch((error: Error) => active && setAuthError(sessionMessage(error.message, "Unable to reach the sign-in service.")))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [applySession]);
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    setAuthError(null);
+    try {
+      await applySession(await signInWithPassword(email, password));
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      throw new Error(sessionMessage(code, "Sign in failed. Check your email and password."), { cause: error });
+    }
+  }, [applySession]);
+
+  const signOut = useCallback(async () => {
+    await signOutSession();
+    setSession(null);
+    setIdentity(null);
+    setAuthError(null);
+  }, []);
+
+  const value = useMemo(
+    () => ({ loading, user: null, identity, authError, signIn, signOut, session, applySession }),
+    [applySession, authError, identity, loading, session, signIn, signOut],
+  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return authMode === "backend"
+    ? <BackendAuthProvider>{children}</BackendAuthProvider>
+    : <SupabaseAuthProvider>{children}</SupabaseAuthProvider>;
 }
 
 // The auth hook intentionally shares the provider's private context.

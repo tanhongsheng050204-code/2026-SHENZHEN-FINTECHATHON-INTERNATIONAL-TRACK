@@ -1,4 +1,5 @@
 import { accessToken, supabase } from "../auth/supabase";
+import { authMode, isStepUpRequired, requestStepUp, sessionFetch } from "./session";
 
 export type Role =
   | "general_employee"
@@ -334,6 +335,9 @@ export async function parse<T>(response: Response): Promise<T> {
 export function friendlyLoadError(message: string): string {
   if (message === "authentication_required") return "Your session has expired — please log in again.";
   if (message === "insufficient_role") return "Your role doesn't have access to this data.";
+  if (message === "step_up_required") return "This needs a fresh code from your authenticator app. Try again and enter the code.";
+  if (message === "csrf_token_invalid" || message === "csrf_origin_denied") return "Your session needs refreshing. Reload the page and try again.";
+  if (message === "session_expired" || message === "session_idle_timeout" || message === "session_revoked") return "Your session has ended — please sign in again.";
   return "Couldn't load this page right now — try refreshing.";
 }
 
@@ -343,6 +347,12 @@ export async function publicFetch(path: string, init: RequestInit = {}): Promise
 }
 
 export async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  if (authMode === "backend") {
+    const response = await sessionFetch(path, init);
+    // Sensitive operations ask for a fresh authenticator code; retry once after it.
+    if (await isStepUpRequired(response) && await requestStepUp()) return sessionFetch(path, init);
+    return response;
+  }
   const token = await accessToken();
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
