@@ -8,6 +8,7 @@ import { AskDrawer } from "./components/AskDrawer";
 import { QuickActionsPalette } from "./components/QuickActionsPalette";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LogoMark } from "./components/Logo";
+import { sharedRouteFor } from "./lib/sharedRoutes";
 
 // Route-level code splitting: a visitor to the marketing landing page
 // shouldn't have to download the chat interface, invoice forms, and
@@ -36,6 +37,7 @@ const Autonomy = lazy(() => import("./screens/Autonomy"));
 const Team = lazy(() => import("./screens/Team"));
 const Trust = lazy(() => import("./screens/Trust"));
 const CompanySettings = lazy(() => import("./screens/CompanySettings"));
+const SharedView = lazy(() => import("./screens/SharedView"));
 
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
@@ -50,6 +52,10 @@ function Screens() {
     if (!loading && !identity && !isPublic) show("login");
     if (!loading && identity && (screen === "login" || screen === "signup")) show("home");
   }, [identity, isPublic, loading, screen, show]);
+
+  // Links shared with lenders and auditors open without signing in.
+  const shared = sharedRouteFor(window.location.pathname);
+  if (shared) return <SharedView route={shared} />;
 
   if (loading) {
     return <div className="fb-root"><div className="fb-callout">Checking secure session…</div></div>;

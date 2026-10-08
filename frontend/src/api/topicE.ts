@@ -1,6 +1,6 @@
 // Topic E endpoints. Shapes mirror docs/api/topic-e-contract.json; every
 // response says whether its data is a canned stub or computed live.
-import { ApiError, authenticatedFetch, parse, type Role } from "./client";
+import { ApiError, authenticatedFetch, parse, publicFetch, type Role } from "./client";
 
 export type DataMode = "stub" | "live";
 
@@ -859,4 +859,19 @@ export async function fetchAlertRules(): Promise<AlertRule[]> {
 
 export async function createAlertRule(rule: Omit<AlertRule, "id" | "enabled">): Promise<AlertRule> {
   return (await parse<{ rule: AlertRule }>(await authenticatedFetch("/settings/alert-rules", json(rule)))).rule;
+}
+
+// ── Public share links (no sign-in) ─────────────────────────────────────────
+
+export async function fetchSharedPassport(token: string): Promise<Passport> {
+  return (await parse<{ passport: Passport }>(await publicFetch(`/lender/passports/${encodeURIComponent(token)}`))).passport;
+}
+
+export async function fetchSharedAuditPack(token: string): Promise<AuditPack> {
+  return (await parse<{ pack: AuditPack }>(await publicFetch(`/auditor/packs/${encodeURIComponent(token)}`))).pack;
+}
+
+/** The same check as verifyPassport, for someone who is not signed in. */
+export async function verifyPassportPublic(document: unknown): Promise<VerificationResult> {
+  return parse<VerificationResult>(await publicFetch("/lender/verify", json(document)));
 }

@@ -157,7 +157,7 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
     try {
       const grant = await createGrant(kind, scopeId, { grantee_email: email, expires_in_days: days, allow_exact_values: exact });
       setGrants((g) => [grant, ...g]);
-      setNewLink(grant.share_path);
+      setNewLink(window.location.origin + grant.share_path);
       setEmail("");
     } catch (e) {
       setError(errorText(e));
@@ -207,7 +207,7 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
       </form>
       {newLink && (
         <div className="fb-fin-done" role="status">
-          Shared. {kind === "lender" ? "The lender" : "The auditor"} opens <code>{newLink}</code>; access ends automatically and you can revoke it at any time.
+          Shared. Send {kind === "lender" ? "the lender" : "the auditor"} this link: <a href={newLink} target="_blank" rel="noreferrer"><code>{newLink}</code></a>. Access ends automatically and you can revoke it at any time.
         </div>
       )}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}

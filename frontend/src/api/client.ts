@@ -337,6 +337,11 @@ export function friendlyLoadError(message: string): string {
   return "Couldn't load this page right now — try refreshing.";
 }
 
+/** For the few public endpoints (shared Passport and audit-pack links): no session needed. */
+export async function publicFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(`${BASE_URL}${path}`, init);
+}
+
 export async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const token = await accessToken();
   const headers = new Headers(init.headers);
