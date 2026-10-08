@@ -1,21 +1,40 @@
 import datetime as dt
-from decimal import Decimal
+from collections.abc import Sequence
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.contracts.common import DataMode, JobFunction
+from app.contracts.common import DataMode, JobFunction, Money
 from app.schemas import UserRole
 
-PRIVILEGED_ROLES = frozenset(
-    {UserRole.OWNER_DIRECTOR, UserRole.FINANCE_OPS, UserRole.COMPLIANCE}
-)
+PRIVILEGED_ROLES = frozenset({UserRole.OWNER_DIRECTOR, UserRole.FINANCE_OPS, UserRole.COMPLIANCE})
 MAX_SESSION_IDLE_MINUTES = 60
 
 SettingsArea = Literal[
     "profile", "positions", "approvals", "alerts", "financing", "security", "branding"
 ]
+ChangeArea = Literal[
+    "profile",
+    "positions",
+    "approvals",
+    "alerts",
+    "financing",
+    "security",
+    "branding",
+    "rollback",
+]
+
+WEEK_DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+LANGUAGES = ("en", "ms", "zh")
+CHANNELS = ("in_app", "email", "telegram")
+JURISDICTIONS = ("MY", "CN")
+
+
+def in_order(values: Sequence, order: Sequence) -> list:
+    """Store set-like lists deduplicated in a fixed order, so equal sets compare equal."""
+    order = list(order)
+    return sorted(dict.fromkeys(values), key=order.index)
 
 
 class IndustryTemplateId(StrEnum):
@@ -36,6 +55,16 @@ class CompanyProfile(BaseModel):
     )
     languages: list[Literal["en", "ms", "zh"]] = Field(min_length=1)
 
+    @field_validator("working_days")
+    @classmethod
+    def _week_order(cls, value: list[str]) -> list[str]:
+        return in_order(value, WEEK_DAYS)
+
+    @field_validator("languages")
+    @classmethod
+    def _language_order(cls, value: list[str]) -> list[str]:
+        return in_order(value, LANGUAGES)
+
 
 class PositionSetting(BaseModel):
     job_function: JobFunction
@@ -44,7 +73,7 @@ class PositionSetting(BaseModel):
 
 
 class ApprovalSettings(BaseModel):
-    owner_escalation_amount: Decimal = Field(gt=0)
+    owner_escalation_amount: Money = Field(gt=0)
     owner_escalation_customer_count: int = Field(ge=1)
     promotion_min_sample: int = Field(ge=5)
     promotion_min_unedited_rate: float = Field(ge=0.5, le=1.0)
@@ -54,11 +83,21 @@ class ApprovalSettings(BaseModel):
 
 
 class AlertSettings(BaseModel):
-    minimum_cash_balance: Decimal = Field(ge=0)
+    minimum_cash_balance: Money = Field(ge=0)
     alert_horizon_days: int = Field(ge=7, le=90)
     recipients: list[JobFunction] = Field(min_length=1)
     channels: list[Literal["in_app", "email", "telegram"]] = Field(min_length=1)
     critical_alerts_enabled: Literal[True] = True
+
+    @field_validator("recipients")
+    @classmethod
+    def _recipient_order(cls, value: list[JobFunction]) -> list[JobFunction]:
+        return in_order(value, list(JobFunction))
+
+    @field_validator("channels")
+    @classmethod
+    def _channel_order(cls, value: list[str]) -> list[str]:
+        return in_order(value, CHANNELS)
 
     @model_validator(mode="after")
     def _owner_always_warned(self) -> "AlertSettings":
@@ -72,10 +111,25 @@ class FinancingPreferences(BaseModel):
     excluded_categories: list[str] = Field(default_factory=list, max_length=20)
     jurisdictions: list[Literal["MY", "CN"]] = Field(min_length=1)
 
+    @field_validator("excluded_categories")
+    @classmethod
+    def _category_order(cls, value: list[str]) -> list[str]:
+        return sorted(dict.fromkeys(value))
+
+    @field_validator("jurisdictions")
+    @classmethod
+    def _jurisdiction_order(cls, value: list[str]) -> list[str]:
+        return in_order(value, JURISDICTIONS)
+
 
 class SecuritySettings(BaseModel):
     mfa_required_roles: list[UserRole]
     session_idle_minutes: int = Field(ge=5, le=MAX_SESSION_IDLE_MINUTES)
+
+    @field_validator("mfa_required_roles")
+    @classmethod
+    def _role_order(cls, value: list[UserRole]) -> list[UserRole]:
+        return in_order(value, list(UserRole))
 
     @model_validator(mode="after")
     def _privileged_roles_need_mfa(self) -> "SecuritySettings":
@@ -97,6 +151,12 @@ class TenantSettings(BaseModel):
     financing: FinancingPreferences
     security: SecuritySettings
     branding: BrandingSettings
+
+    @field_validator("positions")
+    @classmethod
+    def _position_order(cls, value: list[PositionSetting]) -> list[PositionSetting]:
+        order = list(JobFunction)
+        return sorted(value, key=lambda position: order.index(position.job_function))
 
     @model_validator(mode="after")
     def _positions_are_complete(self) -> "TenantSettings":
@@ -128,8 +188,8 @@ class SettingsChangeRequest(BaseModel):
 
 class SettingsChange(BaseModel):
     id: str
-    area: SettingsArea
-    status: Literal["applied", "pending_approval"]
+    area: ChangeArea
+    status: Literal["applied", "pending_approval", "rejected"]
     requires_approval: bool
     version: int
     preview: list[str]
@@ -139,6 +199,11 @@ class SettingsChangeResponse(BaseModel):
     data_mode: DataMode
     change: SettingsChange
     settings: TenantSettings
+
+
+class SettingsChangesResponse(BaseModel):
+    data_mode: DataMode
+    changes: list[SettingsChange]
 
 
 class RollbackRequest(BaseModel):

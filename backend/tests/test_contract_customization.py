@@ -1,3 +1,4 @@
+from app.contracts.customization import header_fingerprint
 from app.routes.customization import router
 from app.schemas import UserRole
 from tests.contract_support import client_for
@@ -71,12 +72,46 @@ def test_templates_reject_unknown_placeholders_and_personal_data():
     assert (missing.status_code, missing.json()["detail"]) == (404, "template_not_found")
 
 
-def test_a_saved_mapping_matches_the_same_headers_in_any_order_or_case():
+def test_templates_reject_anything_that_only_looks_like_a_placeholder():
+    client = client_for(router)
+
+    for body in (
+        "Dear {customer_name.__class__}, please pay soon.",
+        "Dear {{customer_name}}, please pay soon.",
+        "Dear {Customer_Name}, please pay soon.",
+        "Dear {customer_name, please pay soon.",
+        "Dear customer}, please pay {amount} soon.",
+    ):
+        response = client.post("/settings/message-templates", json={**REMINDER, "body": body})
+        assert response.status_code == 422, body
+        assert "invalid_placeholder" in response.text, body
+
+
+def test_templates_reject_numbers_written_with_spaces_or_dashes():
+    client = client_for(router)
+
+    def create(body: str):
+        return client.post("/settings/message-templates", json={**REMINDER, "body": body})
+
+    for number in ("012-345 6789", "5123 4567 8901 2345", "(03) 2345 6789", "012.345.6789"):
+        response = create(f"Call {number} about {{invoice_no}} soon.")
+        assert "personal_data_in_template" in response.text, number
+    dated = create("Please pay {amount} by 2026-10-31 for {invoice_no}.")
+    assert dated.status_code == 200
+
+
+def test_headers_compare_as_people_read_them():
+    assert header_fingerprint(["﻿Debit", "金额（RM）", "Référence"]) == (
+        header_fingerprint(["debit ", "金额(RM)", "Référence"])
+    )
+
+
+def test_a_saved_mapping_matches_the_same_file_in_any_order_or_case():
     response = client_for(router, role=UserRole.FINANCE_OPS).post(
         "/settings/import-mappings/match",
         json={
             "schema_name": "bank_statement_v1",
-            "headers": ["baki", "TARIKH", "Kredit", "Debit", "Keterangan"],
+            "headers": ["﻿baki", "TARIKH", "Kredit", "Tarikh Nilai", "Debit", "Keterangan"],
         },
     )
 
@@ -99,6 +134,7 @@ def test_finance_saves_a_new_mapping():
         json={
             "schema_name": "payables_register_v1",
             "name": "Supplier sheet",
+            "headers": list(PAYABLES_MAP),
             "column_map": PAYABLES_MAP,
         },
     )
@@ -108,13 +144,42 @@ def test_finance_saves_a_new_mapping():
     assert len(mapping["header_fingerprint"]) == 64
 
 
+def test_a_mapping_is_fingerprinted_from_every_header_in_the_file():
+    finance = client_for(router, role=UserRole.FINANCE_OPS)
+
+    def create(headers: list[str]):
+        return finance.post(
+            "/settings/import-mappings",
+            json={
+                "schema_name": "payables_register_v1",
+                "name": "Supplier sheet",
+                "headers": headers,
+                "column_map": PAYABLES_MAP,
+            },
+        )
+
+    saved = create(["﻿Bill", "Vendor", "Total", "Notes", "Ccy", "Due"])
+    outside = create(["Bill", "Vendor", "Ccy", "Due"])
+
+    assert saved.json()["mapping"]["header_fingerprint"] == header_fingerprint(
+        ["Bill", "Vendor", "Total", "Ccy", "Due", "Notes"]
+    )
+    assert outside.status_code == 422
+    assert "column_not_in_headers:Total" in outside.text
+
+
 def test_mappings_must_fit_the_target_schema():
     client = client_for(router)
 
     def create(column_map: dict) -> str:
         return client.post(
             "/settings/import-mappings",
-            json={"schema_name": "payables_register_v1", "name": "x", "column_map": column_map},
+            json={
+                "schema_name": "payables_register_v1",
+                "name": "x",
+                "headers": list(column_map),
+                "column_map": column_map,
+            },
         ).text
 
     assert "unknown_target_field:iban" in create({**PAYABLES_MAP, "Iban": "iban"})

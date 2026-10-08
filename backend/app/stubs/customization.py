@@ -70,6 +70,7 @@ _TEMPLATES: tuple[MessageTemplate, ...] = (
     ),
 )
 
+# "Tarikh Nilai" (value date) is in the file but not mapped; it still counts for matching.
 _MAYBANK = ImportMapping(
     id="map_maybank_csv",
     schema_name="bank_statement_v1",
@@ -81,7 +82,9 @@ _MAYBANK = ImportMapping(
         "Kredit": "credit",
         "Baki": "balance",
     },
-    header_fingerprint=header_fingerprint(["Tarikh", "Keterangan", "Debit", "Kredit", "Baki"]),
+    header_fingerprint=header_fingerprint(
+        ["Tarikh", "Tarikh Nilai", "Keterangan", "Debit", "Kredit", "Baki"]
+    ),
 )
 
 _RULES: tuple[AlertRule, ...] = (
@@ -138,7 +141,7 @@ def mappings() -> list[ImportMapping]:
 
 
 def create_mapping(request: ImportMappingRequest) -> ImportMapping:
-    fingerprint = header_fingerprint(list(request.column_map))
+    fingerprint = header_fingerprint(request.headers)
     return ImportMapping(
         id=f"map_{request.schema_name}_{fingerprint[:8]}",
         schema_name=request.schema_name,

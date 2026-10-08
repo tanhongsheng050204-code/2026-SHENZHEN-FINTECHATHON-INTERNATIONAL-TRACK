@@ -1,19 +1,23 @@
 """Stub review inbox for the demo company: one or more items for every built position.
 
 Workstream B2 replaces it with persisted agent_actions and agent_action_reviews.
-A person's inbox is every item whose reviewer job function they hold; the owner
-oversees every position. Decisions are echoed back, not stored.
+A person sees every item whose reviewer job function they hold; the owner and
+Compliance oversee every item. Deciding follows the autonomy ladder: L1 by a holder
+of the reviewer job function (or the owner), L2 by the owner, L3 by a maker who holds
+the job function and then a different checker, the owner. Decisions are echoed back.
 """
 
 import datetime as dt
 from decimal import Decimal
 
-from app.contracts.agents import ReviewAction, ReviewDecisionRequest
+from app.contracts.agents import ReviewAction, ReviewApproval, ReviewDecisionRequest
 from app.contracts.common import AutonomyLevel, EvidenceRef, JobFunction
 from app.schemas import UserRole
 from app.stubs import team
 
 _CREATED_AT = dt.datetime(2026, 10, 8, 9, 0, tzinfo=dt.UTC)
+_FINANCE_HR_CLERK = "20000000-0000-0000-0000-000000000002"
+_OVERSIGHT_ROLES = (UserRole.OWNER_DIRECTOR, UserRole.COMPLIANCE)
 
 
 class InboxError(ValueError):
@@ -33,7 +37,13 @@ def _action(
     amount: str | None,
     evidence: list[tuple[str, str]],
     draft: str | None = None,
+    approved_by: str | None = None,
 ) -> ReviewAction:
+    approvals = (
+        [ReviewApproval(approver_id=approved_by, approved_at=_CREATED_AT + dt.timedelta(hours=1))]
+        if approved_by
+        else []
+    )
     return ReviewAction(
         id=action_id,
         agent_id=agent_id,
@@ -41,11 +51,12 @@ def _action(
         summary=summary,
         autonomy_level=level,
         reviewer_job_function=reviewer,
-        status="pending",
+        status="awaiting_second_approval" if approvals else "pending",
         amount=Decimal(amount) if amount is not None else None,
         draft=draft,
         evidence=[EvidenceRef(label=label, source=source) for label, source in evidence],
         created_at=_CREATED_AT,
+        approvals=approvals,
     )
 
 
@@ -180,9 +191,10 @@ _INBOX: tuple[ReviewAction, ...] = (
         JobFunction.HR,
         AutonomyLevel.L3,
         "Approve the October payroll run",
-        "HR prepares, the owner checks; the bank transfer happens outside FinBrain.",
+        "HR prepared and approved it; the owner checks. The transfer happens outside FinBrain.",
         "62000.00",
         [("Payroll register", "payroll:2026-10")],
+        approved_by=_FINANCE_HR_CLERK,
     ),
     _action(
         "act_access_review",
@@ -203,15 +215,49 @@ def scope_for(role: UserRole, user_id: str) -> list[JobFunction]:
     return team.job_functions_for(user_id)
 
 
+def _readable(role: UserRole, user_id: str) -> list[JobFunction]:
+    if role in _OVERSIGHT_ROLES:
+        return list(JobFunction)
+    return team.job_functions_for(user_id)
+
+
+def _refusal(
+    action: ReviewAction, decision: str, role: UserRole, user_id: str
+) -> InboxError | None:
+    """Why this person may not take this decision now, or None if they may."""
+    is_owner = role == UserRole.OWNER_DIRECTOR
+    holds_function = action.reviewer_job_function in team.job_functions_for(user_id)
+    if action.autonomy_level == AutonomyLevel.L3:
+        if decision == "edit":
+            return InboxError("edit_not_allowed_at_l3", 409)
+        if decision == "reject":
+            return None if is_owner or holds_function else InboxError("not_your_job_function", 403)
+        if any(approval.approver_id == user_id for approval in action.approvals):
+            return InboxError("same_person_cannot_approve_twice", 409)
+        if action.status == "pending":
+            return None if holds_function else InboxError("maker_approval_required", 409)
+        return None if is_owner else InboxError("owner_approval_required", 403)
+    if action.autonomy_level == AutonomyLevel.L2 and not is_owner:
+        return InboxError("owner_approval_required", 403)
+    if not (is_owner or holds_function):
+        return InboxError("not_your_job_function", 403)
+    return None
+
+
 def review_inbox(
     role: UserRole, user_id: str, job_function: JobFunction | None
 ) -> tuple[list[JobFunction], list[ReviewAction]]:
-    scope = scope_for(role, user_id)
+    readable = _readable(role, user_id)
     if job_function is not None:
-        if job_function not in scope:
+        if job_function not in readable:
             raise InboxError("not_your_job_function", 403)
-        scope = [job_function]
-    return scope, [action for action in _INBOX if action.reviewer_job_function in scope]
+        readable = [job_function]
+    actions = [
+        action.model_copy(update={"can_decide": _refusal(action, "approve", role, user_id) is None})
+        for action in _INBOX
+        if action.reviewer_job_function in readable
+    ]
+    return scope_for(role, user_id), actions
 
 
 def pending_count(job_function: JobFunction) -> int:
@@ -228,13 +274,19 @@ def decide(
     action = next((a for a in _INBOX if a.id == action_id), None)
     if action is None:
         raise InboxError("action_not_found", 404)
-    if action.autonomy_level == AutonomyLevel.L3:
-        raise InboxError("maker_checker_required", 409)
-    if action.autonomy_level == AutonomyLevel.L2 and role != UserRole.OWNER_DIRECTOR:
-        raise InboxError("owner_approval_required", 403)
-    if action.reviewer_job_function not in scope_for(role, user_id):
-        raise InboxError("not_your_job_function", 403)
+    refusal = _refusal(action, request.decision, role, user_id)
+    if refusal is not None:
+        raise refusal
     if request.decision == "edit":
         return action.model_copy(update={"status": "edited", "draft": request.edited_draft})
-    status = "approved" if request.decision == "approve" else "rejected"
-    return action.model_copy(update={"status": status})
+    if request.decision == "reject":
+        return action.model_copy(update={"status": "rejected"})
+    if action.autonomy_level == AutonomyLevel.L3:
+        approvals = [
+            *action.approvals,
+            ReviewApproval(approver_id=user_id, approved_at=dt.datetime.now(dt.UTC)),
+        ]
+        checked = action.status == "awaiting_second_approval"
+        status = "approved" if checked else "awaiting_second_approval"
+        return action.model_copy(update={"status": status, "approvals": approvals})
+    return action.model_copy(update={"status": "approved"})

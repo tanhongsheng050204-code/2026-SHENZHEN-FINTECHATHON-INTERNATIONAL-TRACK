@@ -1,8 +1,18 @@
+from decimal import Decimal
 from enum import StrEnum
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
+
+def _two_decimals(value: Decimal) -> Decimal:
+    return value.quantize(Decimal("0.01"))
+
+
+# Ringgit amounts as numeric(14,2): 50000 and "50000.00" are the same value.
+Money = Annotated[Decimal, Field(max_digits=14, decimal_places=2), AfterValidator(_two_decimals)]
 
 
 class DataMode(StrEnum):
@@ -55,5 +65,7 @@ class OwaspAgenticRisk(StrEnum):
 
 
 class EvidenceRef(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     label: str = Field(max_length=200)
     source: str = Field(max_length=200, description="e.g. einvoice:INV-1041")

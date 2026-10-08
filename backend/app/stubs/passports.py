@@ -126,9 +126,7 @@ def _differences(document: Passport, recorded: Passport) -> list[str]:
     submitted = {metric.key: metric for metric in document.metrics}
     expected = {metric.key: metric for metric in recorded.metrics}
     metric_keys = sorted(
-        key
-        for key in submitted.keys() | expected.keys()
-        if submitted.get(key) != expected.get(key)
+        key for key in submitted.keys() | expected.keys() if submitted.get(key) != expected.get(key)
     )
     return fields + metric_keys
 
@@ -252,6 +250,28 @@ def revoke_grant(kind: GrantKind, scope_id: str, grant_id: str) -> ExternalGrant
         allow_exact_values=False,
         status="revoked",
     )
+
+
+def list_passports() -> list[Passport]:
+    return [_PASSPORT]
+
+
+def list_audit_packs() -> list[AuditPack]:
+    return [get_audit_pack(DEMO_AUDIT_PACK_ID).pack]
+
+
+def list_grants(kind: GrantKind, scope_id: str) -> list[ExternalGrant]:
+    _check_scope(kind, scope_id)
+    return [
+        _grant(
+            kind,
+            scope_id,
+            email_token="EMAIL_demo",
+            expires_at=dt.datetime(2026, 10, 21, 9, 30, tzinfo=dt.UTC),
+            allow_exact_values=False,
+            status="active",
+        )
+    ]
 
 
 def lender_view(grant_token: str) -> PassportResponse:

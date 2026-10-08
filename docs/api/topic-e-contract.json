@@ -239,6 +239,57 @@
         "title": "AgentRunCreated",
         "type": "object"
       },
+      "AgentRunEvent": {
+        "properties": {
+          "action_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Id"
+          },
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "run_started",
+              "tool_called",
+              "proposal_created",
+              "waiting_for_review",
+              "run_completed"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "sequence",
+          "type",
+          "agent_id",
+          "message"
+        ],
+        "title": "AgentRunEvent",
+        "type": "object"
+      },
       "AgentRunRequest": {
         "properties": {
           "goal": {
@@ -493,7 +544,7 @@
             "type": "boolean"
           },
           "minimum_cash_balance": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)",
             "title": "Minimum Cash Balance",
             "type": "string"
           },
@@ -516,6 +567,7 @@
         "type": "object"
       },
       "AnchorRef": {
+        "additionalProperties": false,
         "properties": {
           "anchored_at": {
             "anyOf": [
@@ -532,6 +584,7 @@
           "commit": {
             "anyOf": [
               {
+                "maxLength": 64,
                 "type": "string"
               },
               {
@@ -541,6 +594,7 @@
             "title": "Commit"
           },
           "repository_path": {
+            "maxLength": 200,
             "title": "Repository Path",
             "type": "string"
           }
@@ -593,7 +647,7 @@
             "type": "number"
           },
           "owner_escalation_amount": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)",
             "title": "Owner Escalation Amount",
             "type": "string"
           },
@@ -704,6 +758,26 @@
           "sha256"
         ],
         "title": "AuditPackItem",
+        "type": "object"
+      },
+      "AuditPackListResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "packs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditPack"
+            },
+            "title": "Packs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "packs"
+        ],
+        "title": "AuditPackListResponse",
         "type": "object"
       },
       "AuditPackRequest": {
@@ -1115,6 +1189,7 @@
         "type": "object"
       },
       "EvidenceRef": {
+        "additionalProperties": false,
         "properties": {
           "label": {
             "maxLength": 200,
@@ -1207,6 +1282,26 @@
           "grant"
         ],
         "title": "ExternalGrantResponse",
+        "type": "object"
+      },
+      "ExternalGrantsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalGrant"
+            },
+            "title": "Grants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "grants"
+        ],
+        "title": "ExternalGrantsResponse",
         "type": "object"
       },
       "FinancingMatch": {
@@ -1739,6 +1834,16 @@
             "title": "Column Map",
             "type": "object"
           },
+          "headers": {
+            "description": "Every column header in the sample file, mapped or not",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Headers",
+            "type": "array"
+          },
           "name": {
             "maxLength": 60,
             "minLength": 1,
@@ -1757,6 +1862,7 @@
         "required": [
           "schema_name",
           "name",
+          "headers",
           "column_map"
         ],
         "title": "ImportMappingRequest",
@@ -2241,6 +2347,7 @@
         "type": "string"
       },
       "Passport": {
+        "additionalProperties": false,
         "properties": {
           "anchor": {
             "anyOf": [
@@ -2264,10 +2371,12 @@
             "title": "Audit Entry Id"
           },
           "company_label": {
+            "maxLength": 200,
             "title": "Company Label",
             "type": "string"
           },
           "id": {
+            "maxLength": 64,
             "title": "Id",
             "type": "string"
           },
@@ -2280,10 +2389,12 @@
             "items": {
               "$ref": "#/components/schemas/PassportMetric"
             },
+            "maxItems": 50,
             "title": "Metrics",
             "type": "array"
           },
           "sha256": {
+            "maxLength": 64,
             "title": "Sha256",
             "type": "string"
           },
@@ -2305,24 +2416,50 @@
         "title": "Passport",
         "type": "object"
       },
+      "PassportListResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "passports": {
+            "items": {
+              "$ref": "#/components/schemas/Passport"
+            },
+            "title": "Passports",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "passports"
+        ],
+        "title": "PassportListResponse",
+        "type": "object"
+      },
       "PassportMetric": {
+        "additionalProperties": false,
+        "description": "Strict: a document submitted for verification may carry nothing that was not issued.",
         "properties": {
           "evidence": {
             "items": {
               "$ref": "#/components/schemas/EvidenceRef"
             },
+            "maxItems": 20,
             "title": "Evidence",
             "type": "array"
           },
           "key": {
+            "maxLength": 64,
             "title": "Key",
             "type": "string"
           },
           "label": {
+            "maxLength": 200,
             "title": "Label",
             "type": "string"
           },
           "value": {
+            "maxLength": 500,
             "title": "Value",
             "type": "string"
           }
@@ -2581,8 +2718,22 @@
             ],
             "title": "Amount"
           },
+          "approvals": {
+            "description": "L3: the maker's approval, then the checker's",
+            "items": {
+              "$ref": "#/components/schemas/ReviewApproval"
+            },
+            "title": "Approvals",
+            "type": "array"
+          },
           "autonomy_level": {
             "$ref": "#/components/schemas/AutonomyLevel"
+          },
+          "can_decide": {
+            "default": false,
+            "description": "Whether the requesting person may approve this item now",
+            "title": "Can Decide",
+            "type": "boolean"
           },
           "created_at": {
             "format": "date-time",
@@ -2617,6 +2768,7 @@
           "status": {
             "enum": [
               "pending",
+              "awaiting_second_approval",
               "approved",
               "edited",
               "rejected"
@@ -2647,6 +2799,25 @@
           "created_at"
         ],
         "title": "ReviewAction",
+        "type": "object"
+      },
+      "ReviewApproval": {
+        "properties": {
+          "approved_at": {
+            "format": "date-time",
+            "title": "Approved At",
+            "type": "string"
+          },
+          "approver_id": {
+            "title": "Approver Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "approver_id",
+          "approved_at"
+        ],
+        "title": "ReviewApproval",
         "type": "object"
       },
       "ReviewDecisionRequest": {
@@ -2721,6 +2892,7 @@
             "$ref": "#/components/schemas/DataMode"
           },
           "job_functions": {
+            "description": "Positions this person reviews; Compliance also sees every item, read-only",
             "items": {
               "$ref": "#/components/schemas/JobFunction"
             },
@@ -2874,7 +3046,8 @@
               "alerts",
               "financing",
               "security",
-              "branding"
+              "branding",
+              "rollback"
             ],
             "title": "Area",
             "type": "string"
@@ -2897,7 +3070,8 @@
           "status": {
             "enum": [
               "applied",
-              "pending_approval"
+              "pending_approval",
+              "rejected"
             ],
             "title": "Status",
             "type": "string"
@@ -2975,6 +3149,26 @@
           "settings"
         ],
         "title": "SettingsChangeResponse",
+        "type": "object"
+      },
+      "SettingsChangesResponse": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/SettingsChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          }
+        },
+        "required": [
+          "data_mode",
+          "changes"
+        ],
+        "title": "SettingsChangesResponse",
         "type": "object"
       },
       "SettingsResponse": {
@@ -3613,9 +3807,35 @@
         "responses": {
           "200": {
             "content": {
-              "text/event-stream": {}
+              "text/event-stream": {
+                "itemSchema": {
+                  "properties": {
+                    "data": {
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "#/components/schemas/AgentRunEvent"
+                      },
+                      "type": "string"
+                    },
+                    "event": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "retry": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
             },
-            "description": "AgentRunEvent stream"
+            "description": "Server-sent events; each data line is one AgentRunEvent"
           },
           "422": {
             "content": {
@@ -3697,6 +3917,30 @@
       }
     },
     "/audit-packs": {
+      "get": {
+        "operationId": "list_audit_packs_audit_packs_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPackListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Audit Packs",
+        "tags": [
+          "passports"
+        ]
+      },
       "post": {
         "operationId": "prepare_audit_pack_audit_packs_post",
         "requestBody": {
@@ -3790,6 +4034,51 @@
       }
     },
     "/audit-packs/{pack_id}/grants": {
+      "get": {
+        "operationId": "list_auditor_grants_audit_packs__pack_id__grants_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "title": "Pack Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Auditor Grants",
+        "tags": [
+          "passports"
+        ]
+      },
       "post": {
         "operationId": "grant_auditor_audit_packs__pack_id__grants_post",
         "parameters": [
@@ -4304,6 +4593,30 @@
       }
     },
     "/passports": {
+      "get": {
+        "operationId": "list_passports_passports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Passports",
+        "tags": [
+          "passports"
+        ]
+      },
       "post": {
         "operationId": "issue_passport_passports_post",
         "responses": {
@@ -4377,6 +4690,51 @@
       }
     },
     "/passports/{passport_id}/grants": {
+      "get": {
+        "operationId": "list_lender_grants_passports__passport_id__grants_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "passport_id",
+            "required": true,
+            "schema": {
+              "title": "Passport Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Lender Grants",
+        "tags": [
+          "passports"
+        ]
+      },
       "post": {
         "operationId": "grant_lender_passports__passport_id__grants_post",
         "parameters": [
@@ -4769,6 +5127,63 @@
       }
     },
     "/settings/changes": {
+      "get": {
+        "operationId": "list_changes_settings_changes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "applied",
+                    "pending_approval",
+                    "rejected"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Changes",
+        "tags": [
+          "settings"
+        ]
+      },
       "post": {
         "operationId": "propose_change_settings_changes_post",
         "requestBody": {
@@ -4856,6 +5271,53 @@
           }
         ],
         "summary": "Approve Change",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/changes/{change_id}/reject": {
+      "post": {
+        "operationId": "reject_change_settings_changes__change_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "change_id",
+            "required": true,
+            "schema": {
+              "title": "Change Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reject Change",
         "tags": [
           "settings"
         ]
@@ -5112,7 +5574,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SettingsResponse"
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
                 }
               }
             },

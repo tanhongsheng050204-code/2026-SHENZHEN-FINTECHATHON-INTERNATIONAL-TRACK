@@ -3,7 +3,7 @@ import hashlib
 import json
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.contracts.common import EMAIL_PATTERN, DataMode, EvidenceRef
 
@@ -17,25 +17,33 @@ def _digest(content: dict) -> str:
 
 
 class PassportMetric(BaseModel):
-    key: str
-    label: str
-    value: str
-    evidence: list[EvidenceRef]
+    """Strict: a document submitted for verification may carry nothing that was not issued."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    key: str = Field(max_length=64)
+    label: str = Field(max_length=200)
+    value: str = Field(max_length=500)
+    evidence: list[EvidenceRef] = Field(max_length=20)
 
 
 class AnchorRef(BaseModel):
-    repository_path: str
+    model_config = ConfigDict(extra="forbid")
+
+    repository_path: str = Field(max_length=200)
     anchored_at: dt.datetime | None
-    commit: str | None
+    commit: str | None = Field(max_length=64)
 
 
 class Passport(BaseModel):
-    id: str
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(max_length=64)
     version: int
-    company_label: str
+    company_label: str = Field(max_length=200)
     issued_at: dt.datetime
-    metrics: list[PassportMetric]
-    sha256: str
+    metrics: list[PassportMetric] = Field(max_length=50)
+    sha256: str = Field(max_length=64)
     audit_entry_id: int | None
     anchor: AnchorRef | None
 
@@ -111,3 +119,18 @@ class ExternalGrant(BaseModel):
 class ExternalGrantResponse(BaseModel):
     data_mode: DataMode
     grant: ExternalGrant
+
+
+class ExternalGrantsResponse(BaseModel):
+    data_mode: DataMode
+    grants: list[ExternalGrant]
+
+
+class PassportListResponse(BaseModel):
+    data_mode: DataMode
+    passports: list[Passport]
+
+
+class AuditPackListResponse(BaseModel):
+    data_mode: DataMode
+    packs: list[AuditPack]

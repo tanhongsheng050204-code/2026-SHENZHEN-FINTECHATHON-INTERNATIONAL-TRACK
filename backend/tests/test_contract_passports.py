@@ -51,6 +51,46 @@ def test_removed_and_added_metrics_are_both_reported():
     assert body["mismatched_fields"] == ["credit_rating", "receivables_quality"]
 
 
+def test_documents_with_content_that_was_never_issued_are_rejected():
+    client = client_for(router, role=None)
+    added_field = {**_issued(), "approved_credit_limit": "RM5,000,000.00"}
+    added_in_metric = _issued()
+    added_in_metric["metrics"][0]["note"] = "Pre-approved"
+
+    top_level = client.post("/lender/verify", json=added_field)
+    nested = client.post("/lender/verify", json=added_in_metric)
+
+    assert top_level.status_code == 422
+    assert "approved_credit_limit" in top_level.text
+    assert nested.status_code == 422
+    assert "note" in nested.text
+
+
+def test_lists_show_passports_audit_packs_and_their_grants():
+    owner = client_for(router)
+
+    passports = owner.get("/passports").json()["passports"]
+    packs = owner.get("/audit-packs").json()["packs"]
+    lender_grants = owner.get("/passports/pp_demo_1/grants").json()["grants"]
+    auditor_grants = owner.get("/audit-packs/ap_demo_2026/grants").json()["grants"]
+    unknown = owner.get("/passports/pp_other/grants")
+
+    assert [p["id"] for p in passports] == ["pp_demo_1"]
+    assert [p["id"] for p in packs] == ["ap_demo_2026"]
+    assert [(g["kind"], g["status"]) for g in lender_grants] == [("lender", "active")]
+    assert [(g["kind"], g["status"]) for g in auditor_grants] == [("auditor", "active")]
+    assert (unknown.status_code, unknown.json()["detail"]) == (404, "passport_not_found")
+
+
+def test_readers_find_passports_but_only_the_owner_lists_grants():
+    compliance = client_for(router, role=UserRole.COMPLIANCE)
+
+    assert compliance.get("/passports").status_code == 200
+    assert compliance.get("/audit-packs").status_code == 200
+    assert compliance.get("/passports/pp_demo_1/grants").status_code == 403
+    assert client_for(router, role=UserRole.GENERAL_EMPLOYEE).get("/passports").status_code == 403
+
+
 def test_unknown_passport_id_is_reported_not_verified():
     document = {**_issued(), "id": "pp_other"}
 

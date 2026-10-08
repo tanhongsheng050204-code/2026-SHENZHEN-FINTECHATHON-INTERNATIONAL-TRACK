@@ -4,11 +4,14 @@ from app.auth.dependencies import require_roles
 from app.auth.principal import AuthPrincipal
 from app.contracts.common import DataMode
 from app.contracts.passports import (
+    AuditPackListResponse,
     AuditPackRequest,
     AuditPackResponse,
     ExternalGrantResponse,
+    ExternalGrantsResponse,
     GrantRequest,
     Passport,
+    PassportListResponse,
     PassportResponse,
     VerificationResult,
 )
@@ -28,6 +31,13 @@ def issue_passport(
     return stub.issue()
 
 
+@router.get("/passports", response_model=PassportListResponse)
+def list_passports(
+    principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+) -> PassportListResponse:
+    return PassportListResponse(data_mode=DataMode.STUB, passports=stub.list_passports())
+
+
 @router.get("/passports/{passport_id}", response_model=PassportResponse)
 def get_passport(
     passport_id: str,
@@ -37,6 +47,37 @@ def get_passport(
         return stub.get(passport_id)
     except LookupError as error:
         raise HTTPException(status_code=404, detail="passport_not_found") from error
+
+
+@router.get("/passports/{passport_id}/grants", response_model=ExternalGrantsResponse)
+def list_lender_grants(
+    passport_id: str,
+    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+) -> ExternalGrantsResponse:
+    try:
+        grants = stub.list_grants("lender", passport_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail="passport_not_found") from error
+    return ExternalGrantsResponse(data_mode=DataMode.STUB, grants=grants)
+
+
+@router.get("/audit-packs", response_model=AuditPackListResponse)
+def list_audit_packs(
+    principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+) -> AuditPackListResponse:
+    return AuditPackListResponse(data_mode=DataMode.STUB, packs=stub.list_audit_packs())
+
+
+@router.get("/audit-packs/{pack_id}/grants", response_model=ExternalGrantsResponse)
+def list_auditor_grants(
+    pack_id: str,
+    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+) -> ExternalGrantsResponse:
+    try:
+        grants = stub.list_grants("auditor", pack_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail="audit_pack_not_found") from error
+    return ExternalGrantsResponse(data_mode=DataMode.STUB, grants=grants)
 
 
 @router.post("/passports/{passport_id}/grants", response_model=ExternalGrantResponse)

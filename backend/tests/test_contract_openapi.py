@@ -16,14 +16,18 @@ CONTRACT_OPERATIONS = {
     ("get", "/positions/{job_function}/workspace"),
     ("get", "/financing/matches"),
     ("post", "/financing/application-packs"),
+    ("get", "/passports"),
     ("post", "/passports"),
     ("get", "/passports/{passport_id}"),
+    ("get", "/passports/{passport_id}/grants"),
     ("post", "/passports/{passport_id}/grants"),
     ("delete", "/passports/{passport_id}/grants/{grant_id}"),
     ("post", "/lender/verify"),
     ("get", "/lender/passports/{grant_token}"),
+    ("get", "/audit-packs"),
     ("post", "/audit-packs"),
     ("get", "/audit-packs/{pack_id}"),
+    ("get", "/audit-packs/{pack_id}/grants"),
     ("post", "/audit-packs/{pack_id}/grants"),
     ("delete", "/audit-packs/{pack_id}/grants/{grant_id}"),
     ("get", "/auditor/packs/{grant_token}"),
@@ -35,8 +39,10 @@ CONTRACT_OPERATIONS = {
     ("post", "/team/members/{user_id}/sign-out"),
     ("get", "/settings"),
     ("get", "/settings/schema"),
+    ("get", "/settings/changes"),
     ("post", "/settings/changes"),
     ("post", "/settings/changes/{change_id}/approve"),
+    ("post", "/settings/changes/{change_id}/reject"),
     ("post", "/settings/rollback"),
     ("get", "/settings/templates"),
     ("post", "/settings/templates/{template_id}/preview"),
@@ -70,10 +76,14 @@ def test_every_json_response_declares_its_data_mode():
         assert "data_mode" in schemas[name]["properties"], f"{method} {path}"
 
 
-def test_run_events_are_documented_as_a_stream():
+def test_run_events_are_documented_as_a_stream_of_agent_run_events():
     document = build_contract_app().openapi()
-    content = document["paths"]["/agents/runs/{run_id}/events"]["get"]["responses"]["200"]
-    assert "text/event-stream" in content["content"]
+    response = document["paths"]["/agents/runs/{run_id}/events"]["get"]["responses"]["200"]
+    item = response["content"]["text/event-stream"]["itemSchema"]
+    assert item["properties"]["data"]["contentSchema"] == {
+        "$ref": "#/components/schemas/AgentRunEvent"
+    }
+    assert "sequence" in document["components"]["schemas"]["AgentRunEvent"]["properties"]
 
 
 def test_committed_contract_matches_the_code():

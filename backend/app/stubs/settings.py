@@ -91,7 +91,7 @@ def _positions_for(template: IndustryTemplateId) -> list[PositionSetting]:
     ]
 
 
-def _settings(minimum_cash: str) -> TenantSettings:
+def _settings(minimum_cash: str, session_idle_minutes: int = 30) -> TenantSettings:
     return TenantSettings(
         profile=CompanyProfile(
             company_name="Synthetic Trading Co.",
@@ -126,7 +126,7 @@ def _settings(minimum_cash: str) -> TenantSettings:
                 UserRole.FINANCE_OPS,
                 UserRole.COMPLIANCE,
             ],
-            session_idle_minutes=30,
+            session_idle_minutes=session_idle_minutes,
         ),
         branding=BrandingSettings(
             display_name="Synthetic Trading Co.", document_footer="Synthetic demo company"
@@ -134,11 +134,57 @@ def _settings(minimum_cash: str) -> TenantSettings:
     )
 
 
+_AREAS = ("profile", "positions", "approvals", "alerts", "financing", "security", "branding")
+
 _HISTORY: dict[int, TenantSettings] = {
     1: _settings("30000.00"),
-    2: _settings("40000.00"),
+    2: _settings("40000.00", session_idle_minutes=45),
     3: _settings("50000.00"),
 }
+
+
+def _change_record(
+    change_id: str, area: str, status: str, version: int, preview: str
+) -> SettingsChange:
+    return SettingsChange(
+        id=change_id,
+        area=area,
+        status=status,
+        requires_approval=area == "security",
+        version=version,
+        preview=[preview],
+    )
+
+
+_CHANGES: tuple[SettingsChange, ...] = (
+    _change_record(
+        "chg_alerts_0002",
+        "alerts",
+        "applied",
+        2,
+        'alerts.minimum_cash_balance: "30000.00" → "40000.00"',
+    ),
+    _change_record(
+        "chg_security_0002", "security", "applied", 2, "security.session_idle_minutes: 30 → 45"
+    ),
+    _change_record(
+        "chg_alerts_0003",
+        "alerts",
+        "applied",
+        3,
+        'alerts.minimum_cash_balance: "40000.00" → "50000.00"',
+    ),
+    _change_record(
+        "chg_security_0003", "security", "applied", 3, "security.session_idle_minutes: 45 → 30"
+    ),
+    _change_record(
+        "chg_security_demo",
+        "security",
+        "pending_approval",
+        4,
+        "security.session_idle_minutes: 30 → 20",
+    ),
+)
 
 
 def current() -> SettingsResponse:
@@ -186,20 +232,14 @@ def _preview(area: str, before: TenantSettings, after: TenantSettings) -> list[s
     ]
 
 
-def _in_position_order(settings: TenantSettings) -> TenantSettings:
-    order = list(JobFunction)
-    ordered = sorted(settings.positions, key=lambda position: order.index(position.job_function))
-    return settings.model_copy(update={"positions": ordered})
-
-
 def propose(request: SettingsChangeRequest) -> SettingsChangeResponse:
     before = _HISTORY[CURRENT_VERSION]
     data = before.model_dump(mode="json")
     data[request.area] = request.value
-    after = _in_position_order(_validated(data))
-    lines = _preview(request.area, before, after)
-    if not lines:
+    after = _validated(data)
+    if getattr(after, request.area) == getattr(before, request.area):
         raise SettingsError("no_changes", 409)
+    lines = _preview(request.area, before, after)
     pending = request.area == "security"
     digest = hashlib.sha256(json.dumps(request.value, sort_keys=True).encode()).hexdigest()[:8]
     change = SettingsChange(
@@ -215,27 +255,51 @@ def propose(request: SettingsChangeRequest) -> SettingsChangeResponse:
     )
 
 
-def approve(change_id: str) -> SettingsChange:
+def changes(status: str | None) -> list[SettingsChange]:
+    return [change for change in _CHANGES if status is None or change.status == status]
+
+
+def _decided(change_id: str, status: str, note: str) -> SettingsChange:
+    if any(c.id == change_id and c.status != "pending_approval" for c in _CHANGES):
+        raise SettingsError("change_not_pending", 409)
     if not change_id.startswith("chg_security_"):
         raise SettingsError("change_not_found", 404)
     return SettingsChange(
         id=change_id,
         area="security",
-        status="applied",
+        status=status,
         requires_approval=True,
         version=CURRENT_VERSION + 1,
-        preview=["Applied after Compliance approval"],
+        preview=[note],
     )
 
 
-def rollback(version: int) -> SettingsResponse:
+def approve(change_id: str) -> SettingsChange:
+    return _decided(change_id, "applied", "Applied after Compliance approval")
+
+
+def reject(change_id: str) -> SettingsChange:
+    return _decided(change_id, "rejected", "Rejected by Compliance")
+
+
+def rollback(version: int) -> SettingsChangeResponse:
     if version not in _HISTORY or version >= CURRENT_VERSION:
         raise SettingsError("invalid_rollback_version", 409)
-    return SettingsResponse(
-        data_mode=DataMode.STUB,
+    before, target = _HISTORY[CURRENT_VERSION], _HISTORY[version]
+    areas = [area for area in _AREAS if getattr(target, area) != getattr(before, area)]
+    if not areas:
+        raise SettingsError("no_changes", 409)
+    pending = "security" in areas
+    change = SettingsChange(
+        id=f"chg_security_rollback_v{version}" if pending else f"chg_rollback_v{version}",
+        area="rollback",
+        status="pending_approval" if pending else "applied",
+        requires_approval=pending,
         version=CURRENT_VERSION + 1,
-        template=_HISTORY[version].profile.industry,
-        settings=_HISTORY[version],
+        preview=[line for area in areas for line in _preview(area, before, target)],
+    )
+    return SettingsChangeResponse(
+        data_mode=DataMode.STUB, change=change, settings=before if pending else target
     )
 
 
@@ -265,9 +329,9 @@ def preview_template(template_id: IndustryTemplateId) -> TemplatePreview:
 def apply_template(template_id: IndustryTemplateId) -> SettingsChangeResponse:
     before = _HISTORY[CURRENT_VERSION]
     profile = before.profile.model_copy(update={"industry": template_id})
-    after = before.model_copy(
-        update={"profile": profile, "positions": _positions_for(template_id)}
-    )
+    after = before.model_copy(update={"profile": profile, "positions": _positions_for(template_id)})
+    if after.profile == before.profile and after.positions == before.positions:
+        raise SettingsError("no_changes", 409)
     preview = preview_template(template_id)
     lines = [f"{job.value}: enabled" for job in preview.positions_added] + [
         f"{job.value}: disabled" for job in preview.positions_removed

@@ -91,6 +91,11 @@ class KillSwitchRequest(BaseModel):
     engaged: bool
 
 
+class ReviewApproval(BaseModel):
+    approver_id: str
+    approved_at: dt.datetime
+
+
 class ReviewAction(BaseModel):
     id: str
     agent_id: str
@@ -98,16 +103,24 @@ class ReviewAction(BaseModel):
     summary: str
     autonomy_level: AutonomyLevel
     reviewer_job_function: JobFunction
-    status: Literal["pending", "approved", "edited", "rejected"]
+    status: Literal["pending", "awaiting_second_approval", "approved", "edited", "rejected"]
     amount: Decimal | None
     draft: str | None
     evidence: list[EvidenceRef]
     created_at: dt.datetime
+    approvals: list[ReviewApproval] = Field(
+        default_factory=list, description="L3: the maker's approval, then the checker's"
+    )
+    can_decide: bool = Field(
+        default=False, description="Whether the requesting person may approve this item now"
+    )
 
 
 class ReviewInboxResponse(BaseModel):
     data_mode: DataMode
-    job_functions: list[JobFunction]
+    job_functions: list[JobFunction] = Field(
+        description="Positions this person reviews; Compliance also sees every item, read-only"
+    )
     actions: list[ReviewAction]
 
 

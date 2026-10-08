@@ -1,5 +1,6 @@
 import hashlib
 import re
+import unicodedata
 from decimal import Decimal
 from typing import Literal
 
@@ -12,7 +13,10 @@ TEMPLATE_PLACEHOLDERS = frozenset(
 )
 _PLACEHOLDER = re.compile(r"\{([a-z_]+)\}")
 _EMAIL_LIKE = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
-_LONG_NUMBER = re.compile(r"\d{9,}")
+# Digits written together or split by spaces, dashes, dots or brackets: "012-345 6789".
+_DIGIT_RUN = re.compile(r"\d(?:[\s().-]*\d)*")
+# Phone, card and account numbers have 9 or more digits; a date like 2026-10-31 has 8.
+_PERSONAL_NUMBER_DIGITS = 9
 
 IMPORT_FIELDS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
     # schema: (all target fields, required target fields)
@@ -45,6 +49,13 @@ def placeholders_in(body: str) -> list[str]:
     return list(dict.fromkeys(_PLACEHOLDER.findall(body)))
 
 
+def _has_personal_number(body: str) -> bool:
+    return any(
+        sum(char.isdigit() for char in run) >= _PERSONAL_NUMBER_DIGITS
+        for run in _DIGIT_RUN.findall(body)
+    )
+
+
 class MessageTemplate(BaseModel):
     id: str
     kind: Literal["payment_reminder", "customer_reply", "supplier_query"]
@@ -67,7 +78,12 @@ class MessageTemplateRequest(BaseModel):
         unknown = [name for name in placeholders_in(body) if name not in TEMPLATE_PLACEHOLDERS]
         if unknown:
             raise ValueError(f"unknown_placeholder:{unknown[0]}")
-        if _EMAIL_LIKE.search(body) or _LONG_NUMBER.search(body):
+        # Braces are only for the placeholders above, so no renderer ever sees
+        # "{customer_name.__class__}", "{{customer_name}}" or a stray brace.
+        leftover = _PLACEHOLDER.sub("", body)
+        if "{" in leftover or "}" in leftover:
+            raise ValueError("invalid_placeholder")
+        if _EMAIL_LIKE.search(body) or _has_personal_number(body):
             raise ValueError("personal_data_in_template")
         return body
 
@@ -90,18 +106,32 @@ class ImportMapping(BaseModel):
     header_fingerprint: str
 
 
+def normalize_header(header: str) -> str:
+    """A header as people read it: no byte-order mark, one Unicode form, any case."""
+    return unicodedata.normalize("NFKC", header.replace("﻿", "")).strip().casefold()
+
+
 def header_fingerprint(headers: list[str]) -> str:
-    normalized = sorted(header.strip().casefold() for header in headers)
+    normalized = sorted(normalize_header(header) for header in headers)
     return hashlib.sha256("\n".join(normalized).encode()).hexdigest()
 
 
 class ImportMappingRequest(BaseModel):
     schema_name: ImportSchema
     name: str = Field(min_length=1, max_length=60)
+    headers: list[str] = Field(
+        min_length=1,
+        max_length=40,
+        description="Every column header in the sample file, mapped or not",
+    )
     column_map: dict[str, str] = Field(min_length=1, max_length=40)
 
     @model_validator(mode="after")
     def _targets_fit_the_schema(self) -> "ImportMappingRequest":
+        in_file = {normalize_header(header) for header in self.headers}
+        outside = [column for column in self.column_map if normalize_header(column) not in in_file]
+        if outside:
+            raise ValueError(f"column_not_in_headers:{outside[0]}")
         fields, required = IMPORT_FIELDS[self.schema_name]
         targets = list(self.column_map.values())
         unknown = [target for target in targets if target not in fields]

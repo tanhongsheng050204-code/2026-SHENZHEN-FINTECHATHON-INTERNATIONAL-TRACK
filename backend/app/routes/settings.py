@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth.dependencies import require_roles
 from app.auth.principal import AuthPrincipal
@@ -8,6 +10,7 @@ from app.contracts.settings import (
     RollbackRequest,
     SettingsChangeRequest,
     SettingsChangeResponse,
+    SettingsChangesResponse,
     SettingsResponse,
     SettingsSchemaResponse,
     TemplatePreview,
@@ -39,6 +42,14 @@ def get_settings_schema(
     return stub.schema()
 
 
+@router.get("/settings/changes", response_model=SettingsChangesResponse)
+def list_changes(
+    status: Literal["applied", "pending_approval", "rejected"] | None = Query(default=None),
+    principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+) -> SettingsChangesResponse:
+    return SettingsChangesResponse(data_mode=DataMode.STUB, changes=stub.changes(status))
+
+
 @router.post("/settings/changes", response_model=SettingsChangeResponse)
 def propose_change(
     request: SettingsChangeRequest,
@@ -64,11 +75,25 @@ def approve_change(
     )
 
 
-@router.post("/settings/rollback", response_model=SettingsResponse)
+@router.post("/settings/changes/{change_id}/reject", response_model=SettingsChangeResponse)
+def reject_change(
+    change_id: str,
+    principal: AuthPrincipal = Depends(require_roles(UserRole.COMPLIANCE)),
+) -> SettingsChangeResponse:
+    try:
+        change = stub.reject(change_id)
+    except stub.SettingsError as error:
+        raise _raise(error) from error
+    return SettingsChangeResponse(
+        data_mode=DataMode.STUB, change=change, settings=stub.current().settings
+    )
+
+
+@router.post("/settings/rollback", response_model=SettingsChangeResponse)
 def rollback(
     request: RollbackRequest,
     principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
-) -> SettingsResponse:
+) -> SettingsChangeResponse:
     try:
         return stub.rollback(request.version)
     except stub.SettingsError as error:
@@ -95,4 +120,7 @@ def apply_template(
     template_id: IndustryTemplateId,
     principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
 ) -> SettingsChangeResponse:
-    return stub.apply_template(template_id)
+    try:
+        return stub.apply_template(template_id)
+    except stub.SettingsError as error:
+        raise _raise(error) from error

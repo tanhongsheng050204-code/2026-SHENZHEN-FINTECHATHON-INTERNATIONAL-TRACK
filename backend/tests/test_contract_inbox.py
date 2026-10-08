@@ -33,13 +33,36 @@ def test_each_position_sees_its_own_items():
     stores = client_as(router, PURCHASING_STORES, UserRole.GENERAL_EMPLOYEE).get("/review-inbox")
     marketing = client_as(router, MARKETING_EXEC, UserRole.GENERAL_EMPLOYEE).get("/review-inbox")
     operations = client_as(router, OPERATIONS_MANAGER, UserRole.FINANCE_OPS).get("/review-inbox")
-    compliance = client_for(router, role=UserRole.COMPLIANCE).get("/review-inbox")
 
     assert _ids(sales) == ["act_sales_followup", "act_cs_reply"]
     assert _ids(stores) == ["act_po_approval", "act_reorder"]
     assert _ids(marketing) == ["act_campaign"]
     assert _ids(operations) == ["act_stale_approvals"]
-    assert _ids(compliance) == ["act_access_review"]
+
+
+def test_compliance_oversees_every_action_but_decides_only_its_own():
+    body = client_for(router, role=UserRole.COMPLIANCE).get("/review-inbox").json()
+
+    assert body["job_functions"] == ["compliance"]
+    assert len(body["actions"]) == 13
+    decidable = [action["id"] for action in body["actions"] if action["can_decide"]]
+    assert decidable == ["act_access_review"]
+
+
+def test_can_decide_mirrors_the_rules_for_each_person():
+    clerk = client_for(router, role=UserRole.FINANCE_OPS).get("/review-inbox").json()
+    owner = client_for(router).get("/review-inbox").json()
+
+    clerk_flags = {a["id"]: a["can_decide"] for a in clerk["actions"]}
+    owner_flags = {a["id"]: a["can_decide"] for a in owner["actions"]}
+    assert clerk_flags == {
+        "act_reminders": True,
+        "act_bank_change": True,
+        "act_payroll_run": False,
+    }
+    assert owner_flags["act_send_reminders"] is True
+    assert owner_flags["act_bank_change"] is False
+    assert owner_flags["act_payroll_run"] is True
 
 
 def test_inbox_filters_to_one_of_your_positions():
@@ -86,14 +109,41 @@ def test_external_actions_need_the_owner():
     assert owner.json()["action"]["status"] == "approved"
 
 
-def test_money_movement_needs_two_approvers():
-    client = client_for(router)
+def test_money_movement_needs_a_maker_and_a_different_checker():
+    clerk = client_for(router, role=UserRole.FINANCE_OPS)
+    owner = client_for(router)
+    approve = {"decision": "approve"}
 
-    bank = client.post("/review-inbox/act_bank_change/decision", json={"decision": "approve"})
-    payroll = client.post("/review-inbox/act_payroll_run/decision", json={"decision": "approve"})
+    maker = clerk.post("/review-inbox/act_bank_change/decision", json=approve)
+    owner_first = owner.post("/review-inbox/act_bank_change/decision", json=approve)
+    checker = owner.post("/review-inbox/act_payroll_run/decision", json=approve)
+    twice = clerk.post("/review-inbox/act_payroll_run/decision", json=approve)
+    edited = clerk.post(
+        "/review-inbox/act_bank_change/decision",
+        json={"decision": "edit", "edited_draft": "Use the new account."},
+    )
 
-    assert (bank.status_code, bank.json()["detail"]) == (409, "maker_checker_required")
-    assert (payroll.status_code, payroll.json()["detail"]) == (409, "maker_checker_required")
+    assert maker.json()["action"]["status"] == "awaiting_second_approval"
+    assert [a["approver_id"] for a in maker.json()["action"]["approvals"]] == [
+        "20000000-0000-0000-0000-000000000002"
+    ]
+    assert (owner_first.status_code, owner_first.json()["detail"]) == (
+        409,
+        "maker_approval_required",
+    )
+    assert checker.json()["action"]["status"] == "approved"
+    assert len(checker.json()["action"]["approvals"]) == 2
+    assert (twice.status_code, twice.json()["detail"]) == (409, "same_person_cannot_approve_twice")
+    assert (edited.status_code, edited.json()["detail"]) == (409, "edit_not_allowed_at_l3")
+
+
+def test_either_side_can_reject_money_movement():
+    response = client_for(router).post(
+        "/review-inbox/act_bank_change/decision",
+        json={"decision": "reject", "reason": "Supplier did not confirm by phone."},
+    )
+
+    assert response.json()["action"]["status"] == "rejected"
 
 
 def test_edit_without_a_draft_and_unknown_actions_are_rejected():
