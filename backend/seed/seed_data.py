@@ -330,7 +330,7 @@ def _generate_seed_uin() -> str:
     return "MY29A" + "".join(secrets.choice(alphabet) for _ in range(6))
 
 
-def seed_einvoice_records(db) -> None:
+def seed_einvoice_records(db, records: list[dict] | None = None) -> None:
     """Seed operational e-invoices and mirror them into protected chat search."""
     from sqlalchemy import select
 
@@ -346,7 +346,7 @@ def seed_einvoice_records(db) -> None:
 
     created = 0
     updated = 0
-    for fields in EINVOICE_SEED_RECORDS:
+    for fields in EINVOICE_SEED_RECORDS if records is None else records:
         inv_no = fields.get("invoice_no")
         existing = db.scalar(
             select(EInvoiceRecord).where(

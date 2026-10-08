@@ -106,6 +106,14 @@ curl -i https://finbrainos.vercel.app/api/review-inbox # 401 authentication_requ
 
 Rollback: set `VITE_AUTH_MODE=supabase` and redeploy the frontend; set `AUTH_ALLOW_BEARER=true` on Cloud Run while the old sign-in is in use.
 
+## 4b. One demo company
+
+The Topic E pages and the original pages must read the same tenant, or the demo shows two companies. After the backend is deployed:
+
+1. `python -m seed.topic_e` creates the synthetic tenant and prints its `tenant_id`.
+2. `python -m seed.topic_e_original_fixtures --tenant-id <that id>` adds the original pages' e-invoices (buyer renamed to the synthetic company) and the protected email/Telegram records to the same tenant. It refuses any tenant whose slug does not start with `synthetic-`, and running it twice adds nothing.
+3. Give the demo accounts a role in that tenant and point their sign-in at it (the `tenant_id` claim for Supabase sign-in, or the session's tenant for backend sign-in).
+
 ## 5. What was verified
 
 - The proxy forwards method, path, query, body, cookies, CSRF token and `Origin`; returns every `Set-Cookie` separately; refuses `..`, percent-escapes and absolute URLs; and streams server-sent events without buffering (local test against a fake backend).
