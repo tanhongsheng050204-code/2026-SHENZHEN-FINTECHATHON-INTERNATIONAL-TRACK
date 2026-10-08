@@ -101,10 +101,12 @@ Status as of 2026-10-08. The demo company and its data are synthetic and labelle
 | Topic E API contract served as tested stub endpoints | Planned — target Oct 9 |
 | Cash-flow forecast, scenarios and alerts; financing matching with explanations | Planned — target Oct 16 |
 | Supervisor agent, review inbox, autonomy ladder and earned autonomy | Planned — target Oct 16 |
-| Financing Readiness Passport and lender access | Planned — target Oct 16 |
+| An agent for every SME position — owner, operations, finance, sales, customer service, marketing, purchasing, logistics, HR and compliance — each feeding the cash forecast | Planned — core skills by Oct 16; full skill lists by the November final |
+| Company customization: profile, positions and people, approval limits, alerts, templates, import mapping, financing preferences, industry templates | Planned — target Oct 16 |
+| Financing Readiness Passport, lender and external-auditor access | Planned — target Oct 16 |
 | Email OTP and TOTP sign-in, Team page, agent guardrails, security posture dashboard | Planned — target Oct 16 |
 | Evaluation harness and OWASP Agentic Top 10 control map | Planned — target Oct 16 |
-| Compliance, payables, sales and HR agents; SMS one-time passwords; data classification and retention | Designed, not built |
+| Production agent (manufacturing template); SMS one-time passwords; dashboard layout; automated data retention | Designed, not built |
 
 ### How the entry maps to the scoring criteria
 
@@ -127,6 +129,9 @@ Status as of 2026-10-08. The demo company and its data are synthetic and labelle
 
 ### Program documents
 
+- [The six documents](FINBRAIN_SIX_DOCUMENTS.md) — PRD, TRD, app flow, UI/UX brief, backend
+  schema and implementation plan covering every SME position and company customization. Where
+  it differs from the spec below, it wins.
 - [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md)
   — positioning, agents, finance engine, security, China reachability, schedule, demo script
   and claims policy.
@@ -1010,6 +1015,7 @@ and replaces this flow once those features land.
 
 | Document | Contents |
 | --- | --- |
+| [FINBRAIN_SIX_DOCUMENTS.md](./FINBRAIN_SIX_DOCUMENTS.md) | Topic E master document: PRD, TRD, app flow, UI/UX brief, backend schema, implementation plan, contradictions resolved and decisions log |
 | [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) | FinTechathon 2026 Topic E: positioning, scope tiers, agents, finance engine, security, China reachability, schedule, demo script, claims policy |
 | [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md) | Test-first plan that serves the frozen Topic E API contract as stub endpoints |
 | [SUPABASE_ARCHITECTURE.md](./SUPABASE_ARCHITECTURE.md) | **Required reading for database contributors** — schema contract, RLS boundaries, change rules, emergency procedure |

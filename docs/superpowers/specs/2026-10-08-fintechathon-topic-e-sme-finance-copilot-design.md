@@ -1,7 +1,7 @@
 # FinTechathon 2026 Topic E: SME Finance Copilot — Program Design Specification
 
 **Date:** 2026-10-08  
-**Status:** Approved (team kickoff)  
+**Status:** Approved (team kickoff); partly superseded on 2026-10-08 by `FINBRAIN_SIX_DOCUMENTS.md` (every SME position gets an agent, company customization, job functions as a list, two build waves) — where they differ, that file wins  
 **Target:** 2026 Shenzhen International FinTech Competition (WeBank), International Track, Topic E — SME Finance Copilot  
 **Deadline:** 2026-10-20 23:59 UTC+8 (Beijing and Malaysia time are the same). We submit a complete version on Oct 19; resubmission is allowed until the deadline and the latest version counts.
 
