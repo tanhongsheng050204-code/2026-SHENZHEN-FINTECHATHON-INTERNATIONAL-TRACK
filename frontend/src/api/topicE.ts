@@ -875,3 +875,43 @@ export async function fetchSharedAuditPack(token: string): Promise<AuditPack> {
 export async function verifyPassportPublic(document: unknown): Promise<VerificationResult> {
   return parse<VerificationResult>(await publicFetch("/lender/verify", json(document)));
 }
+
+// ── Credit scorecard ────────────────────────────────────────────────────────
+
+export interface ScoreFactor {
+  key: string;
+  label: string;
+  value: string;
+  points: number;
+  max_points: number;
+  reason: string;
+  evidence: EvidenceRef[];
+}
+
+export interface PublicSignal {
+  source: "google_maps" | "shopee" | "grabfood" | "lazada";
+  metric: string;
+  value: string;
+  trend: string;
+  status: "ok" | "watch" | "risk";
+  synthetic: boolean;
+}
+
+export interface ScorecardResponse {
+  data_mode: DataMode;
+  method: "expert_weights" | "calibrated";
+  method_note: string;
+  score: number;
+  min_score: number;
+  max_score: number;
+  grade: "A" | "B" | "C" | "D" | "E";
+  base_points: number;
+  factors: ScoreFactor[];
+  public_signals: PublicSignal[];
+  public_data_note: string;
+  disclaimer: string;
+}
+
+export async function fetchScorecard(): Promise<ScorecardResponse> {
+  return parse<ScorecardResponse>(await authenticatedFetch("/financing/scorecard"));
+}

@@ -1734,3 +1734,15 @@ html{scroll-behavior:smooth;}
 .fb-stepup{display:flex;flex-direction:column;gap:.8rem;font-family:'Inter Variable','Inter',-apple-system,sans-serif;}
 .fb-stepup h2{margin:0;font-family:var(--font-display);font-size:1.15rem;font-weight:800;}
 .fb-stepup input{letter-spacing:.4em;text-align:center;font-size:1.1rem;}
+
+/* ── Topic E: credit scorecard ──────────────────────────────────────────── */
+.fb-score-top{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
+.fb-score-grade{width:72px;height:72px;border-radius:18px;display:grid;place-items:center;font-family:var(--font-display);font-size:2.2rem;font-weight:800;color:#fff;background:var(--accent);flex:0 0 auto;}
+.fb-score-grade.is-a{background:var(--viz-1);}
+.fb-score-grade.is-c{background:var(--viz-2);}
+.fb-score-grade.is-d,.fb-score-grade.is-e{background:var(--danger);}
+.fb-score-total{flex:1 1 240px;display:flex;flex-direction:column;gap:.3rem;}
+.fb-score-bar{position:relative;height:8px;border-radius:99px;background:linear-gradient(90deg,var(--danger),var(--viz-2),var(--viz-1));margin-top:.3rem;}
+.fb-score-bar span{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--card);border:3px solid var(--ink);transform:translate(-50%,-50%);}
+.fb-score-mini{height:4px;border-radius:99px;background:var(--bg-alt);margin-top:.25rem;min-width:60px;}
+.fb-score-mini span{display:block;height:4px;border-radius:99px;background:var(--accent);}

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Sidebar, AppTopBar } from "../components/Nav";
+import { ScorecardCard } from "../components/ScorecardCard";
 import { useAuth } from "../auth/AuthProvider";
 import { useAppState } from "../lib/appState";
 import { useI18n } from "../lib/i18n";
@@ -334,6 +335,7 @@ export default function Financing() {
       </header>
       <div className="fb-page-body">
         <div className="fb-cash">
+          <ScorecardCard />
           <Matches canPrepare={PACK_ROLES.has(role)} />
           {error && <div className="fb-callout" role="alert">{error}</div>}
           {passport && <PassportCard passport={passport} isOwner={isOwner} />}
