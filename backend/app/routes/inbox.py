@@ -22,9 +22,7 @@ def review_inbox(
     principal: AuthPrincipal = Depends(require_roles(*_ALL_ROLES)),
 ) -> ReviewInboxResponse:
     try:
-        scope, actions = stub.review_inbox(
-            principal.role, str(principal.user_id), job_function
-        )
+        scope, actions = stub.review_inbox(principal.role, str(principal.user_id), job_function)
     except stub.InboxError as error:
         raise HTTPException(status_code=error.status_code, detail=error.code) from error
     return ReviewInboxResponse(data_mode=DataMode.STUB, job_functions=scope, actions=actions)

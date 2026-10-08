@@ -111,8 +111,7 @@ def _evaluate(rule: _Rule) -> RuleResult:
     else:
         bound = "at least" if rule.op == ">=" else "at most"
         detail = (
-            f"{label}: {_format(value, unit)} "
-            f"(requires {bound} {_format(rule.threshold, unit)})"
+            f"{label}: {_format(value, unit)} (requires {bound} {_format(rule.threshold, unit)})"
         )
     return RuleResult(rule=rule.rule, passed=passed, detail=detail, evidence=[evidence])
 

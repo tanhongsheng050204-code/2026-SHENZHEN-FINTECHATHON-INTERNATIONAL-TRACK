@@ -94,9 +94,7 @@ def test_scenario_delaying_customer_a_pushes_day_23_below_zero():
 
 def test_repeated_shifts_for_one_event_add_up():
     once = _scenario([{"event_id": "R1", "shift_days": 30}])
-    twice = _scenario(
-        [{"event_id": "R1", "shift_days": 15}, {"event_id": "R1", "shift_days": 15}]
-    )
+    twice = _scenario([{"event_id": "R1", "shift_days": 15}, {"event_id": "R1", "shift_days": 15}])
 
     assert twice["points"] == once["points"]
 
