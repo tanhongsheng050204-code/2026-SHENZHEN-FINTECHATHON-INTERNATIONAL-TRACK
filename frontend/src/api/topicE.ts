@@ -196,3 +196,172 @@ export function ringgit(amount: string | number | null): string {
   const sign = value < 0 ? "−" : "";
   return sign + "RM" + Math.abs(value).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
+// ── Financing ───────────────────────────────────────────────────────────────
+
+export type Jurisdiction = "MY" | "CN";
+
+export interface RuleResult {
+  rule: string;
+  passed: boolean;
+  detail: string;
+  evidence: EvidenceRef[];
+}
+
+export interface FinancingProduct {
+  id: string;
+  jurisdiction: Jurisdiction;
+  category: string;
+  name: string;
+  illustrative_terms: string;
+  last_verified: string | null;
+  source_url: string | null;
+}
+
+export interface FinancingMatch {
+  product: FinancingProduct;
+  eligible: boolean;
+  fit_score: number;
+  rules: RuleResult[];
+  explanation: string;
+}
+
+export interface FinancingMatchesResponse {
+  data_mode: DataMode;
+  jurisdiction: Jurisdiction;
+  disclaimer: string;
+  shortfall_gap: string | null;
+  matches: FinancingMatch[];
+}
+
+export async function fetchFinancingMatches(jurisdiction: Jurisdiction = "MY"): Promise<FinancingMatchesResponse> {
+  return parse<FinancingMatchesResponse>(await authenticatedFetch(`/financing/matches?jurisdiction=${jurisdiction}`));
+}
+
+/** Drafts an application pack; it lands in the review inbox for the owner. */
+export async function prepareApplicationPack(productId: string): Promise<ReviewDecisionResponse> {
+  return parse<ReviewDecisionResponse>(
+    await authenticatedFetch("/financing/application-packs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_id: productId }),
+    }),
+  );
+}
+
+// ── Passport, audit packs and external grants ───────────────────────────────
+
+export interface PassportMetric {
+  key: string;
+  label: string;
+  value: string;
+  evidence: EvidenceRef[];
+}
+
+export interface AnchorRef {
+  repository_path: string;
+  anchored_at: string | null;
+  commit: string | null;
+}
+
+export interface Passport {
+  id: string;
+  version: number;
+  company_label: string;
+  issued_at: string;
+  metrics: PassportMetric[];
+  sha256: string;
+  audit_entry_id: number | null;
+  anchor: AnchorRef | null;
+}
+
+export interface VerificationResult {
+  data_mode: DataMode;
+  passport_id: string;
+  status: "verified" | "mismatch" | "unknown_passport";
+  expected_sha256: string | null;
+  computed_sha256: string;
+  chain_intact: boolean;
+  anchor: AnchorRef | null;
+  mismatched_fields: string[];
+}
+
+export interface AuditPackItem {
+  key: string;
+  label: string;
+  description: string;
+  sha256: string;
+}
+
+export interface AuditPack {
+  id: string;
+  period: string;
+  company_label: string;
+  created_at: string;
+  items: AuditPackItem[];
+  sha256: string;
+}
+
+export type GrantKind = "lender" | "auditor";
+
+export interface ExternalGrant {
+  id: string;
+  kind: GrantKind;
+  scope: string;
+  grantee_email_token: string;
+  expires_at: string;
+  allow_exact_values: boolean;
+  status: "active" | "revoked" | "expired";
+  share_path: string;
+}
+
+export interface GrantRequest {
+  grantee_email: string;
+  expires_in_days: number;
+  allow_exact_values: boolean;
+}
+
+const json = (body: unknown): RequestInit => ({
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+export async function fetchPassports(): Promise<Passport[]> {
+  return (await parse<{ passports: Passport[] }>(await authenticatedFetch("/passports"))).passports;
+}
+
+export async function issuePassport(): Promise<Passport> {
+  return (await parse<{ passport: Passport }>(await authenticatedFetch("/passports", { method: "POST" }))).passport;
+}
+
+/** Public check a lender can run on a Passport document they were given. */
+export async function verifyPassport(document: Passport): Promise<VerificationResult> {
+  return parse<VerificationResult>(await authenticatedFetch("/lender/verify", json(document)));
+}
+
+export async function fetchAuditPacks(): Promise<AuditPack[]> {
+  return (await parse<{ packs: AuditPack[] }>(await authenticatedFetch("/audit-packs"))).packs;
+}
+
+function grantsPath(kind: GrantKind, scopeId: string): string {
+  return kind === "lender"
+    ? `/passports/${encodeURIComponent(scopeId)}/grants`
+    : `/audit-packs/${encodeURIComponent(scopeId)}/grants`;
+}
+
+export async function fetchGrants(kind: GrantKind, scopeId: string): Promise<ExternalGrant[]> {
+  return (await parse<{ grants: ExternalGrant[] }>(await authenticatedFetch(grantsPath(kind, scopeId)))).grants;
+}
+
+export async function createGrant(kind: GrantKind, scopeId: string, request: GrantRequest): Promise<ExternalGrant> {
+  return (await parse<{ grant: ExternalGrant }>(await authenticatedFetch(grantsPath(kind, scopeId), json(request)))).grant;
+}
+
+export async function revokeGrant(kind: GrantKind, scopeId: string, grantId: string): Promise<ExternalGrant> {
+  return (
+    await parse<{ grant: ExternalGrant }>(
+      await authenticatedFetch(`${grantsPath(kind, scopeId)}/${encodeURIComponent(grantId)}`, { method: "DELETE" }),
+    )
+  ).grant;
+}

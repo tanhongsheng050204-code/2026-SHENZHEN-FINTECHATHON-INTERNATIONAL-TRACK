@@ -1593,3 +1593,41 @@ html{scroll-behavior:smooth;}
 .fb-cash-table td.is-label{min-width:180px;}
 .fb-cash-more{align-self:flex-start;font:inherit;font-size:.76rem;font-weight:600;color:var(--accent);background:none;border:0;padding:.4rem 0;cursor:pointer;min-height:36px;}
 .fb-cash-more:hover{text-decoration:underline;}
+
+/* ── Topic E: financing and Passport ────────────────────────────────────── */
+.fb-fin-gap{margin:0;font-size:.8rem;color:var(--ink-soft);}
+.fb-fin-gap strong{color:var(--danger);font-variant-numeric:tabular-nums;}
+.fb-fin-matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.9rem;}
+.fb-fin-match{display:flex;flex-direction:column;gap:.55rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:14px;background:var(--card);}
+.fb-fin-match.is-best{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.fb-fin-match h3{margin:0;font-family:var(--font-display);font-size:.98rem;font-weight:800;}
+.fb-fin-match-head{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;}
+.fb-fin-score{margin-left:auto;font-family:'Inter Tight','Inter',sans-serif;font-size:1.1rem;font-weight:800;font-variant-numeric:tabular-nums;}
+.fb-fin-score small{font-size:.66rem;font-weight:600;color:var(--ink-soft);}
+.fb-fin-rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.35rem;font-size:.74rem;line-height:1.45;}
+.fb-fin-rules li{display:flex;gap:.45rem;}
+.fb-fin-rules li.is-pass > span:first-child{color:var(--chart-good);font-weight:800;}
+.fb-fin-rules li.is-fail > span:first-child{color:var(--danger);font-weight:800;}
+.fb-fin-explain{margin:0;font-size:.74rem;font-weight:600;}
+.fb-fin-match .fb-btn{align-self:flex-start;min-height:40px;}
+.fb-fin-done{padding:.7rem .9rem;border-radius:12px;background:var(--accent-soft);font-size:.76rem;line-height:1.5;}
+.fb-fin-done code,.fb-fin-hash code,.fb-fin-items code{font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-size:.72rem;word-break:break-all;}
+.fb-fin-metrics{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 1.4rem;}
+.fb-fin-metrics div{padding:.6rem 0;border-bottom:1px solid var(--line);}
+.fb-fin-metrics dt{font-size:.7rem;color:var(--ink-soft);margin-bottom:.15rem;}
+.fb-fin-metrics dd{margin:0;font-size:.84rem;font-weight:600;}
+.fb-fin-hash{margin:0;font-size:.72rem;color:var(--ink-soft);}
+.fb-fin-verify{padding:.75rem .95rem;border-radius:12px;font-size:.78rem;line-height:1.5;}
+.fb-fin-verify.is-verified{background:color-mix(in srgb, var(--chart-good) 12%, transparent);}
+.fb-fin-verify.is-mismatch,.fb-fin-verify.is-unknown_passport{background:var(--danger-soft);}
+.fb-fin-grants{display:flex;flex-direction:column;gap:.6rem;padding-top:.9rem;border-top:1px solid var(--line);}
+.fb-fin-grant{display:flex;justify-content:space-between;align-items:center;gap:.8rem;font-size:.8rem;}
+.fb-fin-revoke{border-color:var(--danger);color:var(--danger);min-height:40px;}
+.fb-fin-share{display:flex;flex-wrap:wrap;gap:.8rem;align-items:flex-end;}
+.fb-fin-share .fb-btn{min-height:44px;}
+.fb-fin-days{flex:0 1 120px;}
+.fb-fin-check{display:flex;align-items:center;gap:.5rem;font-size:.76rem;min-height:44px;}
+.fb-fin-check input{width:18px;height:18px;}
+.fb-fin-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.fb-fin-items li{display:flex;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--line);font-size:.8rem;}
+.fb-fin-items code{color:var(--ink-soft);flex:0 0 auto;align-self:center;}

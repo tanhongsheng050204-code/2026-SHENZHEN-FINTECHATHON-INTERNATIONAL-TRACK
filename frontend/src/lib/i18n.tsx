@@ -67,6 +67,11 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
     ms: "Data demo: syarikat perdagangan sintetik, bukan akaun anda.",
     zh: "演示数据：虚构的贸易公司，并非您的账目。",
   },
+  "fin.desc": {
+    en: "Financing that fits the gap, each match explained rule by rule, and a verifiable Passport you can share with a lender or auditor.",
+    ms: "Pembiayaan yang sesuai dengan jurang, setiap padanan diterangkan mengikut peraturan, dan Pasport boleh disahkan untuk dikongsi dengan pemberi pinjaman atau juruaudit.",
+    zh: "匹配资金缺口的融资方案，逐条说明匹配规则，并提供可验证的融资护照，可分享给贷款方或审计师。",
+  },
   "soon.title": { en: "Coming next", ms: "Akan datang", zh: "即将推出" },
   "soon.desc": {
     en: "This page is designed and its API is ready; it is being built next.",

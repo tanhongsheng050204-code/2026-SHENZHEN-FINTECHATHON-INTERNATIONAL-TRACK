@@ -30,6 +30,7 @@ const Ingestion = lazy(() => import("./screens/Ingestion"));
 const Settings = lazy(() => import("./screens/Settings"));
 const ReviewInbox = lazy(() => import("./screens/ReviewInbox"));
 const CashFlow = lazy(() => import("./screens/CashFlow"));
+const Financing = lazy(() => import("./screens/Financing"));
 const ComingSoon = lazy(() => import("./screens/ComingSoon"));
 
 function Screens() {
@@ -69,9 +70,9 @@ function Screens() {
     case "settings": return <Settings />;
     case "inbox": return <ReviewInbox />;
     case "cashflow": return <CashFlow />;
+    case "financing": return <Financing />;
     case "positions":
     case "autonomy":
-    case "financing":
     case "team":
     case "trust":
       return <ComingSoon key={screen} screen={screen} titleKey={`nav.${screen}`} />;
