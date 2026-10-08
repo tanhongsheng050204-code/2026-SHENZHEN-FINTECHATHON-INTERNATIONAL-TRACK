@@ -3,7 +3,7 @@ export const SCREENS = [
   "landing", "login", "signup", "onboarding", "security", "legal",
   "home", "agents", "customers", "einvoice", "einvoice-detail", "finance", "audit", "approvals", "ingestion", "settings",
   // Topic E pages
-  "inbox", "positions", "autonomy", "cashflow", "financing", "team", "trust",
+  "inbox", "positions", "autonomy", "cashflow", "financing", "team", "trust", "company",
 ] as const;
 
 export type Screen = (typeof SCREENS)[number];

@@ -1700,3 +1700,16 @@ html{scroll-behavior:smooth;}
 .fb-trust-event-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;}
 .fb-trust-code{padding:.1rem .5rem;border-radius:6px;background:var(--ink);color:var(--card);font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-size:.68rem;font-weight:700;}
 .fb-cash .fb-callout{margin:0;max-width:none;}
+
+/* ── Topic E: company settings ──────────────────────────────────────────── */
+.fb-cs-area{border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:.8rem;}
+.fb-cs-area:disabled{opacity:.85;}
+.fb-cs-wide{flex:3 1 320px;}
+.fb-cs-positions{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.5rem 1rem;}
+.fb-cs-positions li{display:flex;align-items:center;justify-content:space-between;gap:.6rem;font-size:.78rem;}
+.fb-cs-positions input:not([type=checkbox]),.fb-cs-positions select{font:inherit;font-size:.78rem;padding:.5rem .65rem;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);min-height:38px;flex:0 1 190px;min-width:0;}
+.fb-cs-preview{margin:.35rem 0 0;padding-left:1.1rem;}
+.fb-cs-line{display:block;font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;font-size:.72rem;color:var(--ink-soft);}
+.fb-cs-subform{display:flex;flex-direction:column;gap:.7rem;padding-top:.9rem;border-top:1px solid var(--line);}
+.fb-cs-chip{border:1px dashed var(--line);cursor:pointer;font-family:ui-monospace,'Cascadia Mono',Consolas,monospace;color:var(--ink);}
+.fb-cs-chip:hover{border-color:var(--accent);color:var(--accent);}

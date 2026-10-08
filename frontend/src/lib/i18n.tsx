@@ -13,6 +13,12 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
   "nav.autonomy": { en: "Agents & autonomy", ms: "Ejen & autonomi", zh: "智能体与自主权" },
   "nav.cashflow": { en: "Cash flow", ms: "Aliran tunai", zh: "现金流" },
   "nav.financing": { en: "Financing & Passport", ms: "Pembiayaan & Pasport", zh: "融资与护照" },
+  "nav.company": { en: "Company settings", ms: "Tetapan syarikat", zh: "公司设置" },
+  "company.desc": {
+    en: "Shape FinBrain to your company: profile, positions, approval limits, alerts, templates and imports, within safety floors nobody can switch off.",
+    ms: "Sesuaikan FinBrain dengan syarikat anda: profil, jawatan, had kelulusan, amaran, templat dan import, dalam had keselamatan yang tidak boleh dimatikan.",
+    zh: "按贵公司需要配置 FinBrain：公司资料、岗位、审批额度、预警、模板与导入，并受不可关闭的安全底线保护。",
+  },
   "nav.team": { en: "Team", ms: "Pasukan", zh: "团队" },
   "nav.trust": { en: "Trust center", ms: "Pusat amanah", zh: "信任中心" },
   "inbox.eyebrow": { en: "AI workforce", ms: "Tenaga kerja AI", zh: "AI 团队" },

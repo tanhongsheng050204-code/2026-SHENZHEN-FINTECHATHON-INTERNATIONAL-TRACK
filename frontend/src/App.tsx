@@ -35,6 +35,7 @@ const Positions = lazy(() => import("./screens/Positions"));
 const Autonomy = lazy(() => import("./screens/Autonomy"));
 const Team = lazy(() => import("./screens/Team"));
 const Trust = lazy(() => import("./screens/Trust"));
+const CompanySettings = lazy(() => import("./screens/CompanySettings"));
 
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
@@ -78,6 +79,7 @@ function Screens() {
     case "autonomy": return <Autonomy />;
     case "team": return <Team />;
     case "trust": return <Trust />;
+    case "company": return <CompanySettings />;
     default: return <Landing />;
   }
 }

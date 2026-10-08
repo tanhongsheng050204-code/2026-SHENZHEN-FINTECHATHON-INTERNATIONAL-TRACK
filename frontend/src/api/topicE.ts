@@ -1,6 +1,6 @@
 // Topic E endpoints. Shapes mirror docs/api/topic-e-contract.json; every
 // response says whether its data is a canned stub or computed live.
-import { authenticatedFetch, parse, type Role } from "./client";
+import { ApiError, authenticatedFetch, parse, type Role } from "./client";
 
 export type DataMode = "stub" | "live";
 
@@ -617,4 +617,246 @@ export async function fetchPosture(): Promise<PostureResponse> {
 
 export async function fetchGuardrailEvents(): Promise<GuardrailEvent[]> {
   return (await parse<{ events: GuardrailEvent[] }>(await authenticatedFetch("/trust/guardrail-events"))).events;
+}
+
+// ── Errors ──────────────────────────────────────────────────────────────────
+
+/**
+ * The backend answers refusals with a code ("no_changes") and validation
+ * failures with a list ({msg: "Value error, owner_must_receive_critical_alerts"}).
+ * Returns the first code either way.
+ */
+export function errorCode(error: unknown): string {
+  const raw: unknown = error instanceof ApiError ? error.code : error instanceof Error ? error.message : "";
+  if (Array.isArray(raw)) {
+    const first = raw[0] as { msg?: string; type?: string } | undefined;
+    return (first?.msg ?? first?.type ?? "invalid_request").replace(/^Value error, /, "");
+  }
+  return typeof raw === "string" ? raw : "";
+}
+
+// ── Company settings ────────────────────────────────────────────────────────
+
+export type SettingsArea = "profile" | "positions" | "approvals" | "alerts" | "financing" | "security" | "branding";
+export type IndustryTemplateId = "trading" | "services" | "manufacturing";
+
+export interface CompanyProfile {
+  company_name: string;
+  industry: IndustryTemplateId;
+  size: "micro" | "small" | "medium";
+  currency: string;
+  fiscal_year_start_month: number;
+  state: string;
+  working_days: string[];
+  languages: ("en" | "ms" | "zh")[];
+}
+
+export interface PositionSetting {
+  job_function: JobFunction;
+  enabled: boolean;
+  display_name: string;
+}
+
+export interface TenantSettings {
+  profile: CompanyProfile;
+  positions: PositionSetting[];
+  approvals: {
+    owner_escalation_amount: string;
+    owner_escalation_customer_count: number;
+    promotion_min_sample: number;
+    promotion_min_unedited_rate: number;
+    demotion_max_rejection_rate: number;
+    quiet_hours_start: string;
+    quiet_hours_end: string;
+  };
+  alerts: {
+    minimum_cash_balance: string;
+    alert_horizon_days: number;
+    recipients: JobFunction[];
+    channels: ("in_app" | "email" | "telegram")[];
+    critical_alerts_enabled: true;
+  };
+  financing: { islamic_only: boolean; excluded_categories: string[]; jurisdictions: Jurisdiction[] };
+  security: { mfa_required_roles: Role[]; session_idle_minutes: number };
+  branding: { display_name: string; document_footer: string | null };
+}
+
+export interface SettingsResponse {
+  data_mode: DataMode;
+  version: number;
+  template: IndustryTemplateId;
+  settings: TenantSettings;
+}
+
+export interface SettingsChange {
+  id: string;
+  area: SettingsArea | "rollback";
+  status: "applied" | "pending_approval" | "rejected";
+  requires_approval: boolean;
+  version: number;
+  preview: string[];
+}
+
+export interface SettingsChangeResponse {
+  data_mode: DataMode;
+  change: SettingsChange;
+  settings: TenantSettings;
+}
+
+export interface IndustryTemplate {
+  id: IndustryTemplateId;
+  name: string;
+  description: string;
+  enabled_positions: JobFunction[];
+  designed_positions: JobFunction[];
+  demo_data: "full" | "settings_only";
+}
+
+export interface TemplatePreview {
+  template_id: IndustryTemplateId;
+  positions_added: JobFunction[];
+  positions_removed: JobFunction[];
+  designed_positions: JobFunction[];
+  data_kept: boolean;
+}
+
+export async function fetchSettings(): Promise<SettingsResponse> {
+  return parse<SettingsResponse>(await authenticatedFetch("/settings"));
+}
+
+export async function proposeSettingsChange(area: SettingsArea, value: unknown): Promise<SettingsChangeResponse> {
+  return parse<SettingsChangeResponse>(await authenticatedFetch("/settings/changes", json({ area, value })));
+}
+
+export async function fetchSettingsChanges(): Promise<SettingsChange[]> {
+  return (await parse<{ changes: SettingsChange[] }>(await authenticatedFetch("/settings/changes"))).changes;
+}
+
+export async function decideSettingsChange(changeId: string, decision: "approve" | "reject"): Promise<SettingsChangeResponse> {
+  return parse<SettingsChangeResponse>(
+    await authenticatedFetch(`/settings/changes/${encodeURIComponent(changeId)}/${decision}`, { method: "POST" }),
+  );
+}
+
+export async function rollbackSettings(version: number): Promise<SettingsChangeResponse> {
+  return parse<SettingsChangeResponse>(await authenticatedFetch("/settings/rollback", json({ version })));
+}
+
+export async function fetchIndustryTemplates(): Promise<{ current: IndustryTemplateId; templates: IndustryTemplate[] }> {
+  return parse(await authenticatedFetch("/settings/templates"));
+}
+
+export async function previewIndustryTemplate(id: IndustryTemplateId): Promise<TemplatePreview> {
+  return parse<TemplatePreview>(await authenticatedFetch(`/settings/templates/${id}/preview`, { method: "POST" }));
+}
+
+export async function applyIndustryTemplate(id: IndustryTemplateId): Promise<SettingsChangeResponse> {
+  return parse<SettingsChangeResponse>(await authenticatedFetch(`/settings/templates/${id}/apply`, { method: "POST" }));
+}
+
+// ── Message templates, import mappings, alert rules ─────────────────────────
+
+export interface MessageTemplate {
+  id: string;
+  kind: "payment_reminder" | "customer_reply" | "supplier_query";
+  language: "en" | "ms" | "zh";
+  tone: "formal" | "friendly";
+  body: string;
+  placeholders: string[];
+  status: "draft" | "approved";
+}
+
+export const TEMPLATE_PLACEHOLDERS = ["customer_name", "invoice_no", "amount", "due_date", "company_name", "sender_name"];
+
+export async function fetchMessageTemplates(): Promise<MessageTemplate[]> {
+  return (await parse<{ templates: MessageTemplate[] }>(await authenticatedFetch("/settings/message-templates"))).templates;
+}
+
+export async function createMessageTemplate(
+  template: Pick<MessageTemplate, "kind" | "language" | "tone" | "body">,
+): Promise<MessageTemplate> {
+  return (await parse<{ template: MessageTemplate }>(await authenticatedFetch("/settings/message-templates", json(template)))).template;
+}
+
+export async function approveMessageTemplate(id: string): Promise<MessageTemplate> {
+  return (
+    await parse<{ template: MessageTemplate }>(
+      await authenticatedFetch(`/settings/message-templates/${encodeURIComponent(id)}/approve`, { method: "POST" }),
+    )
+  ).template;
+}
+
+export type ImportSchema = "bank_statement_v1" | "payables_register_v1";
+
+export const IMPORT_FIELDS: Record<ImportSchema, { all: string[]; required: string[] }> = {
+  bank_statement_v1: {
+    all: ["date", "description", "debit", "credit", "balance", "counterparty", "reference"],
+    required: ["date", "description", "debit", "credit"],
+  },
+  payables_register_v1: {
+    all: ["bill_id", "supplier", "amount", "currency", "due_date", "status", "bank_account"],
+    required: ["bill_id", "supplier", "amount", "currency", "due_date"],
+  },
+};
+
+export interface ImportMapping {
+  id: string;
+  schema_name: ImportSchema;
+  name: string;
+  column_map: Record<string, string>;
+  header_fingerprint: string;
+}
+
+export async function fetchImportMappings(): Promise<ImportMapping[]> {
+  return (await parse<{ mappings: ImportMapping[] }>(await authenticatedFetch("/settings/import-mappings"))).mappings;
+}
+
+export async function createImportMapping(
+  schemaName: ImportSchema,
+  name: string,
+  headers: string[],
+  columnMap: Record<string, string>,
+): Promise<ImportMapping> {
+  return (
+    await parse<{ mapping: ImportMapping }>(
+      await authenticatedFetch(
+        "/settings/import-mappings",
+        json({ schema_name: schemaName, name, headers, column_map: columnMap }),
+      ),
+    )
+  ).mapping;
+}
+
+export async function matchImportMapping(schemaName: ImportSchema, headers: string[]): Promise<ImportMapping> {
+  return (
+    await parse<{ mapping: ImportMapping }>(
+      await authenticatedFetch("/settings/import-mappings/match", json({ schema_name: schemaName, headers })),
+    )
+  ).mapping;
+}
+
+export type AlertMetric =
+  | "projected_balance"
+  | "overdue_amount_per_customer"
+  | "stock_below_reorder"
+  | "payroll_coverage_days"
+  | "marketing_return_per_ringgit"
+  | "open_disputes";
+
+export interface AlertRule {
+  id: string;
+  metric: AlertMetric;
+  operator: "above" | "below";
+  threshold: string;
+  recipients: JobFunction[];
+  channel: "in_app" | "email" | "telegram";
+  enabled: boolean;
+}
+
+export async function fetchAlertRules(): Promise<AlertRule[]> {
+  return (await parse<{ rules: AlertRule[] }>(await authenticatedFetch("/settings/alert-rules"))).rules;
+}
+
+export async function createAlertRule(rule: Omit<AlertRule, "id" | "enabled">): Promise<AlertRule> {
+  return (await parse<{ rule: AlertRule }>(await authenticatedFetch("/settings/alert-rules", json(rule)))).rule;
 }

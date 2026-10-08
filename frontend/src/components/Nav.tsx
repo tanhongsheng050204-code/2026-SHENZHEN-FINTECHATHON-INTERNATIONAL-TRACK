@@ -128,6 +128,7 @@ const NAV_ICONS: Record<string, ReactNode> = {
   financing: <path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6" />,
   team: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
   trust: <path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4" />,
+  company: <path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4" />,
 };
 
 // Primary application navigation. The first group is the original app —
@@ -155,6 +156,7 @@ const NAV_GROUPS: { label: string | null; items: { screen: Screen; key: string; 
     { screen: "financing", key: "nav.financing", isNew: true },
   ] },
   { label: "nav.group.company", items: [
+    { screen: "company", key: "nav.company", isNew: true },
     { screen: "team", key: "nav.team", isNew: true },
     { screen: "trust", key: "nav.trust", isNew: true },
   ] },
@@ -268,6 +270,7 @@ const SCREEN_TITLES: Partial<Record<Screen, string>> = {
   financing: "Financing & Passport",
   team: "Team",
   trust: "Trust center",
+  company: "Company settings",
 };
 
 export function AppTopBar({ current }: { current: Screen }) {
