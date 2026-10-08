@@ -98,7 +98,7 @@ Status as of 2026-10-08. The demo company and its data are synthetic and labelle
 | Cited questions and answers, conversation context, customer intelligence | **Built and tested** |
 | Governed outreach, approvals, overdue reminders, e-invoice readiness and PDFs, receivables aging | **Built and tested** |
 | Dual hash-chained audit logs with daily external anchoring, PDPA access and erasure, vault rotation | **Built and tested** |
-| Topic E API contract served as tested stub endpoints | Planned — target Oct 9 |
+| Topic E API contract served as tested stub endpoints | **Built and tested** — 54 stub endpoints returning labelled synthetic data; contract in [`docs/api/topic-e-contract.json`](docs/api/topic-e-contract.json) |
 | Cash-flow forecast, scenarios and alerts; financing matching with explanations | Planned — target Oct 16 |
 | Supervisor agent, review inbox, autonomy ladder and earned autonomy | Planned — target Oct 16 |
 | An agent for every SME position — owner, operations, finance, sales, customer service, marketing, purchasing, logistics, HR and compliance — each feeding the cash forecast | Planned — core skills by Oct 16; full skill lists by the November final |
@@ -136,8 +136,9 @@ Status as of 2026-10-08. The demo company and its data are synthetic and labelle
   — positioning, agents, finance engine, security, China reachability, schedule, demo script
   and claims policy.
 - [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md)
-  — revision 2: 48 tested stub endpoints covering every position, customization and external
-  sharing; later plans replace each stub with a real service.
+  — revision 2, executed: 54 tested stub endpoints covering every position, customization and
+  external sharing; later plans replace each stub with a real service. The frozen contract is
+  [`docs/api/topic-e-contract.json`](docs/api/topic-e-contract.json).
 
 ---
 

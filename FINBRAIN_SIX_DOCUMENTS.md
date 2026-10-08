@@ -11,7 +11,7 @@
 **Related documents.** Where they disagree with this file, this file wins.
 
 - Program design spec v1 — `docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md` (detailed design of the finance core, security, China reachability, demo).
-- Plan 1, the API contract (revision 2) — `docs/superpowers/plans/2026-10-08-topic-e-api-contract.md`: 48 stub endpoints covering every position, cash signals, position workspaces, the review inbox by job function, company customization, and lender and auditor sharing (task M1.1).
+- Plan 1, the API contract (revision 2) — `docs/superpowers/plans/2026-10-08-topic-e-api-contract.md`: executed Oct 8 — 54 stub endpoints, frozen in `docs/api/topic-e-contract.json`, covering every position, cash signals, position workspaces, the review inbox by job function, company customization, and lender and auditor sharing (task M1.1).
 
 **Status words used throughout**
 

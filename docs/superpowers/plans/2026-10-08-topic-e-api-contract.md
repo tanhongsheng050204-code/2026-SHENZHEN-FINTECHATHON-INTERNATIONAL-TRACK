@@ -27,6 +27,18 @@ Revision 1 of this plan was never executed; revision 2 replaces it entirely.
 - **External auditors.** Audit packs with expiring grants, alongside the lender Passport.
 - **Team** moves to its own router.
 
+## Changes after the final review
+
+This plan was executed on Oct 8 (commits `d47c82d`..`6991d10`). A review of the whole branch then found nine Important issues, fixed in `569e7bf`. Where the task code below differs, `docs/api/topic-e-contract.json` is the source of truth.
+
+- **Six more read endpoints, 54 in total.** `GET /passports`, `GET /passports/{passport_id}/grants`, `GET /audit-packs`, `GET /audit-packs/{pack_id}/grants`, `GET /settings/changes` and `POST /settings/changes/{change_id}/reject`.
+- **Review inbox.** An L3 item moves from `pending` to `awaiting_second_approval` when a maker who holds the reviewer job function approves it, then to `approved` when the owner approves as a different checker. Each approval is recorded in `approvals`. Either side can reject, and edits are refused at L3. Compliance sees every item, read-only. Every item carries `can_decide` for the person asking.
+- **Settings.** Set-like lists are stored deduplicated in a fixed order, and money uses the two-decimal `Money` type. An equivalent submission returns `409 no_changes`. Rollback returns a `SettingsChangeResponse` and waits for Compliance when it touches security.
+- **Passports.** A document sent to `/lender/verify` may not carry fields that were never issued.
+- **Import mappings.** `POST /settings/import-mappings` requires `headers`, which lists every column in the sample file. The fingerprint covers all of them and ignores the byte-order mark, Unicode form and case.
+- **Message templates.** Braces are only for the six placeholders, and anything else returns `invalid_placeholder`. Numbers with nine or more digits are refused even when written with spaces or dashes.
+- **Run events.** `GET /agents/runs/{run_id}/events` uses FastAPI's `EventSourceResponse`. Each `data:` line is one `AgentRunEvent`, there is no `event:` line, and the contract documents the item type. The FastAPI floor is now 0.141.1.
+
 ## Plan series
 
 | # | Plan | Owner | Starts | Replaces |
