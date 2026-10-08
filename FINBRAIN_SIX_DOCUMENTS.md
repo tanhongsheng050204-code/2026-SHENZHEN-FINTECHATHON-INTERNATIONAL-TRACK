@@ -19,7 +19,7 @@
 | --- | --- |
 | Built | Exists in the repository today and is covered by tests |
 | W1 | Wave 1 — working by the Oct 20 submission (feature freeze Oct 16) |
-| W2 | Wave 2 — full depth by Nov 19, before the Shenzhen final |
+| W2 | Wave 2 — full depth; a stretch goal for the Oct 20 submission, and must be done by Nov 19, before the Shenzhen final |
 | Designed | Specified here and shown in the product as "Designed — not built" |
 | Roadmap | After the competition |
 
@@ -124,7 +124,7 @@ Market: Malaysian MSMEs. SME Corp size bands for services firms — micro under 
 
 ### C. An agent for every position
 
-Decision: **every position gets a full agent** (option (a)). Wave 1 ships each position's core skills by Oct 20; Wave 2 completes every skill list by Nov 19 for the final.
+Decision: **every position gets a full agent** (option (a)). Everything below is planned now and the team will attempt all of it: Wave 1 (each position's core skills) is required by Oct 20; Wave 2 (every remaining skill) is a stretch goal for Oct 20 and must be finished by Nov 19 for the final.
 
 | Position (job function) | Agent | W1 skills — working by Oct 20 | W2 skills — full depth by Nov 19 | Cash signal it feeds | Person reviews |
 | --- | --- | --- | --- | --- | --- |
@@ -266,8 +266,8 @@ Rule: **customize data, never code.** Every setting is validated, versioned, aud
 | # | Decision the owner still needs to make | Default if unanswered by Oct 9 |
 | --- | --- | --- |
 | OQ-1 | Which domain to use for `app.` and `api.` | Buy a .com (about RM50) |
-| OQ-2 | Confirm the two-wave approach to option (a): core skills for every position by Oct 20, full depth by Nov 19 | Two waves |
-| OQ-3 | Can all four members work full-time every day to Oct 20? The W1 budget assumes it (section 6) | Apply the cut order at the Oct 14 checkpoint |
+| OQ-2 | ~~Confirm the two-wave approach to option (a)~~ | **Resolved Oct 8:** plan everything; the team attempts the full scope, with Wave 2 as a stretch goal for Oct 20 |
+| OQ-3 | ~~Can all four members work full-time every day to Oct 20?~~ | **Resolved Oct 8:** the team will try to finish everything; the cut order stays as the safety net at the Oct 14 checkpoint |
 | OQ-4 | Supabase plan and region; custom SMTP provider for one-time-code emails | Keep the current project; add a custom SMTP provider |
 | OQ-5 | Cloud Run service name and region (for API domain mapping) | Read from the GCP console |
 | OQ-6 | Who verifies the financing catalogue entries, and by when | Leave `last_verified` empty; terms stay illustrative |
@@ -769,6 +769,8 @@ Purpose: give the AI agent an ordered build sequence with checkpoints.
 
 Option (a) in full — every position's complete skill list — is roughly **80 person-days** of work. Before Oct 20 the team has at most **52 person-days** (4 people × 13 days, every day including weekends). Wave 1 — the platform, the finance core, customization, and each position's core skills — is about **54 person-days**, so **even Wave 1 is slightly over capacity**: expect to use the first steps of the cut order, decided at the Oct 14 checkpoint. Wave 2 (about 27 person-days) completes every position's full skill list between Oct 21 and Nov 19 for the final.
 
+**Team decision (Oct 8):** plan everything and attempt the full scope. Wave 2 items are stretch goals for Oct 20 — pick them up as soon as a person's Wave 1 tasks are green — and remain mandatory for the final. The cut order still protects the submission if the Oct 14 checkpoint is missed.
+
 | Person | W1 load (person-days) | Main work |
 | --- | --- | --- |
 | tanho | about 13.5 | Shell, Command Center, generic position workspace, Review Inbox, Cash, Financing, Passport, lender view, Trust Center, schema-driven Settings, onboarding wizard, web hygiene, deck, video |
@@ -915,6 +917,7 @@ At every checkpoint: run the app, verify the acceptance criteria that milestone 
 | 17 | Cuts to make room | Tier 2 dropped; China pack reduced; signed links; Journey folded in | Appendix A |
 | 18 | Customization for company adaptability | 12 areas, governance rules, three industry templates | PRD F |
 | 19 | Use the six-document templates | This file | — |
+| 20 | "Plan everything first; we will try to finish it" | Full scope planned; Wave 2 becomes a stretch goal for Oct 20; cut order kept as the safety net | Status words; section 6 |
 
 # Appendix C — Sources
 
