@@ -29,6 +29,7 @@ from app.routes import (
     integrations,
     outreach,
     passports,
+    passports_live,
     positions,
     privacy,
     query,
@@ -134,6 +135,7 @@ app.include_router(agents.router)
 app.include_router(inbox.router)
 app.include_router(positions.router)
 app.include_router(financing.router)
+app.include_router(passports_live.router)  # before passports: serves those paths
 app.include_router(passports.router)
 app.include_router(trust.router)
 app.include_router(team.router)

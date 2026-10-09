@@ -88,16 +88,16 @@ FinBrain gives every SME position an agent, so agent safety is designed in, not 
 | --- | --- |
 | Two hash-chained, append-only audit logs (disclosure and workflow) | Built and tested |
 | Daily anchoring of chain heads to a public Git repository (tamper evidence outside the database) | Built |
-| Financing Readiness Passport: SHA-256 over canonical JSON; anyone can verify a received Passport; a document with fields that were never issued is rejected | Contract and demo (verification rules built and tested) |
-| Audit packs for external auditors with a digest per item | Contract and demo |
+| Financing Readiness Passport: computed from the company's records, SHA-256 over canonical JSON recorded on the tenant's workflow chain; public verification names every changed field, re-verifies the whole chain and reports the covering anchor; a document with fields that were never issued is rejected | Built and tested |
+| Audit packs for external auditors: a digest per item, the pack hash recorded on the audit chain, payroll as run totals only | Built and tested |
 
 ## 6. Sharing with lenders and auditors
 
 | Control | Status |
 | --- | --- |
-| Owner-only sharing for 1–30 days; ranges by default, exact values only by choice; revocable at any time | Contract and demo |
+| Owner-only sharing for 1–30 days; Passport values are ranges; revocable at any time; creating, revoking and every view are audit-chain events; the grantee email is stored only as a token | Built and tested |
 | Public share pages show only the shared document and verify it; no sign-in or other data reachable | Built (frontend) |
-| Expiry enforcement and constant-time token checks on the server | Planned (Plan 6) |
+| Expiry and revocation enforced on every view (410), HMAC-signed links checked in constant time, forged links refused (404) | Built and tested |
 | Emailed code for lenders before viewing | Planned (Wave 2) |
 
 ## 7. Company settings and safety floors
@@ -118,9 +118,9 @@ FinBrain is not certified under any standard, and we do not claim partnerships w
 ## 9. Known limitations (residual risk)
 
 - Plan 2 identity and session controls have passed static checks only; end-to-end tests against real Supabase (email delivery, TOTP, refresh, revocation, RLS triggers) are outstanding.
-- Agent runs compute over the synthetic company's cash data, and their proposals point at existing review-inbox items rather than creating new ones; the review inbox and Passport issuance still run on synthetic stub data. Persistence comes in Plans 5 and 6.
+- Agent runs compute over the synthetic company's cash data, and their proposals point at existing review-inbox items rather than creating new ones; the review inbox still runs on synthetic stub data. Persistence comes in Plan 5.
 - Guardrails are deterministic patterns; they will miss paraphrased injections until adversarial evaluation (Plan 7) tunes them.
-- Share-link expiry is not yet enforced by the server.
+- Passport anchors appear only where the anchor files are deployed with the backend; the public verification endpoint has not been validated against hosted PostgreSQL row-level security.
 - The backend is currently reached through a temporary tunnel; production needs a fixed HTTPS hostname under the app's parent domain.
 
 ## 10. Evidence

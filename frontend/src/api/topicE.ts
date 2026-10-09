@@ -344,6 +344,11 @@ export async function fetchAuditPacks(): Promise<AuditPack[]> {
   return (await parse<{ packs: AuditPack[] }>(await authenticatedFetch("/audit-packs"))).packs;
 }
 
+/** period is a year ("2026") or a quarter ("2026-Q3"). */
+export async function prepareAuditPack(period: string): Promise<AuditPack> {
+  return (await parse<{ pack: AuditPack }>(await authenticatedFetch("/audit-packs", json({ period })))).pack;
+}
+
 function grantsPath(kind: GrantKind, scopeId: string): string {
   return kind === "lender"
     ? `/passports/${encodeURIComponent(scopeId)}/grants`

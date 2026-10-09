@@ -18,7 +18,9 @@ function when(iso: string): string {
 
 function loadError(error: unknown): string {
   const code = errorCode(error);
-  if (code === "grant_not_found") return "This link has expired or was revoked. Ask the company for a new one.";
+  if (code === "grant_expired") return "This link has expired. Ask the company for a new one.";
+  if (code === "grant_revoked") return "The company has withdrawn this link.";
+  if (code === "grant_not_found") return "This link is not valid. Check that you copied all of it.";
   return friendlyLoadError(code);
 }
 
