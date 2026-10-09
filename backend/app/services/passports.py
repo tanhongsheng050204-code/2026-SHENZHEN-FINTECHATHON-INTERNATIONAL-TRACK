@@ -17,6 +17,7 @@ pattern with "audit_pack_prepared" events; payroll appears as run totals only.
 
 import datetime as dt
 import hashlib
+import hmac
 import json
 import os
 import secrets
@@ -269,6 +270,20 @@ def verify(db, document: Passport) -> VerificationResult:
         **entry.event_payload["document"], sha256="", audit_entry_id=None, anchor=None
     )
     expected = entry.event_payload["sha256"]
+    if not hmac.compare_digest(document.sha256, expected):
+        # The submitter does not hold the issued document. Naming fields or returning
+        # the recorded hash would let anyone with a Passport id guess its contents
+        # one metric at a time.
+        return VerificationResult(
+            data_mode=DataMode.LIVE,
+            passport_id=document.id,
+            status="mismatch",
+            expected_sha256=None,
+            computed_sha256=computed,
+            chain_intact=False,
+            anchor=None,
+            mismatched_fields=["sha256"],
+        )
     matches = computed == expected
     return VerificationResult(
         data_mode=DataMode.LIVE,

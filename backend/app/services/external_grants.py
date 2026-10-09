@@ -3,7 +3,7 @@
 A grant is not a table row: it is a "external_grant_created" event on the owner's
 tenant workflow chain, closed by a later "external_grant_revoked" event. Its state
 is replayed from those events, so creating, revoking and every view are audited by
-construction. The grantee's email is stored only as a tenant-scoped token.
+construction. The grantee's email is kept only as a keyed digest specific to the grant.
 
 The share link carries the grant id and an HMAC over it and the tenant, so a link
 cannot be guessed or altered; the server still checks revocation and expiry on
@@ -25,7 +25,6 @@ from app.auth.principal import AuthPrincipal
 from app.config import get_settings
 from app.contracts.passports import ExternalGrant, GrantRequest
 from app.models import WorkflowAuditEntry
-from app.security.tokenize import derive_token
 from app.services.workflow_audit import write_workflow_event
 
 GrantKind = Literal["lender", "auditor"]
@@ -54,6 +53,14 @@ def _now() -> dt.datetime:
 def _mac(grant_id: str, tenant_id: str) -> str:
     key = get_settings().token_root_secret.encode()
     return hmac.new(key, f"grant|{grant_id}|{tenant_id}".encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def _grantee_ref(email: str, grant_id: str) -> str:
+    # Specific to this grant: not a vault token, so it cannot be resolved by the
+    # disclosure path or matched against the same address anywhere else.
+    key = get_settings().token_identity_secret.encode()
+    message = f"grantee|{grant_id}|{email.strip().casefold()}".encode()
+    return "GRANTEE_" + hmac.new(key, message, hashlib.sha256).hexdigest()[:20]
 
 
 def _share_token(grant_id: str, tenant_id: str) -> str:
@@ -109,7 +116,7 @@ def create(
         event_payload={
             "kind": kind,
             "scope": f"{_SCOPE[kind]}:{scope_id}",
-            "email_token": derive_token("EMAIL", request.grantee_email, tenant_id),
+            "email_token": _grantee_ref(request.grantee_email, grant_id),
             "expires_at": expires_at.isoformat(),
             "allow_exact_values": request.allow_exact_values,
         },

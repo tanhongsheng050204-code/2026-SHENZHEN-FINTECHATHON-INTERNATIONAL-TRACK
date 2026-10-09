@@ -213,3 +213,34 @@ def test_anchor_is_reported_once_an_anchor_file_covers_the_entry(db, tmp_path, m
     result = _client(db, role=None).post("/lender/verify", json=issued).json()
 
     assert result["anchor"]["repository_path"] == "audit-anchors/2026-10-14.json"
+
+
+def test_verification_is_not_an_oracle_for_someone_without_the_document(db):
+    issued = _issue(db)
+    guess = {**issued, "sha256": "0" * 64}
+    guess["metrics"] = [{**m, "value": "50%"} for m in issued["metrics"]]
+
+    result = _client(db, role=None).post("/lender/verify", json=guess).json()
+
+    assert result["status"] == "mismatch"
+    assert result["expected_sha256"] is None
+    assert result["mismatched_fields"] == ["sha256"]
+    assert result["anchor"] is None
+
+
+def test_grantee_is_recorded_as_a_grant_only_reference(db):
+    from app.security.tokenize import derive_token
+
+    issued = _issue(db)
+    grant = (
+        _client(db)
+        .post(
+            f"/passports/{issued['id']}/grants",
+            json={"grantee_email": "credit@bank.example", "expires_in_days": 7},
+        )
+        .json()["grant"]
+    )
+
+    reference = grant["grantee_email_token"]
+    assert reference.startswith("GRANTEE_")
+    assert reference != derive_token("EMAIL", "credit@bank.example", str(TENANT_A))
