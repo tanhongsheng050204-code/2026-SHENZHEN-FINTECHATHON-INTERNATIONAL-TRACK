@@ -1,0 +1,6230 @@
+{
+  "components": {
+    "schemas": {
+      "AgentCard": {
+        "properties": {
+          "autonomy_level": {
+            "$ref": "#/components/schemas/AutonomyLevel"
+          },
+          "build_status": {
+            "enum": [
+              "built",
+              "designed"
+            ],
+            "title": "Build Status",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "job_function": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobFunction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kill_switch_engaged": {
+            "title": "Kill Switch Engaged",
+            "type": "boolean"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AgentMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "purpose": {
+            "title": "Purpose",
+            "type": "string"
+          },
+          "reviewer_job_function": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobFunction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scoped_autonomy": {
+            "items": {
+              "$ref": "#/components/schemas/ScopedAutonomy"
+            },
+            "title": "Scoped Autonomy",
+            "type": "array"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AgentSkill"
+            },
+            "title": "Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "purpose",
+          "job_function",
+          "reviewer_job_function",
+          "build_status",
+          "autonomy_level",
+          "scoped_autonomy",
+          "skills",
+          "kill_switch_engaged",
+          "metrics"
+        ],
+        "title": "AgentCard",
+        "type": "object"
+      },
+      "AgentCardResponse": {
+        "properties": {
+          "agent": {
+            "$ref": "#/components/schemas/AgentCard"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          }
+        },
+        "required": [
+          "data_mode",
+          "agent"
+        ],
+        "title": "AgentCardResponse",
+        "type": "object"
+      },
+      "AgentCashTotal": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "at_risk_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "At Risk Total",
+            "type": "string"
+          },
+          "inflow_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Inflow Total",
+            "type": "string"
+          },
+          "job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          },
+          "outflow_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Outflow Total",
+            "type": "string"
+          },
+          "signal_count": {
+            "title": "Signal Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "agent_id",
+          "job_function",
+          "inflow_total",
+          "outflow_total",
+          "at_risk_total",
+          "signal_count"
+        ],
+        "title": "AgentCashTotal",
+        "type": "object"
+      },
+      "AgentListResponse": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentCard"
+            },
+            "title": "Agents",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "global_kill_switch_engaged": {
+            "title": "Global Kill Switch Engaged",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data_mode",
+          "global_kill_switch_engaged",
+          "agents"
+        ],
+        "title": "AgentListResponse",
+        "type": "object"
+      },
+      "AgentMetrics": {
+        "properties": {
+          "approved_edited": {
+            "title": "Approved Edited",
+            "type": "integer"
+          },
+          "approved_unedited": {
+            "title": "Approved Unedited",
+            "type": "integer"
+          },
+          "promotion_recommended": {
+            "title": "Promotion Recommended",
+            "type": "boolean"
+          },
+          "proposals": {
+            "title": "Proposals",
+            "type": "integer"
+          },
+          "rejected": {
+            "title": "Rejected",
+            "type": "integer"
+          },
+          "unedited_approval_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unedited Approval Rate"
+          }
+        },
+        "required": [
+          "proposals",
+          "approved_unedited",
+          "approved_edited",
+          "rejected",
+          "unedited_approval_rate",
+          "promotion_recommended"
+        ],
+        "title": "AgentMetrics",
+        "type": "object"
+      },
+      "AgentRunCreated": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "events_url": {
+            "title": "Events Url",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data_mode",
+          "run_id",
+          "events_url"
+        ],
+        "title": "AgentRunCreated",
+        "type": "object"
+      },
+      "AgentRunEvent": {
+        "properties": {
+          "action_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Id"
+          },
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "run_started",
+              "tool_called",
+              "proposal_created",
+              "waiting_for_review",
+              "run_completed"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "sequence",
+          "type",
+          "agent_id",
+          "message"
+        ],
+        "title": "AgentRunEvent",
+        "type": "object"
+      },
+      "AgentRunRequest": {
+        "properties": {
+          "goal": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Goal",
+            "type": "string"
+          }
+        },
+        "required": [
+          "goal"
+        ],
+        "title": "AgentRunRequest",
+        "type": "object"
+      },
+      "AgentSkill": {
+        "properties": {
+          "availability": {
+            "enum": [
+              "available",
+              "planned"
+            ],
+            "title": "Availability",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "side_effect": {
+            "enum": [
+              "read",
+              "draft",
+              "external",
+              "money"
+            ],
+            "title": "Side Effect",
+            "type": "string"
+          },
+          "wave": {
+            "enum": [
+              "W1",
+              "W2"
+            ],
+            "title": "Wave",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "wave",
+          "availability",
+          "side_effect"
+        ],
+        "title": "AgentSkill",
+        "type": "object"
+      },
+      "AlertRule": {
+        "properties": {
+          "channel": {
+            "enum": [
+              "in_app",
+              "email",
+              "telegram"
+            ],
+            "title": "Channel",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "metric": {
+            "enum": [
+              "projected_balance",
+              "overdue_amount_per_customer",
+              "stock_below_reorder",
+              "payroll_coverage_days",
+              "marketing_return_per_ringgit",
+              "open_disputes"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "operator": {
+            "enum": [
+              "above",
+              "below"
+            ],
+            "title": "Operator",
+            "type": "string"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Recipients",
+            "type": "array"
+          },
+          "threshold": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Threshold",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "metric",
+          "operator",
+          "threshold",
+          "recipients",
+          "channel",
+          "enabled"
+        ],
+        "title": "AlertRule",
+        "type": "object"
+      },
+      "AlertRuleRequest": {
+        "properties": {
+          "channel": {
+            "enum": [
+              "in_app",
+              "email",
+              "telegram"
+            ],
+            "title": "Channel",
+            "type": "string"
+          },
+          "metric": {
+            "enum": [
+              "projected_balance",
+              "overdue_amount_per_customer",
+              "stock_below_reorder",
+              "payroll_coverage_days",
+              "marketing_return_per_ringgit",
+              "open_disputes"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "operator": {
+            "enum": [
+              "above",
+              "below"
+            ],
+            "title": "Operator",
+            "type": "string"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "maxItems": 11,
+            "minItems": 1,
+            "title": "Recipients",
+            "type": "array"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Threshold"
+          }
+        },
+        "required": [
+          "metric",
+          "operator",
+          "threshold",
+          "recipients",
+          "channel"
+        ],
+        "title": "AlertRuleRequest",
+        "type": "object"
+      },
+      "AlertRuleResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AlertRule"
+          }
+        },
+        "required": [
+          "data_mode",
+          "rule"
+        ],
+        "title": "AlertRuleResponse",
+        "type": "object"
+      },
+      "AlertRulesResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/AlertRule"
+            },
+            "title": "Rules",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "rules"
+        ],
+        "title": "AlertRulesResponse",
+        "type": "object"
+      },
+      "AlertSettings": {
+        "properties": {
+          "alert_horizon_days": {
+            "maximum": 90.0,
+            "minimum": 7.0,
+            "title": "Alert Horizon Days",
+            "type": "integer"
+          },
+          "channels": {
+            "items": {
+              "enum": [
+                "in_app",
+                "email",
+                "telegram"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Channels",
+            "type": "array"
+          },
+          "critical_alerts_enabled": {
+            "const": true,
+            "default": true,
+            "title": "Critical Alerts Enabled",
+            "type": "boolean"
+          },
+          "minimum_cash_balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)",
+            "title": "Minimum Cash Balance",
+            "type": "string"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "minItems": 1,
+            "title": "Recipients",
+            "type": "array"
+          }
+        },
+        "required": [
+          "minimum_cash_balance",
+          "alert_horizon_days",
+          "recipients",
+          "channels"
+        ],
+        "title": "AlertSettings",
+        "type": "object"
+      },
+      "AnchorRef": {
+        "additionalProperties": false,
+        "properties": {
+          "anchored_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchored At"
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "repository_path": {
+            "maxLength": 200,
+            "title": "Repository Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repository_path",
+          "anchored_at",
+          "commit"
+        ],
+        "title": "AnchorRef",
+        "type": "object"
+      },
+      "ApplicationPackRequest": {
+        "properties": {
+          "product_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Product Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id"
+        ],
+        "title": "ApplicationPackRequest",
+        "type": "object"
+      },
+      "ApplicationPackResponse": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/ReviewAction"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          }
+        },
+        "required": [
+          "data_mode",
+          "action"
+        ],
+        "title": "ApplicationPackResponse",
+        "type": "object"
+      },
+      "ApprovalSettings": {
+        "properties": {
+          "demotion_max_rejection_rate": {
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "title": "Demotion Max Rejection Rate",
+            "type": "number"
+          },
+          "owner_escalation_amount": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,12}|(?=[\\d.]{1,15}0*$)\\d{0,12}\\.\\d{0,2}0*$)",
+            "title": "Owner Escalation Amount",
+            "type": "string"
+          },
+          "owner_escalation_customer_count": {
+            "minimum": 1.0,
+            "title": "Owner Escalation Customer Count",
+            "type": "integer"
+          },
+          "promotion_min_sample": {
+            "minimum": 5.0,
+            "title": "Promotion Min Sample",
+            "type": "integer"
+          },
+          "promotion_min_unedited_rate": {
+            "maximum": 1.0,
+            "minimum": 0.5,
+            "title": "Promotion Min Unedited Rate",
+            "type": "number"
+          },
+          "quiet_hours_end": {
+            "format": "time",
+            "title": "Quiet Hours End",
+            "type": "string"
+          },
+          "quiet_hours_start": {
+            "format": "time",
+            "title": "Quiet Hours Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner_escalation_amount",
+          "owner_escalation_customer_count",
+          "promotion_min_sample",
+          "promotion_min_unedited_rate",
+          "demotion_max_rejection_rate",
+          "quiet_hours_start",
+          "quiet_hours_end"
+        ],
+        "title": "ApprovalSettings",
+        "type": "object"
+      },
+      "AuditPack": {
+        "properties": {
+          "company_label": {
+            "title": "Company Label",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AuditPackItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "period",
+          "company_label",
+          "created_at",
+          "items",
+          "sha256"
+        ],
+        "title": "AuditPack",
+        "type": "object"
+      },
+      "AuditPackItem": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description",
+          "sha256"
+        ],
+        "title": "AuditPackItem",
+        "type": "object"
+      },
+      "AuditPackListResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "packs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditPack"
+            },
+            "title": "Packs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "packs"
+        ],
+        "title": "AuditPackListResponse",
+        "type": "object"
+      },
+      "AuditPackRequest": {
+        "properties": {
+          "period": {
+            "description": "e.g. 2026 or 2026-Q3",
+            "pattern": "^\\d{4}(-Q[1-4])?$",
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "period"
+        ],
+        "title": "AuditPackRequest",
+        "type": "object"
+      },
+      "AuditPackResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "pack": {
+            "$ref": "#/components/schemas/AuditPack"
+          }
+        },
+        "required": [
+          "data_mode",
+          "pack"
+        ],
+        "title": "AuditPackResponse",
+        "type": "object"
+      },
+      "AutonomyChangeRequest": {
+        "properties": {
+          "action": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z_]+$",
+            "title": "Action",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/AutonomyLevel"
+          },
+          "max_amount": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Amount"
+          }
+        },
+        "required": [
+          "action",
+          "level"
+        ],
+        "title": "AutonomyChangeRequest",
+        "type": "object"
+      },
+      "AutonomyLevel": {
+        "enum": [
+          "L0",
+          "L1",
+          "L2",
+          "L3"
+        ],
+        "title": "AutonomyLevel",
+        "type": "string"
+      },
+      "BrandingSettings": {
+        "properties": {
+          "display_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "document_footer": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Footer"
+          }
+        },
+        "required": [
+          "display_name"
+        ],
+        "title": "BrandingSettings",
+        "type": "object"
+      },
+      "CashContribution": {
+        "properties": {
+          "at_risk_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "At Risk Total",
+            "type": "string"
+          },
+          "inflow_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Inflow Total",
+            "type": "string"
+          },
+          "outflow_total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Outflow Total",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "signal_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "role",
+          "inflow_total",
+          "outflow_total",
+          "at_risk_total",
+          "signal_ids"
+        ],
+        "title": "CashContribution",
+        "type": "object"
+      },
+      "CashSignal": {
+        "description": "One agent's expected money in or out. Risk signals annotate another signal.",
+        "properties": {
+          "affects": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affects"
+          },
+          "amount_myr": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount Myr",
+            "type": "string"
+          },
+          "best_day": {
+            "title": "Best Day",
+            "type": "integer"
+          },
+          "fx_rate": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fx Rate"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          },
+          "kind": {
+            "enum": [
+              "inflow",
+              "outflow",
+              "risk"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "likely_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Likely Day"
+          },
+          "probability": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Probability",
+            "type": "number"
+          },
+          "source_agent": {
+            "title": "Source Agent",
+            "type": "string"
+          },
+          "source_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Amount"
+          },
+          "source_currency": {
+            "title": "Source Currency",
+            "type": "string"
+          },
+          "worst_day": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worst Day"
+          }
+        },
+        "required": [
+          "id",
+          "source_agent",
+          "job_function",
+          "kind",
+          "label",
+          "amount_myr",
+          "source_currency",
+          "best_day",
+          "likely_day",
+          "worst_day",
+          "probability"
+        ],
+        "title": "CashSignal",
+        "type": "object"
+      },
+      "CashSignalsResponse": {
+        "properties": {
+          "by_agent": {
+            "items": {
+              "$ref": "#/components/schemas/AgentCashTotal"
+            },
+            "title": "By Agent",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "horizon_days": {
+            "title": "Horizon Days",
+            "type": "integer"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/CashSignal"
+            },
+            "title": "Signals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "horizon_days",
+          "signals",
+          "by_agent"
+        ],
+        "title": "CashSignalsResponse",
+        "type": "object"
+      },
+      "CompanyProfile": {
+        "properties": {
+          "company_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Company Name",
+            "type": "string"
+          },
+          "currency": {
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "fiscal_year_start_month": {
+            "maximum": 12.0,
+            "minimum": 1.0,
+            "title": "Fiscal Year Start Month",
+            "type": "integer"
+          },
+          "industry": {
+            "$ref": "#/components/schemas/IndustryTemplateId"
+          },
+          "languages": {
+            "items": {
+              "enum": [
+                "en",
+                "ms",
+                "zh"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Languages",
+            "type": "array"
+          },
+          "size": {
+            "enum": [
+              "micro",
+              "small",
+              "medium"
+            ],
+            "title": "Size",
+            "type": "string"
+          },
+          "state": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "State",
+            "type": "string"
+          },
+          "working_days": {
+            "items": {
+              "enum": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+                "sat",
+                "sun"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Working Days",
+            "type": "array"
+          }
+        },
+        "required": [
+          "company_name",
+          "industry",
+          "size",
+          "currency",
+          "fiscal_year_start_month",
+          "state",
+          "working_days",
+          "languages"
+        ],
+        "title": "CompanyProfile",
+        "type": "object"
+      },
+      "DataMode": {
+        "description": "Every contract response says whether its data is a canned stub or computed live.",
+        "enum": [
+          "stub",
+          "live"
+        ],
+        "title": "DataMode",
+        "type": "string"
+      },
+      "EventShift": {
+        "properties": {
+          "event_id": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Event Id",
+            "type": "string"
+          },
+          "shift_days": {
+            "maximum": 180.0,
+            "minimum": -90.0,
+            "title": "Shift Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "shift_days"
+        ],
+        "title": "EventShift",
+        "type": "object"
+      },
+      "EvidenceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "maxLength": 200,
+            "title": "Label",
+            "type": "string"
+          },
+          "source": {
+            "description": "e.g. einvoice:INV-1041",
+            "maxLength": 200,
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "source"
+        ],
+        "title": "EvidenceRef",
+        "type": "object"
+      },
+      "ExternalGrant": {
+        "properties": {
+          "allow_exact_values": {
+            "title": "Allow Exact Values",
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "grantee_email_token": {
+            "title": "Grantee Email Token",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "lender",
+              "auditor"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "share_path": {
+            "title": "Share Path",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "revoked",
+              "expired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "scope",
+          "grantee_email_token",
+          "expires_at",
+          "allow_exact_values",
+          "status",
+          "share_path"
+        ],
+        "title": "ExternalGrant",
+        "type": "object"
+      },
+      "ExternalGrantResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "grant": {
+            "$ref": "#/components/schemas/ExternalGrant"
+          }
+        },
+        "required": [
+          "data_mode",
+          "grant"
+        ],
+        "title": "ExternalGrantResponse",
+        "type": "object"
+      },
+      "ExternalGrantsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "grants": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalGrant"
+            },
+            "title": "Grants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "grants"
+        ],
+        "title": "ExternalGrantsResponse",
+        "type": "object"
+      },
+      "FinancingMatch": {
+        "properties": {
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "fit_score": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Fit Score",
+            "type": "integer"
+          },
+          "product": {
+            "$ref": "#/components/schemas/FinancingProduct"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleResult"
+            },
+            "title": "Rules",
+            "type": "array"
+          }
+        },
+        "required": [
+          "product",
+          "eligible",
+          "fit_score",
+          "rules",
+          "explanation"
+        ],
+        "title": "FinancingMatch",
+        "type": "object"
+      },
+      "FinancingMatchesResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "jurisdiction": {
+            "enum": [
+              "MY",
+              "CN"
+            ],
+            "title": "Jurisdiction",
+            "type": "string"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/FinancingMatch"
+            },
+            "title": "Matches",
+            "type": "array"
+          },
+          "shortfall_gap": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shortfall Gap"
+          }
+        },
+        "required": [
+          "data_mode",
+          "jurisdiction",
+          "disclaimer",
+          "shortfall_gap",
+          "matches"
+        ],
+        "title": "FinancingMatchesResponse",
+        "type": "object"
+      },
+      "FinancingPreferences": {
+        "properties": {
+          "excluded_categories": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Excluded Categories",
+            "type": "array"
+          },
+          "islamic_only": {
+            "default": false,
+            "title": "Islamic Only",
+            "type": "boolean"
+          },
+          "jurisdictions": {
+            "items": {
+              "enum": [
+                "MY",
+                "CN"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Jurisdictions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "jurisdictions"
+        ],
+        "title": "FinancingPreferences",
+        "type": "object"
+      },
+      "FinancingProduct": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "illustrative_terms": {
+            "title": "Illustrative Terms",
+            "type": "string"
+          },
+          "jurisdiction": {
+            "enum": [
+              "MY",
+              "CN"
+            ],
+            "title": "Jurisdiction",
+            "type": "string"
+          },
+          "last_verified": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Verified"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          }
+        },
+        "required": [
+          "id",
+          "jurisdiction",
+          "category",
+          "name",
+          "illustrative_terms",
+          "last_verified",
+          "source_url"
+        ],
+        "title": "FinancingProduct",
+        "type": "object"
+      },
+      "ForecastAlert": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "day": {
+            "title": "Day",
+            "type": "integer"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "severity",
+          "title",
+          "detail",
+          "day",
+          "date"
+        ],
+        "title": "ForecastAlert",
+        "type": "object"
+      },
+      "ForecastPoint": {
+        "properties": {
+          "best": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Best",
+            "type": "string"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "day": {
+            "title": "Day",
+            "type": "integer"
+          },
+          "likely": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Likely",
+            "type": "string"
+          },
+          "worst": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Worst",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day",
+          "date",
+          "best",
+          "likely",
+          "worst"
+        ],
+        "title": "ForecastPoint",
+        "type": "object"
+      },
+      "ForecastResponse": {
+        "properties": {
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastAlert"
+            },
+            "title": "Alerts",
+            "type": "array"
+          },
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "currency": {
+            "const": "MYR",
+            "default": "MYR",
+            "title": "Currency",
+            "type": "string"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/CashSignal"
+            },
+            "title": "Drivers",
+            "type": "array"
+          },
+          "horizon_days": {
+            "title": "Horizon Days",
+            "type": "integer"
+          },
+          "minimum_balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Minimum Balance",
+            "type": "string"
+          },
+          "opening_balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Opening Balance",
+            "type": "string"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Shortfall"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data_mode",
+          "as_of",
+          "horizon_days",
+          "opening_balance",
+          "minimum_balance",
+          "points",
+          "shortfall",
+          "alerts",
+          "drivers"
+        ],
+        "title": "ForecastResponse",
+        "type": "object"
+      },
+      "GrantRequest": {
+        "properties": {
+          "allow_exact_values": {
+            "default": false,
+            "title": "Allow Exact Values",
+            "type": "boolean"
+          },
+          "expires_in_days": {
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Expires In Days",
+            "type": "integer"
+          },
+          "grantee_email": {
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Grantee Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "grantee_email",
+          "expires_in_days"
+        ],
+        "title": "GrantRequest",
+        "type": "object"
+      },
+      "GuardrailEvent": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "blocked",
+              "quarantined",
+              "escalated"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          },
+          "owasp_code": {
+            "$ref": "#/components/schemas/OwaspAgenticRisk"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "agent_id",
+          "owasp_code",
+          "title",
+          "detail",
+          "outcome"
+        ],
+        "title": "GuardrailEvent",
+        "type": "object"
+      },
+      "GuardrailEventsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailEvent"
+            },
+            "title": "Events",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "events"
+        ],
+        "title": "GuardrailEventsResponse",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ImportMapping": {
+        "properties": {
+          "column_map": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Column Map",
+            "type": "object"
+          },
+          "header_fingerprint": {
+            "title": "Header Fingerprint",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "schema_name": {
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "schema_name",
+          "name",
+          "column_map",
+          "header_fingerprint"
+        ],
+        "title": "ImportMapping",
+        "type": "object"
+      },
+      "ImportMappingMatchRequest": {
+        "properties": {
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Headers",
+            "type": "array"
+          },
+          "schema_name": {
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_name",
+          "headers"
+        ],
+        "title": "ImportMappingMatchRequest",
+        "type": "object"
+      },
+      "ImportMappingRequest": {
+        "properties": {
+          "column_map": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "maxProperties": 40,
+            "minProperties": 1,
+            "title": "Column Map",
+            "type": "object"
+          },
+          "headers": {
+            "description": "Every column header in the sample file, mapped or not",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Headers",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "schema_name": {
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_name",
+          "name",
+          "headers",
+          "column_map"
+        ],
+        "title": "ImportMappingRequest",
+        "type": "object"
+      },
+      "ImportMappingResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/ImportMapping"
+          }
+        },
+        "required": [
+          "data_mode",
+          "mapping"
+        ],
+        "title": "ImportMappingResponse",
+        "type": "object"
+      },
+      "ImportMappingsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "mappings": {
+            "items": {
+              "$ref": "#/components/schemas/ImportMapping"
+            },
+            "title": "Mappings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "mappings"
+        ],
+        "title": "ImportMappingsResponse",
+        "type": "object"
+      },
+      "IndustryTemplate": {
+        "properties": {
+          "demo_data": {
+            "enum": [
+              "full",
+              "settings_only"
+            ],
+            "title": "Demo Data",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "designed_positions": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Designed Positions",
+            "type": "array"
+          },
+          "enabled_positions": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Enabled Positions",
+            "type": "array"
+          },
+          "id": {
+            "$ref": "#/components/schemas/IndustryTemplateId"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "enabled_positions",
+          "designed_positions",
+          "demo_data"
+        ],
+        "title": "IndustryTemplate",
+        "type": "object"
+      },
+      "IndustryTemplateId": {
+        "enum": [
+          "trading",
+          "services",
+          "manufacturing"
+        ],
+        "title": "IndustryTemplateId",
+        "type": "string"
+      },
+      "InvitationRequest": {
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "type": "string"
+          },
+          "job_functions": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "maxItems": 11,
+            "minItems": 1,
+            "title": "Job Functions",
+            "type": "array"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        },
+        "required": [
+          "email",
+          "role",
+          "job_functions"
+        ],
+        "title": "InvitationRequest",
+        "type": "object"
+      },
+      "JobFunction": {
+        "description": "The positions a person can hold. One person may hold several.",
+        "enum": [
+          "owner",
+          "operations",
+          "finance",
+          "sales",
+          "customer_service",
+          "marketing",
+          "procurement",
+          "logistics",
+          "production",
+          "hr",
+          "compliance"
+        ],
+        "title": "JobFunction",
+        "type": "string"
+      },
+      "JourneyAgent": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "autonomy_level": {
+            "$ref": "#/components/schemas/AutonomyLevel"
+          },
+          "build_status": {
+            "enum": [
+              "built",
+              "designed"
+            ],
+            "title": "Build Status",
+            "type": "string"
+          },
+          "estimated_hours_saved": {
+            "title": "Estimated Hours Saved",
+            "type": "number"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "override_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Override Rate"
+          }
+        },
+        "required": [
+          "agent_id",
+          "name",
+          "autonomy_level",
+          "build_status",
+          "override_rate",
+          "estimated_hours_saved"
+        ],
+        "title": "JourneyAgent",
+        "type": "object"
+      },
+      "JourneyFunction": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyAgent"
+            },
+            "title": "Agents",
+            "type": "array"
+          },
+          "job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          }
+        },
+        "required": [
+          "job_function",
+          "agents"
+        ],
+        "title": "JourneyFunction",
+        "type": "object"
+      },
+      "JourneyResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "estimate_note": {
+            "title": "Estimate Note",
+            "type": "string"
+          },
+          "functions": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyFunction"
+            },
+            "title": "Functions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "estimate_note",
+          "functions"
+        ],
+        "title": "JourneyResponse",
+        "type": "object"
+      },
+      "KillSwitchRequest": {
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None means every agent",
+            "title": "Agent Id"
+          },
+          "engaged": {
+            "title": "Engaged",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "engaged"
+        ],
+        "title": "KillSwitchRequest",
+        "type": "object"
+      },
+      "MemberResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "member": {
+            "$ref": "#/components/schemas/TeamMember"
+          }
+        },
+        "required": [
+          "data_mode",
+          "member"
+        ],
+        "title": "MemberResponse",
+        "type": "object"
+      },
+      "MemberUpdateRequest": {
+        "properties": {
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "job_functions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/JobFunction"
+                },
+                "maxItems": 11,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Functions"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "MemberUpdateRequest",
+        "type": "object"
+      },
+      "MessageTemplate": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "payment_reminder",
+              "customer_reply",
+              "supplier_query"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "en",
+              "ms",
+              "zh"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "placeholders": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Placeholders",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "approved"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tone": {
+            "enum": [
+              "formal",
+              "friendly"
+            ],
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "language",
+          "tone",
+          "body",
+          "placeholders",
+          "status"
+        ],
+        "title": "MessageTemplate",
+        "type": "object"
+      },
+      "MessageTemplateRequest": {
+        "properties": {
+          "body": {
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Body",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "payment_reminder",
+              "customer_reply",
+              "supplier_query"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "en",
+              "ms",
+              "zh"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "tone": {
+            "enum": [
+              "formal",
+              "friendly"
+            ],
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "language",
+          "tone",
+          "body"
+        ],
+        "title": "MessageTemplateRequest",
+        "type": "object"
+      },
+      "MessageTemplateResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "template": {
+            "$ref": "#/components/schemas/MessageTemplate"
+          }
+        },
+        "required": [
+          "data_mode",
+          "template"
+        ],
+        "title": "MessageTemplateResponse",
+        "type": "object"
+      },
+      "MessageTemplatesResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/MessageTemplate"
+            },
+            "title": "Templates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "templates"
+        ],
+        "title": "MessageTemplatesResponse",
+        "type": "object"
+      },
+      "OwaspAgenticRisk": {
+        "description": "OWASP Top 10 for Agentic Applications (2026).",
+        "enum": [
+          "ASI01",
+          "ASI02",
+          "ASI03",
+          "ASI04",
+          "ASI05",
+          "ASI06",
+          "ASI07",
+          "ASI08",
+          "ASI09",
+          "ASI10"
+        ],
+        "title": "OwaspAgenticRisk",
+        "type": "string"
+      },
+      "Passport": {
+        "additionalProperties": false,
+        "properties": {
+          "anchor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnchorRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "audit_entry_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Entry Id"
+          },
+          "company_label": {
+            "maxLength": 200,
+            "title": "Company Label",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 64,
+            "title": "Id",
+            "type": "string"
+          },
+          "issued_at": {
+            "format": "date-time",
+            "title": "Issued At",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/PassportMetric"
+            },
+            "maxItems": 50,
+            "title": "Metrics",
+            "type": "array"
+          },
+          "sha256": {
+            "maxLength": 64,
+            "title": "Sha256",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "company_label",
+          "issued_at",
+          "metrics",
+          "sha256",
+          "audit_entry_id",
+          "anchor"
+        ],
+        "title": "Passport",
+        "type": "object"
+      },
+      "PassportListResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "passports": {
+            "items": {
+              "$ref": "#/components/schemas/Passport"
+            },
+            "title": "Passports",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "passports"
+        ],
+        "title": "PassportListResponse",
+        "type": "object"
+      },
+      "PassportMetric": {
+        "additionalProperties": false,
+        "description": "Strict: a document submitted for verification may carry nothing that was not issued.",
+        "properties": {
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 20,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "key": {
+            "maxLength": 64,
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 200,
+            "title": "Label",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 500,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "evidence"
+        ],
+        "title": "PassportMetric",
+        "type": "object"
+      },
+      "PassportResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "passport": {
+            "$ref": "#/components/schemas/Passport"
+          }
+        },
+        "required": [
+          "data_mode",
+          "passport"
+        ],
+        "title": "PassportResponse",
+        "type": "object"
+      },
+      "PositionSetting": {
+        "properties": {
+          "display_name": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          }
+        },
+        "required": [
+          "job_function",
+          "enabled",
+          "display_name"
+        ],
+        "title": "PositionSetting",
+        "type": "object"
+      },
+      "PositionSummary": {
+        "properties": {
+          "agent_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Agent Ids",
+            "type": "array"
+          },
+          "build_status": {
+            "enum": [
+              "built",
+              "designed"
+            ],
+            "title": "Build Status",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          }
+        },
+        "required": [
+          "job_function",
+          "display_name",
+          "enabled",
+          "build_status",
+          "agent_ids"
+        ],
+        "title": "PositionSummary",
+        "type": "object"
+      },
+      "PositionWorkspace": {
+        "properties": {
+          "agents": {
+            "items": {
+              "$ref": "#/components/schemas/AgentCard"
+            },
+            "title": "Agents",
+            "type": "array"
+          },
+          "build_status": {
+            "enum": [
+              "built",
+              "designed"
+            ],
+            "title": "Build Status",
+            "type": "string"
+          },
+          "cash_contribution": {
+            "$ref": "#/components/schemas/CashContribution"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "inbox_count": {
+            "title": "Inbox Count",
+            "type": "integer"
+          },
+          "job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          },
+          "skill_results": {
+            "items": {
+              "$ref": "#/components/schemas/SkillResult"
+            },
+            "title": "Skill Results",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "job_function",
+          "display_name",
+          "build_status",
+          "agents",
+          "skill_results",
+          "cash_contribution",
+          "inbox_count"
+        ],
+        "title": "PositionWorkspace",
+        "type": "object"
+      },
+      "PositionsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionSummary"
+            },
+            "title": "Positions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "positions"
+        ],
+        "title": "PositionsResponse",
+        "type": "object"
+      },
+      "PostureMetric": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "good",
+              "attention",
+              "risk"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "status",
+          "detail"
+        ],
+        "title": "PostureMetric",
+        "type": "object"
+      },
+      "PostureResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/PostureMetric"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "recent_events": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailEvent"
+            },
+            "title": "Recent Events",
+            "type": "array"
+          },
+          "score": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data_mode",
+          "score",
+          "metrics",
+          "recent_events"
+        ],
+        "title": "PostureResponse",
+        "type": "object"
+      },
+      "PublicSignal": {
+        "properties": {
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "google_maps",
+              "shopee",
+              "grabfood",
+              "lazada"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "watch",
+              "risk"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "description": "True for demo data; real signals come only from official APIs or owner exports",
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "trend": {
+            "title": "Trend",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "metric",
+          "value",
+          "trend",
+          "status",
+          "synthetic"
+        ],
+        "title": "PublicSignal",
+        "type": "object"
+      },
+      "ReviewAction": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "approvals": {
+            "description": "L3: the maker's approval, then the checker's",
+            "items": {
+              "$ref": "#/components/schemas/ReviewApproval"
+            },
+            "title": "Approvals",
+            "type": "array"
+          },
+          "autonomy_level": {
+            "$ref": "#/components/schemas/AutonomyLevel"
+          },
+          "can_decide": {
+            "default": false,
+            "description": "Whether the requesting person may approve this item now",
+            "title": "Can Decide",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reviewer_job_function": {
+            "$ref": "#/components/schemas/JobFunction"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "awaiting_second_approval",
+              "approved",
+              "edited",
+              "rejected"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent_id",
+          "title",
+          "summary",
+          "autonomy_level",
+          "reviewer_job_function",
+          "status",
+          "amount",
+          "draft",
+          "evidence",
+          "created_at"
+        ],
+        "title": "ReviewAction",
+        "type": "object"
+      },
+      "ReviewApproval": {
+        "properties": {
+          "approved_at": {
+            "format": "date-time",
+            "title": "Approved At",
+            "type": "string"
+          },
+          "approver_id": {
+            "title": "Approver Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "approver_id",
+          "approved_at"
+        ],
+        "title": "ReviewApproval",
+        "type": "object"
+      },
+      "ReviewDecisionRequest": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "edit",
+              "reject"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "edited_draft": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited Draft"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "ReviewDecisionRequest",
+        "type": "object"
+      },
+      "ReviewDecisionResponse": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/ReviewAction"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          }
+        },
+        "required": [
+          "data_mode",
+          "action"
+        ],
+        "title": "ReviewDecisionResponse",
+        "type": "object"
+      },
+      "ReviewInboxResponse": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewAction"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "job_functions": {
+            "description": "Positions this person reviews; Compliance also sees every item, read-only",
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Job Functions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "job_functions",
+          "actions"
+        ],
+        "title": "ReviewInboxResponse",
+        "type": "object"
+      },
+      "RollbackRequest": {
+        "properties": {
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "RollbackRequest",
+        "type": "object"
+      },
+      "RuleResult": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule",
+          "passed",
+          "detail",
+          "evidence"
+        ],
+        "title": "RuleResult",
+        "type": "object"
+      },
+      "ScenarioRequest": {
+        "properties": {
+          "as_of": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "horizon_days": {
+            "default": 90,
+            "title": "Horizon Days",
+            "type": "integer"
+          },
+          "shifts": {
+            "items": {
+              "$ref": "#/components/schemas/EventShift"
+            },
+            "maxItems": 50,
+            "title": "Shifts",
+            "type": "array"
+          }
+        },
+        "title": "ScenarioRequest",
+        "type": "object"
+      },
+      "ScopedAutonomy": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/AutonomyLevel"
+          },
+          "max_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Amount"
+          }
+        },
+        "required": [
+          "action",
+          "level"
+        ],
+        "title": "ScopedAutonomy",
+        "type": "object"
+      },
+      "ScoreFactor": {
+        "properties": {
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "max_points": {
+            "title": "Max Points",
+            "type": "integer"
+          },
+          "points": {
+            "title": "Points",
+            "type": "integer"
+          },
+          "reason": {
+            "description": "Which band the input falls in and why it earns these points",
+            "title": "Reason",
+            "type": "string"
+          },
+          "value": {
+            "description": "The input as a person reads it, e.g. '72%'",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "points",
+          "max_points",
+          "reason",
+          "evidence"
+        ],
+        "title": "ScoreFactor",
+        "type": "object"
+      },
+      "ScorecardResponse": {
+        "properties": {
+          "base_points": {
+            "title": "Base Points",
+            "type": "integer"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "disclaimer": {
+            "title": "Disclaimer",
+            "type": "string"
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreFactor"
+            },
+            "title": "Factors",
+            "type": "array"
+          },
+          "grade": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E"
+            ],
+            "title": "Grade",
+            "type": "string"
+          },
+          "max_score": {
+            "title": "Max Score",
+            "type": "integer"
+          },
+          "method": {
+            "description": "expert_weights: published bins set by hand; calibrated: fitted on outcome data",
+            "enum": [
+              "expert_weights",
+              "calibrated"
+            ],
+            "title": "Method",
+            "type": "string"
+          },
+          "method_note": {
+            "title": "Method Note",
+            "type": "string"
+          },
+          "min_score": {
+            "title": "Min Score",
+            "type": "integer"
+          },
+          "public_data_note": {
+            "title": "Public Data Note",
+            "type": "string"
+          },
+          "public_signals": {
+            "items": {
+              "$ref": "#/components/schemas/PublicSignal"
+            },
+            "title": "Public Signals",
+            "type": "array"
+          },
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data_mode",
+          "method",
+          "method_note",
+          "score",
+          "min_score",
+          "max_score",
+          "grade",
+          "base_points",
+          "factors",
+          "public_signals",
+          "public_data_note",
+          "disclaimer"
+        ],
+        "title": "ScorecardResponse",
+        "type": "object"
+      },
+      "SecuritySettings": {
+        "properties": {
+          "mfa_required_roles": {
+            "items": {
+              "$ref": "#/components/schemas/UserRole"
+            },
+            "title": "Mfa Required Roles",
+            "type": "array"
+          },
+          "session_idle_minutes": {
+            "maximum": 60.0,
+            "minimum": 5.0,
+            "title": "Session Idle Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mfa_required_roles",
+          "session_idle_minutes"
+        ],
+        "title": "SecuritySettings",
+        "type": "object"
+      },
+      "SettingsChange": {
+        "properties": {
+          "area": {
+            "enum": [
+              "profile",
+              "positions",
+              "approvals",
+              "alerts",
+              "financing",
+              "security",
+              "branding",
+              "rollback"
+            ],
+            "title": "Area",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "preview": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Preview",
+            "type": "array"
+          },
+          "requires_approval": {
+            "title": "Requires Approval",
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "applied",
+              "pending_approval",
+              "rejected"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "area",
+          "status",
+          "requires_approval",
+          "version",
+          "preview"
+        ],
+        "title": "SettingsChange",
+        "type": "object"
+      },
+      "SettingsChangeRequest": {
+        "properties": {
+          "area": {
+            "enum": [
+              "profile",
+              "positions",
+              "approvals",
+              "alerts",
+              "financing",
+              "security",
+              "branding"
+            ],
+            "title": "Area",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "area",
+          "value"
+        ],
+        "title": "SettingsChangeRequest",
+        "type": "object"
+      },
+      "SettingsChangeResponse": {
+        "properties": {
+          "change": {
+            "$ref": "#/components/schemas/SettingsChange"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/TenantSettings"
+          }
+        },
+        "required": [
+          "data_mode",
+          "change",
+          "settings"
+        ],
+        "title": "SettingsChangeResponse",
+        "type": "object"
+      },
+      "SettingsChangesResponse": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/SettingsChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          }
+        },
+        "required": [
+          "data_mode",
+          "changes"
+        ],
+        "title": "SettingsChangesResponse",
+        "type": "object"
+      },
+      "SettingsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/TenantSettings"
+          },
+          "template": {
+            "$ref": "#/components/schemas/IndustryTemplateId"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data_mode",
+          "version",
+          "template",
+          "settings"
+        ],
+        "title": "SettingsResponse",
+        "type": "object"
+      },
+      "SettingsSchemaResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "json_schema": {
+            "additionalProperties": true,
+            "title": "Json Schema",
+            "type": "object"
+          }
+        },
+        "required": [
+          "data_mode",
+          "json_schema"
+        ],
+        "title": "SettingsSchemaResponse",
+        "type": "object"
+      },
+      "Shortfall": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "day": {
+            "title": "Day",
+            "type": "integer"
+          },
+          "gap": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gap",
+            "type": "string"
+          },
+          "likely_balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Likely Balance",
+            "type": "string"
+          },
+          "minimum_balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Minimum Balance",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day",
+          "date",
+          "likely_balance",
+          "minimum_balance",
+          "gap"
+        ],
+        "title": "Shortfall",
+        "type": "object"
+      },
+      "SignOutResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "sessions_revoked": {
+            "title": "Sessions Revoked",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data_mode",
+          "user_id",
+          "sessions_revoked"
+        ],
+        "title": "SignOutResponse",
+        "type": "object"
+      },
+      "SkillResult": {
+        "properties": {
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "attention",
+              "risk",
+              "planned"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "skill_id",
+          "title",
+          "value",
+          "summary",
+          "status",
+          "evidence"
+        ],
+        "title": "SkillResult",
+        "type": "object"
+      },
+      "TeamMember": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "email_masked": {
+            "title": "Email Masked",
+            "type": "string"
+          },
+          "job_functions": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Job Functions",
+            "type": "array"
+          },
+          "last_active_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Active At"
+          },
+          "mfa_enrolled": {
+            "title": "Mfa Enrolled",
+            "type": "boolean"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "display_name",
+          "email_masked",
+          "role",
+          "job_functions",
+          "active",
+          "mfa_enrolled",
+          "last_active_at"
+        ],
+        "title": "TeamMember",
+        "type": "object"
+      },
+      "TeamResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMember"
+            },
+            "title": "Members",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "members"
+        ],
+        "title": "TeamResponse",
+        "type": "object"
+      },
+      "TemplatePreview": {
+        "properties": {
+          "data_kept": {
+            "title": "Data Kept",
+            "type": "boolean"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "designed_positions": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Designed Positions",
+            "type": "array"
+          },
+          "positions_added": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Positions Added",
+            "type": "array"
+          },
+          "positions_removed": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "title": "Positions Removed",
+            "type": "array"
+          },
+          "template_id": {
+            "$ref": "#/components/schemas/IndustryTemplateId"
+          }
+        },
+        "required": [
+          "data_mode",
+          "template_id",
+          "positions_added",
+          "positions_removed",
+          "designed_positions",
+          "data_kept"
+        ],
+        "title": "TemplatePreview",
+        "type": "object"
+      },
+      "TemplatesResponse": {
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/IndustryTemplateId"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/IndustryTemplate"
+            },
+            "title": "Templates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data_mode",
+          "current",
+          "templates"
+        ],
+        "title": "TemplatesResponse",
+        "type": "object"
+      },
+      "TenantSettings": {
+        "properties": {
+          "alerts": {
+            "$ref": "#/components/schemas/AlertSettings"
+          },
+          "approvals": {
+            "$ref": "#/components/schemas/ApprovalSettings"
+          },
+          "branding": {
+            "$ref": "#/components/schemas/BrandingSettings"
+          },
+          "financing": {
+            "$ref": "#/components/schemas/FinancingPreferences"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionSetting"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/CompanyProfile"
+          },
+          "security": {
+            "$ref": "#/components/schemas/SecuritySettings"
+          }
+        },
+        "required": [
+          "profile",
+          "positions",
+          "approvals",
+          "alerts",
+          "financing",
+          "security",
+          "branding"
+        ],
+        "title": "TenantSettings",
+        "type": "object"
+      },
+      "UserRole": {
+        "enum": [
+          "general_employee",
+          "finance_ops",
+          "owner_director",
+          "compliance"
+        ],
+        "title": "UserRole",
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VerificationResult": {
+        "properties": {
+          "anchor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnchorRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "chain_intact": {
+            "title": "Chain Intact",
+            "type": "boolean"
+          },
+          "computed_sha256": {
+            "title": "Computed Sha256",
+            "type": "string"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "expected_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Sha256"
+          },
+          "mismatched_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Mismatched Fields",
+            "type": "array"
+          },
+          "passport_id": {
+            "title": "Passport Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "mismatch",
+              "unknown_passport"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data_mode",
+          "passport_id",
+          "status",
+          "expected_sha256",
+          "computed_sha256",
+          "chain_intact",
+          "anchor",
+          "mismatched_fields"
+        ],
+        "title": "VerificationResult",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "FinBrain OS Topic E contract",
+    "version": "2026-10-09"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/agents": {
+      "get": {
+        "operationId": "list_agents_agents_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Agents",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/agents/journey": {
+      "get": {
+        "operationId": "journey_agents_journey_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Journey",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/agents/kill-switch": {
+      "post": {
+        "operationId": "kill_switch_agents_kill_switch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KillSwitchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Kill Switch",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/agents/runs": {
+      "post": {
+        "operationId": "start_run_agents_runs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRunCreated"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Start Run",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/agents/runs/{run_id}/events": {
+      "get": {
+        "operationId": "run_events_agents_runs__run_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "itemSchema": {
+                  "properties": {
+                    "data": {
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "#/components/schemas/AgentRunEvent"
+                      },
+                      "type": "string"
+                    },
+                    "event": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "retry": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Server-sent events; each data line is one AgentRunEvent"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Run Events",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/agents/{agent_id}/autonomy": {
+      "post": {
+        "operationId": "change_autonomy_agents__agent_id__autonomy_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "agent_id",
+            "required": true,
+            "schema": {
+              "title": "Agent Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutonomyChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCardResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change Autonomy",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/audit-packs": {
+      "get": {
+        "operationId": "list_audit_packs_audit_packs_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPackListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Audit Packs",
+        "tags": [
+          "passports"
+        ]
+      },
+      "post": {
+        "operationId": "prepare_audit_pack_audit_packs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditPackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Prepare Audit Pack",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/audit-packs/{pack_id}": {
+      "get": {
+        "operationId": "get_audit_pack_audit_packs__pack_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "title": "Pack Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Audit Pack",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/audit-packs/{pack_id}/grants": {
+      "get": {
+        "operationId": "list_auditor_grants_audit_packs__pack_id__grants_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "title": "Pack Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Auditor Grants",
+        "tags": [
+          "passports"
+        ]
+      },
+      "post": {
+        "operationId": "grant_auditor_audit_packs__pack_id__grants_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "title": "Pack Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Grant Auditor",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/audit-packs/{pack_id}/grants/{grant_id}": {
+      "delete": {
+        "operationId": "revoke_auditor_audit_packs__pack_id__grants__grant_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "title": "Pack Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "grant_id",
+            "required": true,
+            "schema": {
+              "title": "Grant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Revoke Auditor",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/auditor/packs/{grant_token}": {
+      "get": {
+        "description": "Public in the stub. Workstream B1 adds the expiring grant check.",
+        "operationId": "auditor_pack_auditor_packs__grant_token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "grant_token",
+            "required": true,
+            "schema": {
+              "title": "Grant Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Auditor Pack",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/cashflow/forecast": {
+      "get": {
+        "operationId": "cashflow_forecast_cashflow_forecast_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "horizon_days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "title": "Horizon Days",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cashflow Forecast",
+        "tags": [
+          "cashflow"
+        ]
+      }
+    },
+    "/cashflow/scenarios": {
+      "post": {
+        "operationId": "cashflow_scenario_cashflow_scenarios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cashflow Scenario",
+        "tags": [
+          "cashflow"
+        ]
+      }
+    },
+    "/cashflow/signals": {
+      "get": {
+        "operationId": "cashflow_signals_cashflow_signals_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "horizon_days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "title": "Horizon Days",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "job_function",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/JobFunction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Job Function"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashSignalsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cashflow Signals",
+        "tags": [
+          "cashflow"
+        ]
+      }
+    },
+    "/financing/application-packs": {
+      "post": {
+        "operationId": "create_application_pack_financing_application_packs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationPackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationPackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Application Pack",
+        "tags": [
+          "financing"
+        ]
+      }
+    },
+    "/financing/matches": {
+      "get": {
+        "operationId": "financing_matches_financing_matches_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "jurisdiction",
+            "required": false,
+            "schema": {
+              "default": "MY",
+              "enum": [
+                "MY",
+                "CN"
+              ],
+              "title": "Jurisdiction",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancingMatchesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Financing Matches",
+        "tags": [
+          "financing"
+        ]
+      }
+    },
+    "/financing/scorecard": {
+      "get": {
+        "description": "A points scorecard a lender can read line by line, with public signals as one factor.",
+        "operationId": "financing_scorecard_financing_scorecard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScorecardResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Financing Scorecard",
+        "tags": [
+          "financing"
+        ]
+      }
+    },
+    "/lender/passports/{grant_token}": {
+      "get": {
+        "description": "Public in the stub. Workstream B1 adds the expiring grant and, in Wave 2, email codes.",
+        "operationId": "lender_passport_lender_passports__grant_token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "grant_token",
+            "required": true,
+            "schema": {
+              "title": "Grant Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Lender Passport",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/lender/verify": {
+      "post": {
+        "description": "Public: anyone holding a Passport document can check it against the audit chain.",
+        "operationId": "verify_passport_lender_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Passport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Passport",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/passports": {
+      "get": {
+        "operationId": "list_passports_passports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Passports",
+        "tags": [
+          "passports"
+        ]
+      },
+      "post": {
+        "operationId": "issue_passport_passports_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Issue Passport",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/passports/{passport_id}": {
+      "get": {
+        "operationId": "get_passport_passports__passport_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "passport_id",
+            "required": true,
+            "schema": {
+              "title": "Passport Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Passport",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/passports/{passport_id}/grants": {
+      "get": {
+        "operationId": "list_lender_grants_passports__passport_id__grants_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "passport_id",
+            "required": true,
+            "schema": {
+              "title": "Passport Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Lender Grants",
+        "tags": [
+          "passports"
+        ]
+      },
+      "post": {
+        "operationId": "grant_lender_passports__passport_id__grants_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "passport_id",
+            "required": true,
+            "schema": {
+              "title": "Passport Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Grant Lender",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/passports/{passport_id}/grants/{grant_id}": {
+      "delete": {
+        "operationId": "revoke_lender_passports__passport_id__grants__grant_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "passport_id",
+            "required": true,
+            "schema": {
+              "title": "Passport Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "grant_id",
+            "required": true,
+            "schema": {
+              "title": "Grant Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalGrantResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Revoke Lender",
+        "tags": [
+          "passports"
+        ]
+      }
+    },
+    "/positions": {
+      "get": {
+        "operationId": "list_positions_positions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Positions",
+        "tags": [
+          "positions"
+        ]
+      }
+    },
+    "/positions/{job_function}/workspace": {
+      "get": {
+        "operationId": "position_workspace_positions__job_function__workspace_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_function",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/JobFunction"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionWorkspace"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Position Workspace",
+        "tags": [
+          "positions"
+        ]
+      }
+    },
+    "/review-inbox": {
+      "get": {
+        "operationId": "review_inbox_review_inbox_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "job_function",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/JobFunction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Job Function"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewInboxResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Review Inbox",
+        "tags": [
+          "review-inbox"
+        ]
+      }
+    },
+    "/review-inbox/{action_id}/decision": {
+      "post": {
+        "operationId": "decide_review_inbox__action_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "title": "Action Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDecisionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Decide",
+        "tags": [
+          "review-inbox"
+        ]
+      }
+    },
+    "/settings": {
+      "get": {
+        "operationId": "get_settings_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Settings",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/alert-rules": {
+      "get": {
+        "operationId": "list_rules_settings_alert_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRulesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Rules",
+        "tags": [
+          "settings"
+        ]
+      },
+      "post": {
+        "operationId": "create_rule_settings_alert_rules_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertRuleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertRuleResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Rule",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/changes": {
+      "get": {
+        "operationId": "list_changes_settings_changes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "applied",
+                    "pending_approval",
+                    "rejected"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Changes",
+        "tags": [
+          "settings"
+        ]
+      },
+      "post": {
+        "operationId": "propose_change_settings_changes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Propose Change",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/changes/{change_id}/approve": {
+      "post": {
+        "operationId": "approve_change_settings_changes__change_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "change_id",
+            "required": true,
+            "schema": {
+              "title": "Change Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Approve Change",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/changes/{change_id}/reject": {
+      "post": {
+        "operationId": "reject_change_settings_changes__change_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "change_id",
+            "required": true,
+            "schema": {
+              "title": "Change Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reject Change",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/import-mappings": {
+      "get": {
+        "operationId": "list_mappings_settings_import_mappings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Mappings",
+        "tags": [
+          "settings"
+        ]
+      },
+      "post": {
+        "operationId": "create_mapping_settings_import_mappings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportMappingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Mapping",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/import-mappings/match": {
+      "post": {
+        "operationId": "match_mapping_settings_import_mappings_match_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportMappingMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Match Mapping",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/message-templates": {
+      "get": {
+        "operationId": "list_templates_settings_message_templates_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplatesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Templates",
+        "tags": [
+          "settings"
+        ]
+      },
+      "post": {
+        "operationId": "create_template_settings_message_templates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Template",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/message-templates/{template_id}/approve": {
+      "post": {
+        "operationId": "approve_template_settings_message_templates__template_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageTemplateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Approve Template",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/rollback": {
+      "post": {
+        "operationId": "rollback_settings_rollback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rollback",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/schema": {
+      "get": {
+        "operationId": "get_settings_schema_settings_schema_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsSchemaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Settings Schema",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/templates": {
+      "get": {
+        "operationId": "list_templates_settings_templates_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplatesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Templates",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/templates/{template_id}/apply": {
+      "post": {
+        "operationId": "apply_template_settings_templates__template_id__apply_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IndustryTemplateId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsChangeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Apply Template",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/settings/templates/{template_id}/preview": {
+      "post": {
+        "operationId": "preview_template_settings_templates__template_id__preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IndustryTemplateId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplatePreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Template",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/team/invitations": {
+      "post": {
+        "operationId": "invite_member_team_invitations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Invite Member",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/team/members": {
+      "get": {
+        "operationId": "team_members_team_members_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Team Members",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/team/members/{user_id}": {
+      "patch": {
+        "operationId": "update_member_team_members__user_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Member",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/team/members/{user_id}/sign-out": {
+      "post": {
+        "operationId": "sign_out_member_team_members__user_id__sign_out_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignOutResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Sign Out Member",
+        "tags": [
+          "team"
+        ]
+      }
+    },
+    "/trust/guardrail-events": {
+      "get": {
+        "operationId": "guardrail_events_trust_guardrail_events_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardrailEventsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Guardrail Events",
+        "tags": [
+          "trust"
+        ]
+      }
+    },
+    "/trust/posture": {
+      "get": {
+        "operationId": "posture_trust_posture_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostureResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Posture",
+        "tags": [
+          "trust"
+        ]
+      }
+    }
+  }
+}

@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.models import TokenizedContent
 from app.schemas import CanonicalIngestionRecord, IngestionResult, ProcessingStatus
 from app.security.detect import contains_known_pii, detect_spans
+from app.security.guardrails import content_risk, record_event
 from app.security.protection import protect_metadata, protect_text
 from app.security.tokenize import persist_vault_entries, tokenize_record
 from app.services.embeddings import embed_text
@@ -19,7 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 def _protect_text(
-    text: str, source_record_id: str, tenant_id: str, db: Session | None = None
+    text: str,
+    source_record_id: str,
+    tenant_id: str,
+    db: Session | None = None,
+    *,
+    data_class: str = "customer_personal",
 ):
     """Compatibility seam for tests and connector-specific detector injection."""
     return protect_text(
@@ -29,6 +35,7 @@ def _protect_text(
         db,
         spans=detect_spans(text),
         tokenizer=tokenize_record,
+        data_class=data_class,
     )
 
 
@@ -36,11 +43,22 @@ def preview_canonical_record(record: CanonicalIngestionRecord) -> str:
     """Return protected text without persistence or external model calls."""
     if contains_known_pii(record.source_record_id):
         raise ValueError("source_record_id must be an opaque identifier without recognizable PII")
+    data_class = _data_class(record)
     protected_text, _entries = _protect_text(
-        record.text, record.source_record_id, record.tenant_id
+        record.text, record.source_record_id, record.tenant_id, data_class=data_class
     )
-    protect_metadata(record.metadata, record.source_record_id, record.tenant_id)
+    protect_metadata(
+        record.metadata, record.source_record_id, record.tenant_id, data_class=data_class
+    )
     return protected_text
+
+
+def _data_class(record: CanonicalIngestionRecord) -> str:
+    return (
+        "employee_personal"
+        if record.record_type in {"payroll_line", "employee_record", "leave_record"}
+        else "customer_personal"
+    )
 
 
 def _content_fingerprint(record: CanonicalIngestionRecord) -> str:
@@ -88,6 +106,8 @@ def ingest_canonical_record(
 ) -> IngestionResult:
     """Compatibility wrapper around protected persistence and optional enrichment."""
     result = protect_canonical_record(db, record, refresh=refresh)
+    if result.processing_status == ProcessingStatus.QUARANTINED:
+        return result
     if not enrich or (
         not result.created
         and not result.refreshed
@@ -109,11 +129,19 @@ def protect_canonical_record(
     refresh: bool = False,
 ) -> IngestionResult:
     """Protect and commit source content without making any external model call."""
+    context = db.info.get("finbrain_rls_context", {})
+    if context.get("database_role") == "finbrain_worker" and not context.get("tenant_id"):
+        from app.db import set_worker_context
+
+        set_worker_context(db, actor_ref=context["actor_ref"], tenant_id=record.tenant_id)
     if contains_known_pii(record.source_record_id):
         raise ValueError("source_record_id must be an opaque identifier without recognizable PII")
     fingerprint = _content_fingerprint(record)
     existing = db.scalar(
-        select(TokenizedContent).where(TokenizedContent.source_record_id == record.source_record_id)
+        select(TokenizedContent).where(
+            TokenizedContent.source_record_id == record.source_record_id,
+            TokenizedContent.tenant_id == record.tenant_id,
+        )
     )
     if (
         existing
@@ -124,10 +152,14 @@ def protect_canonical_record(
         return _result(existing, created=False, refreshed=False)
 
     protected_text, content_entries = _protect_text(
-        record.text, record.source_record_id, record.tenant_id, db
+        record.text, record.source_record_id, record.tenant_id, db, data_class=_data_class(record)
     )
     protected_metadata, metadata_entries = protect_metadata(
-        record.metadata, record.source_record_id, record.tenant_id, db
+        record.metadata,
+        record.source_record_id,
+        record.tenant_id,
+        db,
+        data_class=_data_class(record),
     )
     entries = {entry.token: entry for entry in content_entries + metadata_entries}
     persist_vault_entries(db, list(entries.values()))
@@ -147,14 +179,24 @@ def protect_canonical_record(
     row.content_fingerprint = fingerprint
     row.safe_metadata = protected_metadata
     row.structured_summary = None
-    row.processing_status = ProcessingStatus.PROTECTED
+    risk = content_risk(record.text + "\n" + "\n".join(record.metadata.values()))
+    row.processing_status = ProcessingStatus.QUARANTINED if risk else ProcessingStatus.PROTECTED
     row.processing_error = None
     row.enrichment_mode = None
     if created:
         db.add(row)
+    if risk:
+        record_event(
+            db,
+            record.tenant_id,
+            "ASI01" if risk == "prompt_injection" else "ASI09",
+            "Untrusted content quarantined",
+            f"Ingestion policy matched {risk}; excluded from models and skills.",
+            "quarantined",
+        )
     db.commit()
 
-    if get_settings().customer_intelligence_enabled:
+    if not risk and get_settings().customer_intelligence_enabled:
         try:
             from app.services.entity_resolution import link_record_from_known_aliases
 
@@ -182,6 +224,8 @@ def enrich_protected_record(
     )
     if row is None:
         raise ValueError("Protected record not found")
+    if row.processing_status == ProcessingStatus.QUARANTINED:
+        return _result(row, created=created, refreshed=refreshed)
     protected_text = row.content_text
     if contains_known_pii(protected_text):
         raise ValueError("Refusing to enrich a record containing recognized PII")
@@ -207,9 +251,7 @@ def enrich_protected_record(
     except Exception:
         db.rollback()
         row = db.scalar(
-            select(TokenizedContent).where(
-                TokenizedContent.source_record_id == source_record_id
-            )
+            select(TokenizedContent).where(TokenizedContent.source_record_id == source_record_id)
         )
         if row is None:
             raise RuntimeError("Protected record disappeared during enrichment") from None

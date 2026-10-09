@@ -14,7 +14,7 @@ def _change(area: str, value) -> object:
 def test_settings_start_from_the_trading_template():
     body = client_for(router, role=UserRole.FINANCE_OPS).get("/settings").json()
 
-    assert (body["data_mode"], body["version"], body["template"]) == ("stub", 3, "trading")
+    assert (body["data_mode"], body["version"], body["template"]) == ("live", 3, "trading")
     settings = body["settings"]
     assert settings["alerts"]["minimum_cash_balance"] == "50000.00"
     production = next(p for p in settings["positions"] if p["job_function"] == "production")
@@ -162,7 +162,7 @@ def test_rollback_restores_an_earlier_version_as_a_new_version():
     client = client_for(router)
 
     restored = client.post("/settings/rollback", json={"version": 1}).json()
-    current = client.post("/settings/rollback", json={"version": 3})
+    current = client.post("/settings/rollback", json={"version": 4})
     unknown = client.post("/settings/rollback", json={"version": 9})
 
     assert (restored["change"]["status"], restored["change"]["version"]) == ("applied", 4)
@@ -173,18 +173,10 @@ def test_rollback_restores_an_earlier_version_as_a_new_version():
     assert unknown.status_code == 409
 
 
-def test_rolling_back_security_settings_waits_for_compliance():
-    rollback = client_for(router).post("/settings/rollback", json={"version": 2}).json()
-    change = rollback["change"]
-    approved = client_for(router, role=UserRole.COMPLIANCE).post(
-        f"/settings/changes/{change['id']}/approve"
-    )
-
-    assert (change["status"], change["requires_approval"]) == ("pending_approval", True)
-    assert "security.session_idle_minutes: 30 → 45" in change["preview"]
-    assert rollback["settings"]["security"]["session_idle_minutes"] == 30
-    assert rollback["settings"]["alerts"]["minimum_cash_balance"] == "50000.00"
-    assert approved.json()["change"]["status"] == "applied"
+def test_rollback_cannot_weaken_session_idle_floor():
+    response = client_for(router).post("/settings/rollback", json={"version": 2})
+    assert (response.status_code, response.json()["detail"]) == (409, "security_may_only_tighten")
+    assert _current()["security"]["session_idle_minutes"] == 30
 
 
 def test_compliance_finds_pending_changes_and_can_reject_them():
@@ -197,7 +189,7 @@ def test_compliance_finds_pending_changes_and_can_reject_them():
     owner_rejects = client_for(router).post("/settings/changes/chg_security_demo/reject")
     unknown = compliance.post("/settings/changes/chg_nothing/reject")
 
-    assert [c["version"] for c in everything] == [2, 2, 3, 3, 4]
+    assert [c["version"] for c in everything] == [4, 3, 3, 2, 2]
     assert [c["id"] for c in pending["changes"]] == ["chg_security_demo"]
     assert rejected.json()["change"]["status"] == "rejected"
     assert (already_applied.status_code, already_applied.json()["detail"]) == (
@@ -238,7 +230,10 @@ def test_applying_manufacturing_adds_the_production_position():
     assert body["settings"]["profile"]["industry"] == "manufacturing"
     production = next(p for p in body["settings"]["positions"] if p["job_function"] == "production")
     assert production["enabled"] is True
-    assert body["change"]["preview"] == ["production: enabled"]
+    assert body["change"]["preview"] == [
+        'profile.industry: "trading" \u2192 "manufacturing"',
+        "production: enabled",
+    ]
 
 
 def test_roles_for_settings():

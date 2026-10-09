@@ -1,0 +1,600 @@
+{
+  "members": [
+    {
+      "user_id": "30000000-0000-0000-0000-000000000003",
+      "display_name": "Owner (demo)",
+      "email_masked": "o***@finbrain-demo.test",
+      "role": "owner_director",
+      "job_functions": [
+        "owner"
+      ],
+      "active": true,
+      "mfa_enrolled": true,
+      "last_active_at": "2026-10-14T12:00:00Z"
+    },
+    {
+      "user_id": "20000000-0000-0000-0000-000000000002",
+      "display_name": "Finance and HR clerk (demo)",
+      "email_masked": "f***@finbrain-demo.test",
+      "role": "finance_ops",
+      "job_functions": [
+        "finance",
+        "hr"
+      ],
+      "active": true,
+      "mfa_enrolled": true,
+      "last_active_at": "2026-10-14T10:00:00Z"
+    },
+    {
+      "user_id": "40000000-0000-0000-0000-000000000004",
+      "display_name": "Compliance officer (demo)",
+      "email_masked": "c***@finbrain-demo.test",
+      "role": "compliance",
+      "job_functions": [
+        "compliance"
+      ],
+      "active": true,
+      "mfa_enrolled": true,
+      "last_active_at": "2026-10-13T12:00:00Z"
+    },
+    {
+      "user_id": "10000000-0000-0000-0000-000000000001",
+      "display_name": "Sales and service executive (demo)",
+      "email_masked": "e***@finbrain-demo.test",
+      "role": "general_employee",
+      "job_functions": [
+        "sales",
+        "customer_service"
+      ],
+      "active": true,
+      "mfa_enrolled": false,
+      "last_active_at": "2026-10-14T09:00:00Z"
+    },
+    {
+      "user_id": "50000000-0000-0000-0000-000000000005",
+      "display_name": "Operations manager (demo)",
+      "email_masked": "m***@finbrain-demo.test",
+      "role": "finance_ops",
+      "job_functions": [
+        "operations"
+      ],
+      "active": true,
+      "mfa_enrolled": true,
+      "last_active_at": "2026-10-14T07:00:00Z"
+    },
+    {
+      "user_id": "60000000-0000-0000-0000-000000000006",
+      "display_name": "Purchasing and stores executive (demo)",
+      "email_masked": "p***@finbrain-demo.test",
+      "role": "general_employee",
+      "job_functions": [
+        "procurement",
+        "logistics"
+      ],
+      "active": true,
+      "mfa_enrolled": false,
+      "last_active_at": "2026-10-14T11:00:00Z"
+    },
+    {
+      "user_id": "70000000-0000-0000-0000-000000000007",
+      "display_name": "Marketing executive (demo)",
+      "email_masked": "k***@finbrain-demo.test",
+      "role": "general_employee",
+      "job_functions": [
+        "marketing"
+      ],
+      "active": true,
+      "mfa_enrolled": false,
+      "last_active_at": "2026-08-30T12:00:00Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "tpl_reminder_en_formal",
+      "kind": "payment_reminder",
+      "language": "en",
+      "tone": "formal",
+      "body": "Dear {customer_name}, invoice {invoice_no} for {amount} was due on {due_date}. Could you confirm the payment date? {sender_name}, {company_name}",
+      "placeholders": [
+        "customer_name",
+        "invoice_no",
+        "amount",
+        "due_date",
+        "sender_name",
+        "company_name"
+      ],
+      "status": "approved"
+    },
+    {
+      "id": "tpl_reminder_ms_formal",
+      "kind": "payment_reminder",
+      "language": "ms",
+      "tone": "formal",
+      "body": "Tuan/Puan {customer_name}, invois {invoice_no} berjumlah {amount} telah tamat tempoh pada {due_date}. Mohon sahkan tarikh pembayaran. {sender_name}, {company_name}",
+      "placeholders": [
+        "customer_name",
+        "invoice_no",
+        "amount",
+        "due_date",
+        "sender_name",
+        "company_name"
+      ],
+      "status": "approved"
+    },
+    {
+      "id": "tpl_reminder_zh_friendly",
+      "kind": "payment_reminder",
+      "language": "zh",
+      "tone": "friendly",
+      "body": "{customer_name} 您好，发票 {invoice_no}（{amount}）已于 {due_date} 到期，请问预计何时付款？{sender_name}，{company_name}",
+      "placeholders": [
+        "customer_name",
+        "invoice_no",
+        "amount",
+        "due_date",
+        "sender_name",
+        "company_name"
+      ],
+      "status": "draft"
+    }
+  ],
+  "rules": [
+    {
+      "id": "rule_overdue_customer",
+      "metric": "overdue_amount_per_customer",
+      "operator": "above",
+      "threshold": "10000.00",
+      "recipients": [
+        "sales",
+        "finance"
+      ],
+      "channel": "in_app",
+      "enabled": true
+    },
+    {
+      "id": "rule_stock_below_reorder",
+      "metric": "stock_below_reorder",
+      "operator": "above",
+      "threshold": "0.00",
+      "recipients": [
+        "logistics",
+        "procurement"
+      ],
+      "channel": "in_app",
+      "enabled": true
+    }
+  ],
+  "mapping": {
+    "id": "map_maybank_csv",
+    "schema_name": "bank_statement_v1",
+    "name": "Maybank CSV",
+    "column_map": {
+      "Tarikh": "date",
+      "Keterangan": "description",
+      "Debit": "debit",
+      "Kredit": "credit",
+      "Baki": "balance"
+    },
+    "header_fingerprint": "e97234b1a205395861c36fd0e937b19f4c7055c59b38ee42c542d9c26125b0df"
+  },
+  "settings": {
+    "1": {
+      "profile": {
+        "company_name": "Synthetic Trading Co.",
+        "industry": "trading",
+        "size": "small",
+        "currency": "MYR",
+        "fiscal_year_start_month": 7,
+        "state": "Penang",
+        "working_days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat"
+        ],
+        "languages": [
+          "en",
+          "ms",
+          "zh"
+        ]
+      },
+      "positions": [
+        {
+          "job_function": "owner",
+          "enabled": true,
+          "display_name": "Owner / Managing Director"
+        },
+        {
+          "job_function": "operations",
+          "enabled": true,
+          "display_name": "Operations Manager"
+        },
+        {
+          "job_function": "finance",
+          "enabled": true,
+          "display_name": "Finance"
+        },
+        {
+          "job_function": "sales",
+          "enabled": true,
+          "display_name": "Sales"
+        },
+        {
+          "job_function": "customer_service",
+          "enabled": true,
+          "display_name": "Customer Service"
+        },
+        {
+          "job_function": "marketing",
+          "enabled": true,
+          "display_name": "Marketing / E-commerce"
+        },
+        {
+          "job_function": "procurement",
+          "enabled": true,
+          "display_name": "Purchasing / Import"
+        },
+        {
+          "job_function": "logistics",
+          "enabled": true,
+          "display_name": "Storekeeper / Logistics"
+        },
+        {
+          "job_function": "production",
+          "enabled": false,
+          "display_name": "Production"
+        },
+        {
+          "job_function": "hr",
+          "enabled": true,
+          "display_name": "Admin & HR"
+        },
+        {
+          "job_function": "compliance",
+          "enabled": true,
+          "display_name": "Compliance / Data Protection"
+        }
+      ],
+      "approvals": {
+        "owner_escalation_amount": "20000.00",
+        "owner_escalation_customer_count": 10,
+        "promotion_min_sample": 30,
+        "promotion_min_unedited_rate": 0.9,
+        "demotion_max_rejection_rate": 0.2,
+        "quiet_hours_start": "21:00:00",
+        "quiet_hours_end": "08:00:00"
+      },
+      "alerts": {
+        "minimum_cash_balance": "30000.00",
+        "alert_horizon_days": 30,
+        "recipients": [
+          "owner",
+          "finance"
+        ],
+        "channels": [
+          "in_app",
+          "email"
+        ],
+        "critical_alerts_enabled": true
+      },
+      "financing": {
+        "islamic_only": false,
+        "excluded_categories": [],
+        "jurisdictions": [
+          "MY",
+          "CN"
+        ]
+      },
+      "security": {
+        "mfa_required_roles": [
+          "finance_ops",
+          "owner_director",
+          "compliance"
+        ],
+        "session_idle_minutes": 30
+      },
+      "branding": {
+        "display_name": "Synthetic Trading Co.",
+        "document_footer": "Synthetic demo company"
+      }
+    },
+    "2": {
+      "profile": {
+        "company_name": "Synthetic Trading Co.",
+        "industry": "trading",
+        "size": "small",
+        "currency": "MYR",
+        "fiscal_year_start_month": 7,
+        "state": "Penang",
+        "working_days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat"
+        ],
+        "languages": [
+          "en",
+          "ms",
+          "zh"
+        ]
+      },
+      "positions": [
+        {
+          "job_function": "owner",
+          "enabled": true,
+          "display_name": "Owner / Managing Director"
+        },
+        {
+          "job_function": "operations",
+          "enabled": true,
+          "display_name": "Operations Manager"
+        },
+        {
+          "job_function": "finance",
+          "enabled": true,
+          "display_name": "Finance"
+        },
+        {
+          "job_function": "sales",
+          "enabled": true,
+          "display_name": "Sales"
+        },
+        {
+          "job_function": "customer_service",
+          "enabled": true,
+          "display_name": "Customer Service"
+        },
+        {
+          "job_function": "marketing",
+          "enabled": true,
+          "display_name": "Marketing / E-commerce"
+        },
+        {
+          "job_function": "procurement",
+          "enabled": true,
+          "display_name": "Purchasing / Import"
+        },
+        {
+          "job_function": "logistics",
+          "enabled": true,
+          "display_name": "Storekeeper / Logistics"
+        },
+        {
+          "job_function": "production",
+          "enabled": false,
+          "display_name": "Production"
+        },
+        {
+          "job_function": "hr",
+          "enabled": true,
+          "display_name": "Admin & HR"
+        },
+        {
+          "job_function": "compliance",
+          "enabled": true,
+          "display_name": "Compliance / Data Protection"
+        }
+      ],
+      "approvals": {
+        "owner_escalation_amount": "20000.00",
+        "owner_escalation_customer_count": 10,
+        "promotion_min_sample": 30,
+        "promotion_min_unedited_rate": 0.9,
+        "demotion_max_rejection_rate": 0.2,
+        "quiet_hours_start": "21:00:00",
+        "quiet_hours_end": "08:00:00"
+      },
+      "alerts": {
+        "minimum_cash_balance": "40000.00",
+        "alert_horizon_days": 30,
+        "recipients": [
+          "owner",
+          "finance"
+        ],
+        "channels": [
+          "in_app",
+          "email"
+        ],
+        "critical_alerts_enabled": true
+      },
+      "financing": {
+        "islamic_only": false,
+        "excluded_categories": [],
+        "jurisdictions": [
+          "MY",
+          "CN"
+        ]
+      },
+      "security": {
+        "mfa_required_roles": [
+          "finance_ops",
+          "owner_director",
+          "compliance"
+        ],
+        "session_idle_minutes": 45
+      },
+      "branding": {
+        "display_name": "Synthetic Trading Co.",
+        "document_footer": "Synthetic demo company"
+      }
+    },
+    "3": {
+      "profile": {
+        "company_name": "Synthetic Trading Co.",
+        "industry": "trading",
+        "size": "small",
+        "currency": "MYR",
+        "fiscal_year_start_month": 7,
+        "state": "Penang",
+        "working_days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat"
+        ],
+        "languages": [
+          "en",
+          "ms",
+          "zh"
+        ]
+      },
+      "positions": [
+        {
+          "job_function": "owner",
+          "enabled": true,
+          "display_name": "Owner / Managing Director"
+        },
+        {
+          "job_function": "operations",
+          "enabled": true,
+          "display_name": "Operations Manager"
+        },
+        {
+          "job_function": "finance",
+          "enabled": true,
+          "display_name": "Finance"
+        },
+        {
+          "job_function": "sales",
+          "enabled": true,
+          "display_name": "Sales"
+        },
+        {
+          "job_function": "customer_service",
+          "enabled": true,
+          "display_name": "Customer Service"
+        },
+        {
+          "job_function": "marketing",
+          "enabled": true,
+          "display_name": "Marketing / E-commerce"
+        },
+        {
+          "job_function": "procurement",
+          "enabled": true,
+          "display_name": "Purchasing / Import"
+        },
+        {
+          "job_function": "logistics",
+          "enabled": true,
+          "display_name": "Storekeeper / Logistics"
+        },
+        {
+          "job_function": "production",
+          "enabled": false,
+          "display_name": "Production"
+        },
+        {
+          "job_function": "hr",
+          "enabled": true,
+          "display_name": "Admin & HR"
+        },
+        {
+          "job_function": "compliance",
+          "enabled": true,
+          "display_name": "Compliance / Data Protection"
+        }
+      ],
+      "approvals": {
+        "owner_escalation_amount": "20000.00",
+        "owner_escalation_customer_count": 10,
+        "promotion_min_sample": 30,
+        "promotion_min_unedited_rate": 0.9,
+        "demotion_max_rejection_rate": 0.2,
+        "quiet_hours_start": "21:00:00",
+        "quiet_hours_end": "08:00:00"
+      },
+      "alerts": {
+        "minimum_cash_balance": "50000.00",
+        "alert_horizon_days": 30,
+        "recipients": [
+          "owner",
+          "finance"
+        ],
+        "channels": [
+          "in_app",
+          "email"
+        ],
+        "critical_alerts_enabled": true
+      },
+      "financing": {
+        "islamic_only": false,
+        "excluded_categories": [],
+        "jurisdictions": [
+          "MY",
+          "CN"
+        ]
+      },
+      "security": {
+        "mfa_required_roles": [
+          "finance_ops",
+          "owner_director",
+          "compliance"
+        ],
+        "session_idle_minutes": 30
+      },
+      "branding": {
+        "display_name": "Synthetic Trading Co.",
+        "document_footer": "Synthetic demo company"
+      }
+    }
+  },
+  "changes": [
+    {
+      "id": "chg_alerts_0002",
+      "area": "alerts",
+      "status": "applied",
+      "requires_approval": false,
+      "version": 2,
+      "preview": [
+        "alerts.minimum_cash_balance: \"30000.00\" → \"40000.00\""
+      ]
+    },
+    {
+      "id": "chg_security_0002",
+      "area": "security",
+      "status": "applied",
+      "requires_approval": true,
+      "version": 2,
+      "preview": [
+        "security.session_idle_minutes: 30 → 45"
+      ]
+    },
+    {
+      "id": "chg_alerts_0003",
+      "area": "alerts",
+      "status": "applied",
+      "requires_approval": false,
+      "version": 3,
+      "preview": [
+        "alerts.minimum_cash_balance: \"40000.00\" → \"50000.00\""
+      ]
+    },
+    {
+      "id": "chg_security_0003",
+      "area": "security",
+      "status": "applied",
+      "requires_approval": true,
+      "version": 3,
+      "preview": [
+        "security.session_idle_minutes: 45 → 30"
+      ]
+    },
+    {
+      "id": "chg_security_demo",
+      "area": "security",
+      "status": "pending_approval",
+      "requires_approval": true,
+      "version": 4,
+      "preview": [
+        "security.session_idle_minutes: 30 → 20"
+      ]
+    }
+  ]
+}

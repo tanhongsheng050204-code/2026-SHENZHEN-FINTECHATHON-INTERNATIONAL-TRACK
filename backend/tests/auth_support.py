@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from app.auth.principal import AuthPrincipal
@@ -14,6 +15,13 @@ USER_IDS = {
 TENANT_A = UUID(DEFAULT_TENANT_ID)
 TENANT_B = UUID("00000000-0000-0000-0000-000000000002")
 
+ROLE_JOBS = {
+    UserRole.OWNER_DIRECTOR: ("owner",),
+    UserRole.FINANCE_OPS: ("finance", "hr"),
+    UserRole.GENERAL_EMPLOYEE: ("sales", "customer_service"),
+    UserRole.COMPLIANCE: ("compliance",),
+}
+
 
 def principal(
     role: UserRole = UserRole.GENERAL_EMPLOYEE, tenant_id: UUID = TENANT_A
@@ -23,4 +31,7 @@ def principal(
         email=f"{role.value}@finbrain.test",
         role=role,
         tenant_id=tenant_id,
+        job_functions=ROLE_JOBS[role],
+        aal="aal2",
+        mfa_verified_at=datetime.now(UTC),
     )

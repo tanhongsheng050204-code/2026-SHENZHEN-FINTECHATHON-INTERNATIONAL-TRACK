@@ -1,4 +1,11 @@
-from scripts.export_contract import CONTRACT_PATH, build_contract_app, render_contract
+import json
+
+from scripts.export_contract import (
+    CONTRACT_PATH,
+    FROZEN_CONTRACT_PATH,
+    build_contract_app,
+    render_contract,
+)
 
 CONTRACT_OPERATIONS = {
     ("get", "/cashflow/forecast"),
@@ -91,6 +98,11 @@ def test_committed_contract_matches_the_code():
     assert CONTRACT_PATH.read_text(encoding="utf-8") == render_contract(), (
         "Run `uv run python -m scripts.export_contract` from backend/ and commit the result."
     )
+
+
+def test_original_contract_operations_are_preserved():
+    frozen = json.loads(FROZEN_CONTRACT_PATH.read_text(encoding="utf-8"))
+    assert _operations(build_contract_app().openapi()) >= _operations(frozen)
 
 
 def test_main_app_serves_the_contract():

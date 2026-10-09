@@ -22,7 +22,10 @@ from app.routes import (
 )
 from app.routes import settings as settings_routes
 
-CONTRACT_PATH = Path(__file__).resolve().parents[2] / "docs" / "api" / "topic-e-contract.json"
+FROZEN_CONTRACT_PATH = (
+    Path(__file__).resolve().parents[2] / "docs" / "api" / "topic-e-contract.json"
+)
+CONTRACT_PATH = FROZEN_CONTRACT_PATH.with_name("topic-e-current-contract.json")
 CONTRACT_ROUTERS = (
     cashflow.router,
     agents.router,

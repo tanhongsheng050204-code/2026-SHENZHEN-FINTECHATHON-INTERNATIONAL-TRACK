@@ -55,6 +55,7 @@ async def preview(
             filename=filename,
             mime_type=request.headers.get("content-type", "application/octet-stream"),
             record_type=record_type,
+            tenant_id=str(_principal.tenant_id),
         )
     except ExtractionError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
@@ -82,6 +83,7 @@ async def commit(
             filename=filename,
             mime_type=request.headers.get("content-type", "application/octet-stream"),
             record_type=record_type,
+            tenant_id=str(_principal.tenant_id),
             expected_digest=preview_digest,
         )
     except ExtractionError as error:

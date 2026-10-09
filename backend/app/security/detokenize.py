@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.models import ProtectedTokenRegistry, TokenVaultEntry
+from app.models import ProtectedTokenRegistry, TokenizedContent, TokenVaultEntry
 from app.security.disclosure import new_disclosure_session
 from app.security.keyring import decrypt_vault_entry
 from app.services.audit import write_audit_entry
@@ -66,7 +66,14 @@ def detokenize_response_with_trace(
     query_hash: str,
     actor_ref: str = "legacy",
     turn_ref: str = "unbound",
+    allow_exact: bool | None = None,
+    tenant_id: str | None = None,
 ) -> DetokenizationTrace:
+    from app.security.guardrails import record_event
+
+    if allow_exact is None:
+        allow_exact = db.info.get("finbrain_disclosure_allowed", True)
+    tenant_id = tenant_id or db.info.get("finbrain_request_tenant")
     result = text
     restored = 0
     withheld = 0
@@ -86,13 +93,48 @@ def detokenize_response_with_trace(
             for token in tokens:
                 registry = db.get(ProtectedTokenRegistry, token)
                 entry = db.scalar(select(TokenVaultEntry).where(TokenVaultEntry.token == token))
+                if tenant_id and registry and registry.tenant_id != tenant_id:
+                    registry, entry = None, None
                 if registry is None:
                     if token.startswith("AMOUNT_BAND_"):
                         result = result.replace(token, _band_label(token))
                     continue
                 # PostgreSQL RLS hides ciphertext rows from roles outside allowed_roles.
                 # The explicit check preserves identical behavior in SQLite tests.
-                authorized = entry is not None and role in entry.allowed_roles
+                source = (
+                    db.scalar(
+                        select(TokenizedContent).where(
+                            TokenizedContent.tenant_id == registry.tenant_id,
+                            TokenizedContent.source_record_id == entry.source_record_id,
+                        )
+                    )
+                    if entry
+                    else None
+                )
+                employee_data = registry.data_class == "employee_personal" or (
+                    source is not None
+                    and source.record_type
+                    in {
+                        "payroll_line",
+                        "employee_record",
+                        "leave_record",
+                    }
+                )
+                employee_access = role == "owner_director" or "hr" in db.info.get(
+                    "finbrain_request_jobs", ()
+                )
+                policy_access = entry is not None and (
+                    role in entry.allowed_roles
+                    or (
+                        employee_data
+                        and employee_access
+                        and registry.entity_type
+                        in {"PERSON", "AMOUNT", "NRIC", "BANKACC", "EMAIL", "PHONE", "ADDR"}
+                    )
+                )
+                authorized = (
+                    allow_exact and policy_access and (not employee_data or employee_access)
+                )
                 if authorized:
                     assert entry is not None
                     plaintext = decrypt_vault_entry(db, entry)
@@ -106,6 +148,15 @@ def detokenize_response_with_trace(
                         else registry.masked_value
                     )
                     withheld += 1
+                    if registry.entity_type in {"BANKACC", "CARD", "NRIC"}:
+                        record_event(
+                            db,
+                            registry.tenant_id,
+                            "ASI03",
+                            "Exact-value disclosure denied",
+                            "Role policy or recent MFA requirement withheld a protected value.",
+                            "blocked",
+                        )
                 result = result.replace(token, replacement)
                 decisions.append(
                     DisclosureDecision(

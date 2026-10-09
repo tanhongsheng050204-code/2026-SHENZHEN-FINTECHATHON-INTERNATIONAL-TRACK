@@ -2,7 +2,8 @@
 
 Workstream B2 replaces it with the agent runtime (manifests, skills, cash signals).
 Skill lists follow FINBRAIN_SIX_DOCUMENTS.md: W1 skills are "available", W2 skills
-are "planned". Nothing is persisted: promotions and kill-switch changes are echoed back.
+are "planned". Promotions are echoed back. Kill switches are implemented by
+app.services.agent_security.
 """
 
 import hashlib
@@ -19,7 +20,6 @@ from app.contracts.agents import (
     JourneyAgent,
     JourneyFunction,
     JourneyResponse,
-    KillSwitchRequest,
     ScopedAutonomy,
 )
 from app.contracts.common import AutonomyLevel, DataMode, JobFunction, autonomy_rank
@@ -306,24 +306,6 @@ def find_agent(agent_id: str) -> AgentCard:
         if agent.id == agent_id:
             return agent
     raise LookupError(agent_id)
-
-
-def apply_kill_switch(request: KillSwitchRequest) -> AgentListResponse:
-    if request.agent_id is None:
-        engaged = [a.model_copy(update={"kill_switch_engaged": request.engaged}) for a in _AGENTS]
-        return AgentListResponse(
-            data_mode=DataMode.STUB,
-            global_kill_switch_engaged=request.engaged,
-            agents=engaged,
-        )
-    target = find_agent(request.agent_id)
-    updated = [
-        a.model_copy(update={"kill_switch_engaged": request.engaged}) if a.id == target.id else a
-        for a in _AGENTS
-    ]
-    return AgentListResponse(
-        data_mode=DataMode.STUB, global_kill_switch_engaged=False, agents=updated
-    )
 
 
 def change_autonomy(agent_id: str, request: AutonomyChangeRequest) -> AgentCard:

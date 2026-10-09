@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from app.config import get_settings
@@ -13,6 +14,10 @@ class AuthPrincipal:
     email: str | None
     role: UserRole
     tenant_id: UUID
+    job_functions: tuple[str, ...] = ()
+    aal: str = "aal1"
+    mfa_verified_at: datetime | None = None
+    session_id: str | None = None
 
     @property
     def actor_ref(self) -> str:

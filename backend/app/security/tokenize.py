@@ -33,6 +33,7 @@ ACL_POLICY = {
     "AMOUNT": ["finance_ops", "owner_director", "compliance"],
     "TGUSER": ["finance_ops", "owner_director", "compliance"],
     "TGCHAT": ["compliance"],
+    "TEXT": ["finance_ops", "owner_director", "compliance"],
 }
 
 AMOUNT_BANDS = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
@@ -124,11 +125,18 @@ def tokenize_record(
     source_record_id: str,
     tenant_id: str,
     db: Session | None = None,
+    *,
+    data_class: str = "customer_personal",
 ) -> tuple[str, list[TokenVaultEntry]]:
     sanitized = text
     vault_entries: dict[str, TokenVaultEntry] = {}
     for span in sorted(spans, key=lambda item: item.start, reverse=True):
-        token = _token_for(span, tenant_id)
+        identity_scope = (
+            f"{tenant_id}:employee:{source_record_id}"
+            if data_class == "employee_personal"
+            else tenant_id
+        )
+        token = _token_for(span, identity_scope)
         sanitized = f"{sanitized[: span.start]}{token}{sanitized[span.end :]}"
         label = LABEL_TOKEN_MAP.get(span.label, "MISC")
         if token in vault_entries or db is None:
@@ -146,11 +154,16 @@ def tokenize_record(
             tenant_id=tenant_id,
             entity_type=label,
             encrypted_value=ciphertext,
+            data_class=data_class,
             nonce=nonce,
             key_version=key_version,
             masked_value=_masked_value(label, span.text, token),
             encryption_algorithm="AES-256-GCM",
-            allowed_roles=ACL_POLICY.get(label, ["compliance"]),
+            allowed_roles=(
+                ["owner_director"]
+                if data_class == "employee_personal" and label != "CARD"
+                else ACL_POLICY.get(label, ["compliance"])
+            ),
             sensitivity="high" if label in {"NRIC", "CARD"} else "medium",
             source_record_id=source_record_id,
         )
@@ -160,6 +173,7 @@ def tokenize_record(
                     token=token,
                     tenant_id=tenant_id,
                     entity_type=label,
+                    data_class=data_class,
                     masked_value=_masked_value(label, span.text, token),
                 )
             )
@@ -180,10 +194,16 @@ def protect_scalar(
     value: str,
     source_record_id: str,
     tenant_id: str,
+    data_class: str = "customer_personal",
 ) -> str:
     """Protect one explicitly classified value that detectors cannot safely infer."""
     label = entity_type.upper()
-    token = derive_token(label, value, tenant_id)
+    identity_scope = (
+        f"{tenant_id}:employee:{source_record_id}"
+        if data_class == "employee_personal"
+        else tenant_id
+    )
+    token = derive_token(label, value, identity_scope)
     masked = {
         "TGUSER": "telegram-user-********",
         "TGCHAT": "telegram-chat-********",
@@ -191,7 +211,11 @@ def protect_scalar(
         "EMAIL": "*****@*******.***",
         "PHONE": "01*-***-****",
     }.get(label, f"[{label.lower()} — restricted]")
-    if not _has_token(db, TokenVaultEntry, token):
+    # Registry existence is safe to check even when RLS hides this ciphertext from
+    # the importing job holder. Registry and vault inserts share one transaction.
+    if not _has_token(db, ProtectedTokenRegistry, token) and not _has_token(
+        db, TokenVaultEntry, token
+    ):
         ciphertext, nonce, key_version = encrypt_vault_value(
             db,
             token=token,
@@ -204,12 +228,17 @@ def protect_scalar(
                 token=token,
                 tenant_id=tenant_id,
                 entity_type=label,
+                data_class=data_class,
                 encrypted_value=ciphertext,
                 nonce=nonce,
                 key_version=key_version,
                 masked_value=masked,
                 encryption_algorithm="AES-256-GCM",
-                allowed_roles=ACL_POLICY.get(label, ["compliance"]),
+                allowed_roles=(
+                    ["owner_director"]
+                    if data_class == "employee_personal" and label != "CARD"
+                    else ACL_POLICY.get(label, ["compliance"])
+                ),
                 sensitivity="medium",
                 source_record_id=source_record_id,
             )
@@ -220,6 +249,7 @@ def protect_scalar(
                 token=token,
                 tenant_id=tenant_id,
                 entity_type=label,
+                data_class=data_class,
                 masked_value=masked,
             )
         )

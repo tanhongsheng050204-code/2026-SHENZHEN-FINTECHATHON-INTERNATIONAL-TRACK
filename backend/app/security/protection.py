@@ -6,9 +6,7 @@ from app.models import TokenVaultEntry
 from app.security.detect import Span, contains_known_pii, detect_spans
 from app.security.tokenize import tokenize_record
 
-_PROTECTED_TOKEN_PATTERN = re.compile(
-    r"(?:AMOUNT_BAND_\d+_[0-9a-f]{10}|[A-Z]+_[0-9a-f]{10})"
-)
+_PROTECTED_TOKEN_PATTERN = re.compile(r"(?:AMOUNT_BAND_\d+_[0-9a-f]{10}|[A-Z]+_[0-9a-f]{10})")
 
 
 def _exclude_existing_protected_tokens(text: str, spans: list[Span]) -> list[Span]:
@@ -31,6 +29,7 @@ def protect_text(
     *,
     spans: list[Span] | None = None,
     tokenizer=None,
+    data_class: str = "customer_personal",
 ) -> tuple[str, list[TokenVaultEntry]]:
     tokenize = tokenizer or tokenize_record
     detected_spans = detect_spans(text) if spans is None else spans
@@ -42,6 +41,7 @@ def protect_text(
         source_record_id,
         tenant_id,
         db=db,
+        **({"data_class": data_class} if data_class == "employee_personal" else {}),
     )
     if contains_known_pii(protected):
         raise ValueError(f"Safety-net PII detection failed for source {source_record_id}")
@@ -49,13 +49,19 @@ def protect_text(
 
 
 def protect_metadata(
-    metadata: dict[str, str], source_record_id: str, tenant_id: str,
+    metadata: dict[str, str],
+    source_record_id: str,
+    tenant_id: str,
     db: Session | None = None,
+    *,
+    data_class: str = "customer_personal",
 ) -> tuple[dict[str, str], list[TokenVaultEntry]]:
     protected_metadata: dict[str, str] = {}
     entries: dict[str, TokenVaultEntry] = {}
     for key, value in metadata.items():
-        protected_value, value_entries = protect_text(value, source_record_id, tenant_id, db)
+        protected_value, value_entries = protect_text(
+            value, source_record_id, tenant_id, db, data_class=data_class
+        )
         protected_metadata[key] = protected_value
         entries.update({entry.token: entry for entry in value_entries})
     return protected_metadata, list(entries.values())

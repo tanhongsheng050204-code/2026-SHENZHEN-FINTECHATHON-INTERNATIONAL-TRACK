@@ -1,0 +1,1236 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FinBrain OS - Plan 3 imports",
+    "version": "3.0.0"
+  },
+  "paths": {
+    "/settings/import-mappings": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "List Mappings",
+        "operationId": "list_mappings_settings_import_mappings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Create Mapping",
+        "operationId": "create_mapping_settings_import_mappings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportMappingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/settings/import-mappings/match": {
+      "post": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Match Mapping",
+        "operationId": "match_mapping_settings_import_mappings_match_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportMappingMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportMappingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/imports/schemas": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Schemas",
+        "operationId": "schemas_imports_schemas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSchemasResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/imports/batches": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Batches",
+        "operationId": "batches_imports_batches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schema_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "bank_statement_v1",
+                    "payables_register_v1",
+                    "purchase_orders_v1",
+                    "stock_v1",
+                    "payroll_v1",
+                    "marketing_spend_v1",
+                    "marketplace_payouts_v1",
+                    "sales_pipeline_v1"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Schema Name"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/imports/{schema_name}/preview": {
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Preview",
+        "operationId": "preview_imports__schema_name__preview_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schema_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "bank_statement_v1",
+                "payables_register_v1",
+                "purchase_orders_v1",
+                "stock_v1",
+                "payroll_v1",
+                "marketing_spend_v1",
+                "marketplace_payouts_v1",
+                "sales_pipeline_v1"
+              ],
+              "type": "string",
+              "title": "Schema Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CsvImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsvImportPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/imports/{schema_name}/commit": {
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Commit",
+        "operationId": "commit_imports__schema_name__commit_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "schema_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "bank_statement_v1",
+                "payables_register_v1",
+                "purchase_orders_v1",
+                "stock_v1",
+                "payroll_v1",
+                "marketing_spend_v1",
+                "marketplace_payouts_v1",
+                "sales_pipeline_v1"
+              ],
+              "type": "string",
+              "title": "Schema Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CsvImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsvImportResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlertRule": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "projected_balance",
+              "overdue_amount_per_customer",
+              "stock_below_reorder",
+              "payroll_coverage_days",
+              "marketing_return_per_ringgit",
+              "open_disputes"
+            ],
+            "title": "Metric"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "above",
+              "below"
+            ],
+            "title": "Operator"
+          },
+          "threshold": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Threshold"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "type": "array",
+            "title": "Recipients"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "in_app",
+              "email",
+              "telegram"
+            ],
+            "title": "Channel"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "metric",
+          "operator",
+          "threshold",
+          "recipients",
+          "channel",
+          "enabled"
+        ],
+        "title": "AlertRule"
+      },
+      "AlertRuleRequest": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "enum": [
+              "projected_balance",
+              "overdue_amount_per_customer",
+              "stock_below_reorder",
+              "payroll_coverage_days",
+              "marketing_return_per_ringgit",
+              "open_disputes"
+            ],
+            "title": "Metric"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "above",
+              "below"
+            ],
+            "title": "Operator"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "recipients": {
+            "items": {
+              "$ref": "#/components/schemas/JobFunction"
+            },
+            "type": "array",
+            "maxItems": 11,
+            "minItems": 1,
+            "title": "Recipients"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "in_app",
+              "email",
+              "telegram"
+            ],
+            "title": "Channel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "operator",
+          "threshold",
+          "recipients",
+          "channel"
+        ],
+        "title": "AlertRuleRequest"
+      },
+      "AlertRuleResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "rule": {
+            "$ref": "#/components/schemas/AlertRule"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_mode",
+          "rule"
+        ],
+        "title": "AlertRuleResponse"
+      },
+      "AlertRulesResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/AlertRule"
+            },
+            "type": "array",
+            "title": "Rules"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_mode",
+          "rules"
+        ],
+        "title": "AlertRulesResponse"
+      },
+      "CsvImportPreview": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode",
+            "default": "live"
+          },
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "mapping_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapping Id"
+          },
+          "fingerprint": {
+            "type": "string",
+            "title": "Fingerprint"
+          },
+          "total_rows": {
+            "type": "integer",
+            "title": "Total Rows"
+          },
+          "accepted_rows": {
+            "type": "integer",
+            "title": "Accepted Rows"
+          },
+          "duplicate_rows": {
+            "type": "integer",
+            "title": "Duplicate Rows"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ImportIssue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "can_commit": {
+            "type": "boolean",
+            "title": "Can Commit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_name",
+          "mapping_id",
+          "fingerprint",
+          "total_rows",
+          "accepted_rows",
+          "duplicate_rows",
+          "issues",
+          "can_commit"
+        ],
+        "title": "CsvImportPreview"
+      },
+      "CsvImportRequest": {
+        "properties": {
+          "csv_text": {
+            "type": "string",
+            "maxLength": 2000000,
+            "minLength": 1,
+            "title": "Csv Text"
+          },
+          "mapping_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapping Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "csv_text"
+        ],
+        "title": "CsvImportRequest"
+      },
+      "CsvImportResult": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode",
+            "default": "live"
+          },
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "batch_id": {
+            "type": "string",
+            "title": "Batch Id"
+          },
+          "imported_rows": {
+            "type": "integer",
+            "title": "Imported Rows"
+          },
+          "duplicate_rows": {
+            "type": "integer",
+            "title": "Duplicate Rows"
+          },
+          "replayed": {
+            "type": "boolean",
+            "title": "Replayed"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_name",
+          "batch_id",
+          "imported_rows",
+          "duplicate_rows",
+          "replayed",
+          "synthetic"
+        ],
+        "title": "CsvImportResult"
+      },
+      "DataMode": {
+        "type": "string",
+        "enum": [
+          "stub",
+          "live"
+        ],
+        "title": "DataMode",
+        "description": "Every contract response says whether its data is a canned stub or computed live."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImportBatchView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "imported_rows": {
+            "type": "integer",
+            "title": "Imported Rows"
+          },
+          "duplicate_rows": {
+            "type": "integer",
+            "title": "Duplicate Rows"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "schema_name",
+          "imported_rows",
+          "duplicate_rows",
+          "synthetic",
+          "created_at"
+        ],
+        "title": "ImportBatchView"
+      },
+      "ImportBatchesResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode",
+            "default": "live"
+          },
+          "batches": {
+            "items": {
+              "$ref": "#/components/schemas/ImportBatchView"
+            },
+            "type": "array",
+            "title": "Batches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batches"
+        ],
+        "title": "ImportBatchesResponse"
+      },
+      "ImportIssue": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "row",
+          "field",
+          "code"
+        ],
+        "title": "ImportIssue"
+      },
+      "ImportMapping": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "column_map": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Column Map"
+          },
+          "header_fingerprint": {
+            "type": "string",
+            "title": "Header Fingerprint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "schema_name",
+          "name",
+          "column_map",
+          "header_fingerprint"
+        ],
+        "title": "ImportMapping"
+      },
+      "ImportMappingMatchRequest": {
+        "properties": {
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Headers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_name",
+          "headers"
+        ],
+        "title": "ImportMappingMatchRequest"
+      },
+      "ImportMappingRequest": {
+        "properties": {
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Headers",
+            "description": "Every column header in the sample file, mapped or not"
+          },
+          "column_map": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "maxProperties": 40,
+            "minProperties": 1,
+            "title": "Column Map"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_name",
+          "name",
+          "headers",
+          "column_map"
+        ],
+        "title": "ImportMappingRequest"
+      },
+      "ImportMappingResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/ImportMapping"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_mode",
+          "mapping"
+        ],
+        "title": "ImportMappingResponse"
+      },
+      "ImportMappingsResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "mappings": {
+            "items": {
+              "$ref": "#/components/schemas/ImportMapping"
+            },
+            "type": "array",
+            "title": "Mappings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_mode",
+          "mappings"
+        ],
+        "title": "ImportMappingsResponse"
+      },
+      "ImportSchemaView": {
+        "properties": {
+          "schema_name": {
+            "type": "string",
+            "enum": [
+              "bank_statement_v1",
+              "payables_register_v1",
+              "purchase_orders_v1",
+              "stock_v1",
+              "payroll_v1",
+              "marketing_spend_v1",
+              "marketplace_payouts_v1",
+              "sales_pipeline_v1"
+            ],
+            "title": "Schema Name"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fields"
+          },
+          "required_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Fields"
+          },
+          "writer_jobs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Writer Jobs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schema_name",
+          "fields",
+          "required_fields",
+          "writer_jobs"
+        ],
+        "title": "ImportSchemaView"
+      },
+      "ImportSchemasResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode",
+            "default": "live"
+          },
+          "schemas": {
+            "items": {
+              "$ref": "#/components/schemas/ImportSchemaView"
+            },
+            "type": "array",
+            "title": "Schemas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "schemas"
+        ],
+        "title": "ImportSchemasResponse"
+      },
+      "JobFunction": {
+        "type": "string",
+        "enum": [
+          "owner",
+          "operations",
+          "finance",
+          "sales",
+          "customer_service",
+          "marketing",
+          "procurement",
+          "logistics",
+          "production",
+          "hr",
+          "compliance"
+        ],
+        "title": "JobFunction",
+        "description": "The positions a person can hold. One person may hold several."
+      },
+      "MessageTemplate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "payment_reminder",
+              "customer_reply",
+              "supplier_query"
+            ],
+            "title": "Kind"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ms",
+              "zh"
+            ],
+            "title": "Language"
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "formal",
+              "friendly"
+            ],
+            "title": "Tone"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "placeholders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Placeholders"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "approved"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "language",
+          "tone",
+          "body",
+          "placeholders",
+          "status"
+        ],
+        "title": "MessageTemplate"
+      },
+      "MessageTemplateRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "payment_reminder",
+              "customer_reply",
+              "supplier_query"
+            ],
+            "title": "Kind"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ms",
+              "zh"
+            ],
+            "title": "Language"
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "formal",
+              "friendly"
+            ],
+            "title": "Tone"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "language",
+          "tone",
+          "body"
+        ],
+        "title": "MessageTemplateRequest"
+      },
+      "MessageTemplateResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "template": {
+            "$ref": "#/components/schemas/MessageTemplate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_mode",
+          "template"
+        ],
+        "title": "MessageTemplateResponse"
+      },
+      "MessageTemplatesResponse": {
+        "properties": {
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/MessageTemplate"
+            },
+            "type": "array",
+            "title": "Templates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data_mode",
+          "templates"
+        ],
+        "title": "MessageTemplatesResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

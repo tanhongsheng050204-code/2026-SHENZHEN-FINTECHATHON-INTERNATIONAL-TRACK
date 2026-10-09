@@ -28,13 +28,97 @@ IMPORT_FIELDS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
     ),
     "payables_register_v1": (
         frozenset(
-            {"bill_id", "supplier", "amount", "currency", "due_date", "status", "bank_account"}
+            {
+                "bill_id",
+                "supplier",
+                "amount",
+                "currency",
+                "fx_rate",
+                "due_date",
+                "status",
+                "bank_account",
+            }
         ),
         frozenset({"bill_id", "supplier", "amount", "currency", "due_date"}),
     ),
 }
 
-ImportSchema = Literal["bank_statement_v1", "payables_register_v1"]
+IMPORT_FIELDS.update(
+    {
+        "purchase_orders_v1": (
+            frozenset(
+                {
+                    "po_no",
+                    "supplier",
+                    "amount",
+                    "currency",
+                    "fx_rate",
+                    "expected_delivery",
+                    "expected_payment",
+                    "status",
+                }
+            ),
+            frozenset(
+                {"po_no", "supplier", "amount", "currency", "expected_delivery", "expected_payment"}
+            ),
+        ),
+        "stock_v1": (
+            frozenset(
+                {
+                    "sku",
+                    "name",
+                    "unit_cost",
+                    "reorder_level",
+                    "lead_time_days",
+                    "on_hand",
+                    "snapshot_date",
+                }
+            ),
+            frozenset({"sku", "name", "unit_cost", "on_hand", "snapshot_date"}),
+        ),
+        "payroll_v1": (
+            frozenset(
+                {"period", "pay_date", "employee", "gross", "employer_contribution", "status"}
+            ),
+            frozenset({"period", "pay_date", "employee", "gross", "employer_contribution"}),
+        ),
+        "marketing_spend_v1": (
+            frozenset(
+                {
+                    "reference",
+                    "channel",
+                    "campaign",
+                    "spend",
+                    "period_start",
+                    "period_end",
+                    "attributed_revenue",
+                }
+            ),
+            frozenset({"reference", "channel", "campaign", "spend", "period_start", "period_end"}),
+        ),
+        "marketplace_payouts_v1": (
+            frozenset({"reference", "platform", "payout_date", "gross", "fees", "net", "status"}),
+            frozenset({"reference", "platform", "payout_date", "gross", "fees", "net"}),
+        ),
+        "sales_pipeline_v1": (
+            frozenset(
+                {"reference", "customer", "stage", "amount", "expected_payment_date", "probability"}
+            ),
+            frozenset({"reference", "customer", "stage", "amount", "expected_payment_date"}),
+        ),
+    }
+)
+
+ImportSchema = Literal[
+    "bank_statement_v1",
+    "payables_register_v1",
+    "purchase_orders_v1",
+    "stock_v1",
+    "payroll_v1",
+    "marketing_spend_v1",
+    "marketplace_payouts_v1",
+    "sales_pipeline_v1",
+]
 AlertMetric = Literal[
     "projected_balance",
     "overdue_amount_per_customer",
@@ -129,6 +213,14 @@ class ImportMappingRequest(BaseModel):
     @model_validator(mode="after")
     def _targets_fit_the_schema(self) -> "ImportMappingRequest":
         in_file = {normalize_header(header) for header in self.headers}
+        if len(in_file) != len(self.headers) or "" in in_file:
+            raise ValueError("duplicate_or_empty_header")
+        if len({normalize_header(h) for h in self.column_map}) != len(self.column_map):
+            raise ValueError("duplicate_mapping_header")
+        if any(len(h) > 120 for h in self.headers):
+            raise ValueError("header_too_long")
+        if any(ord(c) < 32 for h in self.headers for c in h):
+            raise ValueError("control_character_in_header")
         outside = [column for column in self.column_map if normalize_header(column) not in in_file]
         if outside:
             raise ValueError(f"column_not_in_headers:{outside[0]}")
@@ -177,6 +269,11 @@ class AlertRuleRequest(BaseModel):
     threshold: Decimal = Field(ge=0)
     recipients: list[JobFunction] = Field(min_length=1, max_length=11)
     channel: Literal["in_app", "email", "telegram"]
+
+    @field_validator("recipients")
+    @classmethod
+    def _unique_recipients(cls, value):
+        return list(dict.fromkeys(value))
 
 
 class AlertRulesResponse(BaseModel):

@@ -99,12 +99,14 @@ Status as of 2026-10-08. The demo company and its data are synthetic and labelle
 | Governed outreach, approvals, overdue reminders, e-invoice readiness and PDFs, receivables aging | **Built and tested** |
 | Dual hash-chained audit logs with daily external anchoring, PDPA access and erasure, vault rotation | **Built and tested** |
 | Topic E API contract served as tested stub endpoints | **Built and tested** — 54 stub endpoints returning labelled synthetic data; contract in [`docs/api/topic-e-contract.json`](docs/api/topic-e-contract.json) |
+| Plan 2 identity, Team, persistent settings and guardrails | **Backend implemented locally** — see [Plan 2](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md); hosted validation pending |
+| Plan 3 mapped business CSV importers and synthetic tenant | **Backend implemented; local seed executed** — eight datasets, 53 rows; see [Plan 3](docs/superpowers/plans/2026-10-09-topic-e-importers.md). Automated/hosted validation pending |
 | Cash-flow forecast, scenarios and alerts; financing matching with explanations | Planned — target Oct 16 |
 | Supervisor agent, review inbox, autonomy ladder and earned autonomy | Planned — target Oct 16 |
 | An agent for every SME position — owner, operations, finance, sales, customer service, marketing, purchasing, logistics, HR and compliance — each feeding the cash forecast | Planned — core skills by Oct 16; full skill lists by the November final |
-| Company customization: profile, positions and people, approval limits, alerts, templates, import mapping, financing preferences, industry templates | Planned — target Oct 16 |
+| Company customization: profile, positions and people, approval limits, alerts, templates, import mapping, financing preferences, industry templates | Backend persistence implemented in Plans 2–3; frontend and hosted validation pending |
 | Financing Readiness Passport, lender and external-auditor access | Planned — target Oct 16 |
-| Email OTP and TOTP sign-in, Team page, agent guardrails, security posture dashboard | Planned — target Oct 16 |
+| Email OTP and TOTP sign-in, Team page, agent guardrails, security posture dashboard | Plan 2 backend implemented; frontend and hosted auth validation pending |
 | Evaluation harness and OWASP Agentic Top 10 control map | Planned — target Oct 16 |
 | Production agent (manufacturing template); SMS one-time passwords; dashboard layout; automated data retention | Designed, not built |
 
@@ -1019,6 +1021,8 @@ and replaces this flow once those features land.
 | [FINBRAIN_SIX_DOCUMENTS.md](./FINBRAIN_SIX_DOCUMENTS.md) | Topic E master document: PRD, TRD, app flow, UI/UX brief, backend schema, implementation plan, contradictions resolved and decisions log |
 | [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) | FinTechathon 2026 Topic E: positioning, scope tiers, agents, finance engine, security, China reachability, schedule, demo script, claims policy |
 | [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md) | Test-first plan that serves the frozen Topic E API contract as stub endpoints |
+| [Plan 2: Identity and security](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md) | Backend session/MFA protocol, Team, settings persistence and guardrails |
+| [Plan 3: Synthetic tenant and importers](docs/superpowers/plans/2026-10-09-topic-e-importers.md) | Eight mapped CSV schemas, tenant persistence, protected payroll and local synthetic seed |
 | [SUPABASE_ARCHITECTURE.md](./SUPABASE_ARCHITECTURE.md) | **Required reading for database contributors** — schema contract, RLS boundaries, change rules, emergency procedure |
 | [SUPABASE_SCHEMA_REFERENCE.md](./SUPABASE_SCHEMA_REFERENCE.md) | Column-level disaster-recovery snapshot of the live schema |
 | [AUTH_SETUP.md](./AUTH_SETUP.md) | Supabase Auth, JWT signing, custom token hook, user provisioning |

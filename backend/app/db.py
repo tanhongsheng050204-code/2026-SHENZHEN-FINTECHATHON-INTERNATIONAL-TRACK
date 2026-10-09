@@ -60,6 +60,50 @@ def initialize_local_schema() -> None:
     from app.models import Base
 
     Base.metadata.create_all(engine)
+    # create_all does not evolve pre-Plan-2 SQLite databases. PostgreSQL uses SQL migrations.
+    with engine.begin() as connection:
+        connection.exec_driver_sql(
+            "CREATE UNIQUE INDEX IF NOT EXISTS customers_tenant_id_unique "
+            "ON customers(tenant_id, id)"
+        )
+        existing = {row[1] for row in connection.exec_driver_sql("pragma table_info(user_roles)")}
+        batch_columns = {
+            row[1]
+            for row in connection.exec_driver_sql("pragma table_info(structured_ingestion_batches)")
+        }
+        if "tenant_id" not in batch_columns:
+            connection.exec_driver_sql(
+                "ALTER TABLE structured_ingestion_batches ADD COLUMN tenant_id TEXT NOT NULL "
+                "DEFAULT '00000000-0000-0000-0000-000000000001'"
+            )
+        additions = {
+            "job_functions": "JSON NOT NULL DEFAULT '[]'",
+            "display_name": "TEXT NOT NULL DEFAULT 'Team member'",
+            "email_masked": "TEXT NOT NULL DEFAULT '[restricted]'",
+            "mfa_enrolled": "BOOLEAN NOT NULL DEFAULT 0",
+            "last_active_at": "DATETIME",
+            "session_generation": "INTEGER NOT NULL DEFAULT 0",
+        }
+        for column, declaration in additions.items():
+            if column not in existing:
+                connection.exec_driver_sql(
+                    f"ALTER TABLE user_roles ADD COLUMN {column} {declaration}"
+                )
+        if "job_functions" not in existing:
+            connection.exec_driver_sql("""
+                UPDATE user_roles SET job_functions = CASE user_role
+                WHEN 'owner_director' THEN '["owner"]'
+                WHEN 'finance_ops' THEN '["finance"]'
+                WHEN 'compliance' THEN '["compliance"]'
+                ELSE '[]' END
+            """)
+        for table in ("token_vault", "protected_token_registry"):
+            columns = {row[1] for row in connection.exec_driver_sql(f"pragma table_info({table})")}
+            if "data_class" not in columns:
+                connection.exec_driver_sql(
+                    f"ALTER TABLE {table} ADD COLUMN data_class TEXT NOT NULL "
+                    "DEFAULT 'customer_personal'"
+                )
 
 
 def get_db() -> Generator[Session, None, None]:

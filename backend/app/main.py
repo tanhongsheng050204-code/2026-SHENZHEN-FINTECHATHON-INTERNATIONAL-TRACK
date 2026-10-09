@@ -4,7 +4,10 @@ from contextlib import asynccontextmanager
 from time import perf_counter
 
 from fastapi import Depends, FastAPI, Request, Response
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -23,6 +26,7 @@ from app.routes import (
     finance,
     financing,
     health,
+    imports,
     inbox,
     ingestion,
     integrations,
@@ -48,6 +52,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    if (
+        settings.supabase_anon_key
+        and settings.auth_cookie_secure
+        and not settings.production_secret_configured
+    ):
+        raise RuntimeError("Backend authentication requires independent production secrets")
     initialize_local_schema()
     if settings.prewarm_gliner_on_startup and settings.enable_gliner:
         detector = warm_detector()
@@ -83,6 +93,8 @@ async def attach_request_id(request: Request, call_next):
         )
         raise
     response.headers["X-Request-ID"] = request_id
+    if request.url.path.startswith("/auth/"):
+        response.headers["Cache-Control"] = "no-store"
     logger.info(
         "http_request_completed",
         extra={
@@ -99,7 +111,7 @@ async def attach_request_id(request: Request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_origin_regex=settings.cors_origin_regex or None,
+    # Cookie authentication requires an exact, explicit app-origin allowlist.
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=[
@@ -109,6 +121,7 @@ app.add_middleware(
         "X-FinBrain-Record-Type",
         "X-FinBrain-Preview-Digest",
         "X-Request-ID",
+        "X-CSRF-Token",
     ],
     expose_headers=["X-Request-ID"],
 )
@@ -137,6 +150,26 @@ app.include_router(trust.router)
 app.include_router(team.router)
 app.include_router(settings_routes.router)
 app.include_router(customization.router)
+app.include_router(imports.router)
+
+
+@app.exception_handler(RequestValidationError)
+async def safe_import_validation(request: Request, error: RequestValidationError):
+    if request.url.path.startswith(("/imports", "/auth")):
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": [
+                    {
+                        "loc": list(item["loc"]),
+                        "type": item["type"],
+                        "msg": "invalid_request",
+                    }
+                    for item in error.errors()
+                ]
+            },
+        )
+    return await request_validation_exception_handler(request, error)
 
 
 @app.get("/health", tags=["system"])

@@ -41,6 +41,12 @@ This plan was executed on Oct 8 (commits `d47c82d`..`6991d10`). A review of the 
 
 ## Plan series
 
+**Plan 2 implementation:** [Identity and security](2026-10-08-topic-e-identity-security.md)
+records the backend changes, browser protocol, migration and remaining live validation.
+
+**Plan 3 implementation:** [Synthetic tenant and importers](2026-10-09-topic-e-importers.md)
+records the eight CSV schemas, persistence, privacy boundaries and local synthetic seed.
+
 | # | Plan | Owner | Starts | Replaces |
 |---|---|---|---|---|
 | 1 | API contract (this plan, revision 2) | B2 | Oct 8 | — |

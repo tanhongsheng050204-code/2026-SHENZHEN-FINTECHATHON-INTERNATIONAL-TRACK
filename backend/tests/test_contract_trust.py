@@ -6,11 +6,11 @@ from tests.contract_support import client_for
 def test_posture_summarises_controls_and_recent_attacks():
     body = client_for(router, role=UserRole.COMPLIANCE).get("/trust/posture").json()
 
-    assert body["data_mode"] == "stub"
-    assert body["score"] == 92
+    assert body["data_mode"] == "live"
+    assert 0 <= body["score"] <= 100
     metrics = {metric["key"]: metric for metric in body["metrics"]}
-    assert metrics["mfa_coverage"]["value"] == "4 of 4 privileged users"
-    assert metrics["inactive_accounts"]["status"] == "attention"
+    assert metrics["mfa_coverage"]["value"] == "4/4"
+    assert metrics["inactive_users"]["status"] == "attention"
     assert {event["owasp_code"] for event in body["recent_events"]} == {"ASI01", "ASI03", "ASI09"}
 
 

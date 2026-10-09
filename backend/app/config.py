@@ -1,7 +1,7 @@
 import re
 from functools import lru_cache
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.schemas import UserRole
@@ -99,6 +99,13 @@ class Settings(BaseSettings):
     supabase_jwt_audience: str = "authenticated"
     supabase_jwt_algorithms: str = "RS256,ES256"
     supabase_service_role_key: str | None = None
+    supabase_anon_key: str = ""
+    auth_cookie_secure: bool = True
+    auth_session_hours: int = 24
+    auth_step_up_seconds: int = 300
+    auth_allow_bearer: bool = False
+    agent_daily_tool_limit: int = 100
+    agent_daily_cost_limit: float = Field(default=10.0, gt=0, allow_inf_nan=False)
     einvoice_document_bucket: str = "einvoice-documents"
     log_level: str = "INFO"
     sentry_dsn: str | None = None
@@ -152,6 +159,9 @@ class Settings(BaseSettings):
         "database_max_overflow",
         "database_pool_timeout",
         "gliner_cpu_threads",
+        "auth_session_hours",
+        "auth_step_up_seconds",
+        "agent_daily_tool_limit",
     )
     @classmethod
     def positive_connector_limits(cls, value: int) -> int:

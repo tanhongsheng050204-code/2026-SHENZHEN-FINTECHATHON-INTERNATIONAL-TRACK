@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.auth.dependencies import require_roles
+from app.auth.dependencies import require_roles, require_step_up
 from app.auth.principal import AuthPrincipal
 from app.contracts.agents import (
     ReviewDecisionRequest,
@@ -22,7 +22,9 @@ def review_inbox(
     principal: AuthPrincipal = Depends(require_roles(*_ALL_ROLES)),
 ) -> ReviewInboxResponse:
     try:
-        scope, actions = stub.review_inbox(principal.role, str(principal.user_id), job_function)
+        scope, actions = stub.review_inbox(
+            principal.role, str(principal.user_id), job_function, principal.job_functions
+        )
     except stub.InboxError as error:
         raise HTTPException(status_code=error.status_code, detail=error.code) from error
     return ReviewInboxResponse(data_mode=DataMode.STUB, job_functions=scope, actions=actions)
@@ -32,10 +34,12 @@ def review_inbox(
 def decide(
     action_id: str,
     request: ReviewDecisionRequest,
-    principal: AuthPrincipal = Depends(require_roles(*_ALL_ROLES)),
+    principal: AuthPrincipal = Depends(require_step_up(*_ALL_ROLES)),
 ) -> ReviewDecisionResponse:
     try:
-        action = stub.decide(action_id, request, principal.role, str(principal.user_id))
+        action = stub.decide(
+            action_id, request, principal.role, str(principal.user_id), principal.job_functions
+        )
     except stub.InboxError as error:
         raise HTTPException(status_code=error.status_code, detail=error.code) from error
     return ReviewDecisionResponse(data_mode=DataMode.STUB, action=action)

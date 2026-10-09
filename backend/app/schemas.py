@@ -25,6 +25,7 @@ class ProcessingStatus(StrEnum):
     PROTECTED = "protected"
     READY = "ready"
     FAILED_ENRICHMENT = "failed_enrichment"
+    QUARANTINED = "quarantined"
 
 
 class SummaryPriority(StrEnum):
@@ -224,9 +225,7 @@ class IntelligenceAction(BaseModel):
 
 class CustomerIntelligenceBrief(BaseModel):
     subject_label: str = Field(min_length=1, max_length=120)
-    status: str = Field(
-        pattern=r"^(healthy|needs_attention|at_risk|insufficient_evidence)$"
-    )
+    status: str = Field(pattern=r"^(healthy|needs_attention|at_risk|insufficient_evidence)$")
     executive_summary: str = Field(min_length=1, max_length=8_000)
     claims: list[IntelligenceClaim] = Field(default_factory=list, max_length=5)
     timeline: list[IntelligenceTimelineEvent] = Field(default_factory=list, max_length=5)

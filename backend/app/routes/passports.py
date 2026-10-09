@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.auth.dependencies import require_roles
+from app.auth.dependencies import require_roles, require_step_up
 from app.auth.principal import AuthPrincipal
 from app.contracts.common import DataMode
 from app.contracts.passports import (
@@ -26,7 +26,7 @@ _PREPARE_ROLES = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR)
 
 @router.post("/passports", response_model=PassportResponse)
 def issue_passport(
-    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
 ) -> PassportResponse:
     return stub.issue()
 
@@ -84,7 +84,7 @@ def list_auditor_grants(
 def grant_lender(
     passport_id: str,
     request: GrantRequest,
-    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
 ) -> ExternalGrantResponse:
     try:
         grant = stub.create_grant("lender", passport_id, request, str(principal.tenant_id))
@@ -97,7 +97,7 @@ def grant_lender(
 def revoke_lender(
     passport_id: str,
     grant_id: str,
-    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
 ) -> ExternalGrantResponse:
     try:
         grant = stub.revoke_grant("lender", passport_id, grant_id)
@@ -144,7 +144,7 @@ def get_audit_pack(
 def grant_auditor(
     pack_id: str,
     request: GrantRequest,
-    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
 ) -> ExternalGrantResponse:
     try:
         grant = stub.create_grant("auditor", pack_id, request, str(principal.tenant_id))
@@ -157,7 +157,7 @@ def grant_auditor(
 def revoke_auditor(
     pack_id: str,
     grant_id: str,
-    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
 ) -> ExternalGrantResponse:
     try:
         grant = stub.revoke_grant("auditor", pack_id, grant_id)

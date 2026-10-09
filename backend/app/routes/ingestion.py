@@ -25,7 +25,7 @@ def ingest(
 ) -> IngestionResponse:
     """Protected ingestion authorized by a verified Supabase principal."""
     record = CanonicalIngestionRecord.model_validate(
-        payload.model_dump(exclude={"refresh"})
+        {**payload.model_dump(exclude={"refresh"}), "tenant_id": str(principal.tenant_id)}
     )
     try:
         result = ingest_canonical_record(db, record, refresh=payload.refresh)

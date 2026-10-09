@@ -39,7 +39,7 @@ def test_invitation_masks_the_email_and_removes_duplicate_positions():
     member = response.json()["member"]
     assert member["email_masked"] == "n***@example.com"
     assert member["job_functions"] == ["finance", "hr"]
-    assert member["active"] is False
+    assert member["active"] is True
     assert "new.clerk@example.com" not in response.text
 
 

@@ -22,9 +22,7 @@ from app.services.health import heartbeat_key
 router = APIRouter(tags=["integrations"])
 
 
-@router.get(
-    "/integrations/telegram/status", response_model=TelegramIntegrationStatusResponse
-)
+@router.get("/integrations/telegram/status", response_model=TelegramIntegrationStatusResponse)
 def telegram_status(
     _principal: AuthPrincipal = Depends(
         require_roles(UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR, UserRole.COMPLIANCE)
@@ -64,7 +62,10 @@ def ingestion_records(
 ) -> list[ProtectedIngestionRecordResponse]:
     rows = db.scalars(
         select(TokenizedContent)
-        .where(TokenizedContent.source_system == source_system)
+        .where(
+            TokenizedContent.source_system == source_system,
+            TokenizedContent.tenant_id == str(_principal.tenant_id),
+        )
         .order_by(TokenizedContent.created_at.desc())
         .limit(limit)
     ).all()

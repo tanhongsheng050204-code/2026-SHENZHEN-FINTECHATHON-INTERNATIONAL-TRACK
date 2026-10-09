@@ -13,7 +13,6 @@ from decimal import Decimal
 from app.contracts.agents import ReviewAction, ReviewApproval, ReviewDecisionRequest
 from app.contracts.common import AutonomyLevel, EvidenceRef, JobFunction
 from app.schemas import UserRole
-from app.stubs import team
 
 _CREATED_AT = dt.datetime(2026, 10, 8, 9, 0, tzinfo=dt.UTC)
 _FINANCE_HR_CLERK = "20000000-0000-0000-0000-000000000002"
@@ -209,24 +208,24 @@ _INBOX: tuple[ReviewAction, ...] = (
 )
 
 
-def scope_for(role: UserRole, user_id: str) -> list[JobFunction]:
+def scope_for(role: UserRole, user_id: str, job_functions=()) -> list[JobFunction]:
     if role == UserRole.OWNER_DIRECTOR:
         return list(JobFunction)
-    return team.job_functions_for(user_id)
+    return [JobFunction(job) for job in job_functions]
 
 
-def _readable(role: UserRole, user_id: str) -> list[JobFunction]:
+def _readable(role: UserRole, user_id: str, job_functions=()) -> list[JobFunction]:
     if role in _OVERSIGHT_ROLES:
         return list(JobFunction)
-    return team.job_functions_for(user_id)
+    return [JobFunction(job) for job in job_functions]
 
 
 def _refusal(
-    action: ReviewAction, decision: str, role: UserRole, user_id: str
+    action: ReviewAction, decision: str, role: UserRole, user_id: str, job_functions=()
 ) -> InboxError | None:
     """Why this person may not take this decision now, or None if they may."""
     is_owner = role == UserRole.OWNER_DIRECTOR
-    holds_function = action.reviewer_job_function in team.job_functions_for(user_id)
+    holds_function = action.reviewer_job_function in job_functions
     if action.autonomy_level == AutonomyLevel.L3:
         if decision == "edit":
             return InboxError("edit_not_allowed_at_l3", 409)
@@ -245,19 +244,21 @@ def _refusal(
 
 
 def review_inbox(
-    role: UserRole, user_id: str, job_function: JobFunction | None
+    role: UserRole, user_id: str, job_function: JobFunction | None, job_functions=()
 ) -> tuple[list[JobFunction], list[ReviewAction]]:
-    readable = _readable(role, user_id)
+    readable = _readable(role, user_id, job_functions)
     if job_function is not None:
         if job_function not in readable:
             raise InboxError("not_your_job_function", 403)
         readable = [job_function]
     actions = [
-        action.model_copy(update={"can_decide": _refusal(action, "approve", role, user_id) is None})
+        action.model_copy(
+            update={"can_decide": _refusal(action, "approve", role, user_id, job_functions) is None}
+        )
         for action in _INBOX
         if action.reviewer_job_function in readable
     ]
-    return scope_for(role, user_id), actions
+    return scope_for(role, user_id, job_functions), actions
 
 
 def pending_count(job_function: JobFunction) -> int:
@@ -269,12 +270,12 @@ def pending_count(job_function: JobFunction) -> int:
 
 
 def decide(
-    action_id: str, request: ReviewDecisionRequest, role: UserRole, user_id: str
+    action_id: str, request: ReviewDecisionRequest, role: UserRole, user_id: str, job_functions=()
 ) -> ReviewAction:
     action = next((a for a in _INBOX if a.id == action_id), None)
     if action is None:
         raise InboxError("action_not_found", 404)
-    refusal = _refusal(action, request.decision, role, user_id)
+    refusal = _refusal(action, request.decision, role, user_id, job_functions)
     if refusal is not None:
         raise refusal
     if request.decision == "edit":

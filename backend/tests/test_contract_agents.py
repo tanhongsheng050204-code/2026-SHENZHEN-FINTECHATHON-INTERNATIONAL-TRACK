@@ -18,7 +18,7 @@ def test_every_position_has_an_agent():
     body = client_for(router, role=UserRole.GENERAL_EMPLOYEE).get("/agents").json()
 
     agents = body["agents"]
-    assert body["data_mode"] == "stub"
+    assert body["data_mode"] == "live"
     assert len(agents) == 14
     covered = {agent["job_function"] for agent in agents} - {None}
     assert covered == {job.value for job in JobFunction}
@@ -132,6 +132,7 @@ def test_compliance_engages_global_and_single_kill_switches():
     client = client_for(router, role=UserRole.COMPLIANCE)
 
     everything = client.post("/agents/kill-switch", json={"engaged": True}).json()
+    client.post("/agents/kill-switch", json={"engaged": False})
     single = client.post(
         "/agents/kill-switch", json={"agent_id": "purchasing", "engaged": True}
     ).json()

@@ -281,8 +281,8 @@ def _build_status(job_function: JobFunction) -> str:
     return "built" if owned and all(a.build_status == "built" for a in owned) else "designed"
 
 
-def positions(role: UserRole, user_id: str) -> PositionsResponse:
-    scope = inbox.scope_for(role, user_id)
+def positions(role: UserRole, user_id: str, job_functions=()) -> PositionsResponse:
+    scope = inbox.scope_for(role, user_id, job_functions)
     return PositionsResponse(
         data_mode=DataMode.STUB,
         positions=[
@@ -314,8 +314,10 @@ def _planned(job_function: JobFunction) -> list[SkillResult]:
     ]
 
 
-def workspace(job_function: JobFunction, role: UserRole, user_id: str) -> PositionWorkspace:
-    if job_function not in inbox.scope_for(role, user_id):
+def workspace(
+    job_function: JobFunction, role: UserRole, user_id: str, job_functions=()
+) -> PositionWorkspace:
+    if job_function not in inbox.scope_for(role, user_id, job_functions):
         raise PositionError("not_your_job_function", 403)
     signals = cashflow.list_signals(horizon_days=90, job_function=job_function)
     totals = signals.by_agent

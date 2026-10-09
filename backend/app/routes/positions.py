@@ -16,7 +16,7 @@ _ALL_ROLES = tuple(UserRole)
 def list_positions(
     principal: AuthPrincipal = Depends(require_roles(*_ALL_ROLES)),
 ) -> PositionsResponse:
-    return stub.positions(principal.role, str(principal.user_id))
+    return stub.positions(principal.role, str(principal.user_id), principal.job_functions)
 
 
 @router.get("/positions/{job_function}/workspace", response_model=PositionWorkspace)
@@ -25,6 +25,8 @@ def position_workspace(
     principal: AuthPrincipal = Depends(require_roles(*_ALL_ROLES)),
 ) -> PositionWorkspace:
     try:
-        return stub.workspace(job_function, principal.role, str(principal.user_id))
+        return stub.workspace(
+            job_function, principal.role, str(principal.user_id), principal.job_functions
+        )
     except stub.PositionError as error:
         raise HTTPException(status_code=error.status_code, detail=error.code) from error

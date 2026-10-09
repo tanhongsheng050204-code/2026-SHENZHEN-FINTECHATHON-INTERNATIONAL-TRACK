@@ -12,6 +12,8 @@
 
 - Program design spec v1 — `docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md` (detailed design of the finance core, security, China reachability, demo).
 - Plan 1, the API contract (revision 2) — `docs/superpowers/plans/2026-10-08-topic-e-api-contract.md`: executed Oct 8 — 54 stub endpoints, frozen in `docs/api/topic-e-contract.json`, covering every position, cash signals, position workspaces, the review inbox by job function, company customization, and lender and auditor sharing (task M1.1).
+- Plan 2 backend implementation — `docs/superpowers/plans/2026-10-08-topic-e-identity-security.md`: identity, settings, Team and guardrails implemented locally; hosted auth/security validation remains pending.
+- Plan 3 backend implementation — `docs/superpowers/plans/2026-10-09-topic-e-importers.md`: eight mapped CSV importers and synthetic tenant implemented; local seed imported 53 rows and reconciled the day-23 RM20,560 cash basis. Automated tests and hosted RLS validation remain pending.
 
 **Status words used throughout**
 

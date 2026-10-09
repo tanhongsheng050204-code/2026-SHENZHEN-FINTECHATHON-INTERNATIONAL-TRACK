@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.db import set_worker_context
 from app.integrations.structured_csv.adapter import adapt_invoice_row, batch_reference
 from app.integrations.structured_csv.parser import parse_invoice_csv
 from app.integrations.structured_csv.schemas import (
@@ -23,10 +24,18 @@ def ingest_structured_csv(
     *,
     refresh: bool = False,
     origin_channel: str = "web_upload",
+    tenant_id: str | None = None,
 ) -> StructuredCsvBatchResult:
     """Validate, protect every accepted row, then enrich protected rows only."""
+    context = db.info.get("finbrain_rls_context", {})
+    if context.get("database_role") == "finbrain_worker":
+        set_worker_context(
+            db,
+            actor_ref=context["actor_ref"],
+            tenant_id=tenant_id or "00000000-0000-0000-0000-000000000001",
+        )
     parsed = parse_invoice_csv(data)
-    batch_ref = batch_reference(data)
+    batch_ref = batch_reference(data, tenant_id=tenant_id)
     invalid_rows = max(parsed.total_rows - len(parsed.rows), 0)
     batch = db.get(StructuredIngestionBatch, batch_ref)
     if batch is None:
@@ -34,6 +43,7 @@ def ingest_structured_csv(
             batch_ref=batch_ref,
             schema_name=SCHEMA_NAME,
             origin_channel=origin_channel,
+            tenant_id=tenant_id or "00000000-0000-0000-0000-000000000001",
             status="validated",
             total_rows=parsed.total_rows,
             valid_rows=len(parsed.rows),
@@ -72,7 +82,9 @@ def ingest_structured_csv(
     protected_results: list[StructuredCsvRowResult] = []
     protection_failures = 0
     for parsed_row in parsed.rows:
-        record = adapt_invoice_row(parsed_row, batch_ref=batch_ref, origin_channel=origin_channel)
+        record = adapt_invoice_row(
+            parsed_row, batch_ref=batch_ref, origin_channel=origin_channel, tenant_id=tenant_id
+        )
         try:
             result = protect_canonical_record(db, record, refresh=refresh)
         except Exception:

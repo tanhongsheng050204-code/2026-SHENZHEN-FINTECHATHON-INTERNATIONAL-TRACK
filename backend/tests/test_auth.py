@@ -4,7 +4,7 @@ from uuid import UUID
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -14,6 +14,18 @@ from app.auth import jwt as jwt_service
 from app.models import DEFAULT_TENANT_ID, AuthUserRole, Base
 from app.schemas import UserRole
 from app.services.conversations import create_conversation, get_active_conversation
+
+
+@pytest.fixture(autouse=True)
+def enable_legacy_bearer(monkeypatch):
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "auth_allow_bearer", True)
+
+
+def _request():
+    return Request({"type": "http", "method": "GET", "path": "/auth/me", "headers": []})
+
 
 USER_ID = UUID("50000000-0000-0000-0000-000000000005")
 TENANT_A = DEFAULT_TENANT_ID
@@ -53,7 +65,7 @@ def test_principal_uses_database_role_and_rejects_stale_claim(monkeypatch):
                 "tenant_id": TENANT_A,
             },
         )
-        principal = dependencies.get_current_user(_credentials(), db)
+        principal = dependencies.get_current_user(_request(), _credentials(), db)
         assert principal.user_id == USER_ID
         assert principal.role is UserRole.FINANCE_OPS
         assert str(principal.tenant_id) == TENANT_A
@@ -70,7 +82,7 @@ def test_principal_uses_database_role_and_rejects_stale_claim(monkeypatch):
             },
         )
         with pytest.raises(HTTPException) as error:
-            dependencies.get_current_user(_credentials(), db)
+            dependencies.get_current_user(_request(), _credentials(), db)
         assert error.value.status_code == 403
         assert error.value.detail == "stale_user_role_claim"
     finally:
@@ -82,7 +94,7 @@ def test_missing_token_and_unprovisioned_user_are_denied(monkeypatch):
     engine, db = _database()
     try:
         with pytest.raises(HTTPException) as missing:
-            dependencies.get_current_user(None, db)
+            dependencies.get_current_user(_request(), None, db)
         assert missing.value.status_code == 401
 
         monkeypatch.setattr(
@@ -91,7 +103,7 @@ def test_missing_token_and_unprovisioned_user_are_denied(monkeypatch):
             lambda _token: {"sub": str(USER_ID), "role": "authenticated", "tenant_id": TENANT_A},
         )
         with pytest.raises(HTTPException) as unprovisioned:
-            dependencies.get_current_user(_credentials(), db)
+            dependencies.get_current_user(_request(), _credentials(), db)
         assert unprovisioned.value.status_code == 403
         assert unprovisioned.value.detail == "user_not_provisioned"
     finally:
@@ -108,7 +120,7 @@ def test_missing_tenant_claim_requests_a_fresh_session(monkeypatch):
             lambda _token: {"sub": str(USER_ID), "role": "authenticated"},
         )
         with pytest.raises(HTTPException) as error:
-            dependencies.get_current_user(_credentials(), db)
+            dependencies.get_current_user(_request(), _credentials(), db)
         assert error.value.status_code == 401
         assert error.value.detail == "missing_tenant_claim"
     finally:
@@ -125,7 +137,7 @@ def test_token_verification_error_is_preserved(monkeypatch):
 
         monkeypatch.setattr(dependencies, "verify_access_token", reject)
         with pytest.raises(HTTPException) as error:
-            dependencies.get_current_user(_credentials(), db)
+            dependencies.get_current_user(_request(), _credentials(), db)
         assert error.value.status_code == 401
         assert error.value.detail == "expired_access_token"
     finally:

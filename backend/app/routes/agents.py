@@ -2,8 +2,9 @@ from collections.abc import Iterator
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.sse import EventSourceResponse
+from sqlalchemy.orm import Session
 
-from app.auth.dependencies import require_roles
+from app.auth.dependencies import require_roles, require_step_up
 from app.auth.principal import AuthPrincipal
 from app.contracts.agents import (
     AgentCardResponse,
@@ -16,7 +17,10 @@ from app.contracts.agents import (
     KillSwitchRequest,
 )
 from app.contracts.common import DataMode
+from app.db import get_db
 from app.schemas import UserRole
+from app.security.guardrails import ensure_running
+from app.services import agent_security
 from app.stubs import agents as stub
 
 router = APIRouter(tags=["agents"])
@@ -29,15 +33,19 @@ _KILL_SWITCH_ROLES = (UserRole.OWNER_DIRECTOR, UserRole.COMPLIANCE)
 @router.get("/agents", response_model=AgentListResponse)
 def list_agents(
     principal: AuthPrincipal = Depends(require_roles(*_ALL_ROLES)),
+    db: Session = Depends(get_db),
 ) -> AgentListResponse:
-    return stub.list_agents()
+    return agent_security.list_agents(db, principal)
 
 
 @router.post("/agents/runs", response_model=AgentRunCreated)
 def start_run(
     request: AgentRunRequest,
     principal: AuthPrincipal = Depends(require_roles(*_OPERATOR_ROLES)),
+    db: Session = Depends(get_db),
 ) -> AgentRunCreated:
+    for agent_id in ("supervisor", "cashflow", "receivables", "financing"):
+        ensure_running(db, str(principal.tenant_id), agent_id)
     return stub.start_run(request.goal)
 
 
@@ -65,7 +73,7 @@ def run_events(
 def change_autonomy(
     agent_id: str,
     request: AutonomyChangeRequest,
-    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
 ) -> AgentCardResponse:
     try:
         agent = stub.change_autonomy(agent_id, request)
@@ -79,12 +87,10 @@ def change_autonomy(
 @router.post("/agents/kill-switch", response_model=AgentListResponse)
 def kill_switch(
     request: KillSwitchRequest,
-    principal: AuthPrincipal = Depends(require_roles(*_KILL_SWITCH_ROLES)),
+    principal: AuthPrincipal = Depends(require_step_up(*_KILL_SWITCH_ROLES)),
+    db: Session = Depends(get_db),
 ) -> AgentListResponse:
-    try:
-        return stub.apply_kill_switch(request)
-    except LookupError as error:
-        raise HTTPException(status_code=404, detail="agent_not_found") from error
+    return agent_security.kill_switch(db, principal, request)
 
 
 @router.get("/agents/journey", response_model=JourneyResponse)

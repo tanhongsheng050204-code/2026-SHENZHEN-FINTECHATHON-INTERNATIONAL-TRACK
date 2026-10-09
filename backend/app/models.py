@@ -12,6 +12,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     LargeBinary,
@@ -85,6 +86,114 @@ class Base(DeclarativeBase):
     pass
 
 
+class BackendAuthSession(Base):
+    """Opaque browser handle; provider credentials exist only as encrypted server data."""
+
+    __tablename__ = "backend_auth_sessions"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    csrf_hash: Mapped[str] = mapped_column(String, nullable=False)
+    user_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), index=True)
+    tenant_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), ForeignKey("tenants.id"))
+    purpose: Mapped[str] = mapped_column(String, nullable=False)
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    password_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    credential_ciphertext: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    credential_nonce: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    generation: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    aal: Mapped[str] = mapped_column(String, default="aal1", nullable=False)
+    mfa_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class TenantSettingsRecord(Base):
+    __tablename__ = "tenant_settings"
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), primary_key=True
+    )
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    document: Mapped[dict] = mapped_column(ObjectType(), nullable=False)
+
+
+class TenantSettingsVersion(Base):
+    __tablename__ = "tenant_settings_versions"
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), primary_key=True
+    )
+    version: Mapped[int] = mapped_column(Integer, primary_key=True)
+    document: Mapped[dict] = mapped_column(ObjectType(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class TenantSettingsChange(Base):
+    __tablename__ = "tenant_setting_changes"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), index=True
+    )
+    area: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    requires_approval: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    base_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    proposed_document: Mapped[dict] = mapped_column(ObjectType(), nullable=False)
+    preview: Mapped[list[str]] = mapped_column(RoleListType(), nullable=False)
+    proposer_id: Mapped[str] = mapped_column(Uuid(as_uuid=False), nullable=False)
+    reviewer_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class TenantCustomization(Base):
+    __tablename__ = "tenant_customizations"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), index=True
+    )
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    document: Mapped[dict] = mapped_column(ObjectType(), nullable=False)
+    created_by: Mapped[str] = mapped_column(Uuid(as_uuid=False), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class SecurityGuardrailEvent(Base):
+    __tablename__ = "security_guardrail_events"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), index=True
+    )
+    agent_id: Mapped[str | None] = mapped_column(String)
+    owasp_code: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    detail: Mapped[str] = mapped_column(String, nullable=False)
+    outcome: Mapped[str] = mapped_column(String, nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AgentSecurityControl(Base):
+    __tablename__ = "agent_security_controls"
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), primary_key=True
+    )
+    agent_id: Mapped[str] = mapped_column(String, primary_key=True)
+    engaged: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    updated_by: Mapped[str] = mapped_column(Uuid(as_uuid=False), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AgentBudgetWindow(Base):
+    __tablename__ = "agent_budget_windows"
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), primary_key=True
+    )
+    agent_id: Mapped[str] = mapped_column(String, primary_key=True)
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    tool_calls: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    spent: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=Decimal("0.00"), nullable=False)
+
+
 # Well-known id for the single tenant that exists while multi-tenancy is being
 # rolled out. Every pre-existing row (and every SQLite/local-dev row, since there
 # is no migration-driven backfill there) belongs to this tenant.
@@ -113,6 +222,12 @@ class AuthUserRole(Base):
     )
     user_role: Mapped[str] = mapped_column(String, nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    job_functions: Mapped[list[str]] = mapped_column(RoleListType(), default=list, nullable=False)
+    display_name: Mapped[str] = mapped_column(String, default="Team member", nullable=False)
+    email_masked: Mapped[str] = mapped_column(String, default="[restricted]", nullable=False)
+    mfa_enrolled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    last_active_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    session_generation: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -159,13 +274,12 @@ class TokenVaultEntry(Base):
         Uuid(as_uuid=False), ForeignKey("tenants.id"), default=DEFAULT_TENANT_ID, nullable=False
     )
     entity_type: Mapped[str] = mapped_column(String, nullable=False)
+    data_class: Mapped[str] = mapped_column(String, default="customer_personal", nullable=False)
     encrypted_value: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
     nonce: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
     key_version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     masked_value: Mapped[str] = mapped_column(String, default="[restricted]", nullable=False)
-    encryption_algorithm: Mapped[str] = mapped_column(
-        String, default="AES-256-GCM", nullable=False
-    )
+    encryption_algorithm: Mapped[str] = mapped_column(String, default="AES-256-GCM", nullable=False)
     allowed_roles: Mapped[list[str]] = mapped_column(RoleListType(), nullable=False)
     sensitivity: Mapped[str] = mapped_column(String, default="high")
     source_record_id: Mapped[str] = mapped_column(String, nullable=False)
@@ -182,6 +296,7 @@ class ProtectedTokenRegistry(Base):
         Uuid(as_uuid=False), ForeignKey("tenants.id"), default=DEFAULT_TENANT_ID, nullable=False
     )
     entity_type: Mapped[str] = mapped_column(String, nullable=False)
+    data_class: Mapped[str] = mapped_column(String, default="customer_personal", nullable=False)
     masked_value: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
@@ -316,7 +431,8 @@ class EmailReplyCorrelation(Base):
     __tablename__ = "email_reply_correlations"
     __table_args__ = (
         UniqueConstraint(
-            "email_receipt_ref_hash", "outreach_action_id",
+            "email_receipt_ref_hash",
+            "outreach_action_id",
             name="email_reply_action_unique",
         ),
     )
@@ -345,6 +461,9 @@ class StructuredIngestionBatch(Base):
     __tablename__ = "structured_ingestion_batches"
 
     batch_ref: Mapped[str] = mapped_column(String, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), default=DEFAULT_TENANT_ID, nullable=False
+    )
     schema_name: Mapped[str] = mapped_column(String, nullable=False)
     origin_channel: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
@@ -454,9 +573,7 @@ class ProcessRecommendation(Base):
     record_count: Mapped[int] = mapped_column(Integer, nullable=False)
     source_systems: Mapped[list[str]] = mapped_column(RoleListType(), nullable=False)
     enrichment_mode: Mapped[str] = mapped_column(String, nullable=False)
-    origin_type: Mapped[str] = mapped_column(
-        String, default="process_analysis", nullable=False
-    )
+    origin_type: Mapped[str] = mapped_column(String, default="process_analysis", nullable=False)
     origin_turn_id: Mapped[int | None] = mapped_column(
         BigInteger,
         ForeignKey("conversation_turns.id", ondelete="SET NULL"),
@@ -538,6 +655,7 @@ class Customer(Base):
     __tablename__ = "customers"
     __table_args__ = (
         UniqueConstraint("tenant_id", "normalized_name", name="customers_tenant_normalized_unique"),
+        UniqueConstraint("tenant_id", "id", name="customers_tenant_id_unique"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -556,9 +674,7 @@ class Customer(Base):
 class CustomerAlias(Base):
     __tablename__ = "customer_aliases"
     __table_args__ = (
-        UniqueConstraint(
-            "tenant_id", "customer_id", "alias_token", name="customer_alias_unique"
-        ),
+        UniqueConstraint("tenant_id", "customer_id", "alias_token", name="customer_alias_unique"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -584,7 +700,10 @@ class CustomerRecordLink(Base):
     __tablename__ = "customer_record_links"
     __table_args__ = (
         UniqueConstraint(
-            "tenant_id", "customer_id", "tokenized_content_id", "match_basis",
+            "tenant_id",
+            "customer_id",
+            "tokenized_content_id",
+            "match_basis",
             name="customer_record_link_unique",
         ),
     )
@@ -615,7 +734,9 @@ class CustomerAttentionSnapshot(Base):
     __tablename__ = "customer_attention_snapshots"
     __table_args__ = (
         UniqueConstraint(
-            "tenant_id", "customer_id", "input_fingerprint",
+            "tenant_id",
+            "customer_id",
+            "input_fingerprint",
             name="customer_attention_input_unique",
         ),
     )
@@ -729,9 +850,7 @@ class TenantOutreachPolicy(Base):
     tenant_id: Mapped[str] = mapped_column(
         Uuid(as_uuid=False), ForeignKey("tenants.id"), primary_key=True
     )
-    telegram_reminders_enabled: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False
-    )
+    telegram_reminders_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     grace_days: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     repeat_interval_days: Mapped[int] = mapped_column(Integer, default=7, nullable=False)
     max_reminders: Mapped[int] = mapped_column(Integer, default=3, nullable=False)
@@ -854,9 +973,7 @@ class EInvoiceRecord(Base):
     supplier_name: Mapped[str] = mapped_column(String, nullable=False)
     supplier_tin: Mapped[str | None] = mapped_column(String)
     buyer_name: Mapped[str | None] = mapped_column(String)
-    buyer_customer_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("customers.id")
-    )
+    buyer_customer_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("customers.id"))
     buyer_email_token: Mapped[str | None] = mapped_column(String)
     buyer_phone_token: Mapped[str | None] = mapped_column(String)
     invoice_no: Mapped[str | None] = mapped_column(String)
@@ -897,3 +1014,253 @@ class EinvoiceOutreachDraft(Base):
     decided_by_user_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+# Plan 3: immutable import facts. Composite foreign keys prevent cross-tenant joins.
+class BusinessTenantMixin:
+    id: Mapped[int] = mapped_column(
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), nullable=False
+    )
+
+
+class ImportMappingRecord(Base):
+    __tablename__ = "import_mappings"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "schema_name", "header_fingerprint"),
+        UniqueConstraint("tenant_id", "id"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), nullable=False
+    )
+    schema_name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String(60), nullable=False)
+    column_map: Mapped[dict] = mapped_column(ObjectType, nullable=False)
+    header_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_by: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BusinessImportBatch(Base):
+    __tablename__ = "business_import_batches"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id"),
+        ForeignKeyConstraint(
+            ["tenant_id", "mapping_id"], ["import_mappings.tenant_id", "import_mappings.id"]
+        ),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), nullable=False
+    )
+    schema_name: Mapped[str] = mapped_column(String, nullable=False)
+    mapping_id: Mapped[str | None] = mapped_column(String)
+    fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    imported_rows: Mapped[int] = mapped_column(Integer, nullable=False)
+    duplicate_rows: Mapped[int] = mapped_column(Integer, nullable=False)
+    synthetic: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_by: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BusinessImportMixin(BusinessTenantMixin):
+    source_record_id: Mapped[str] = mapped_column(String, nullable=False)
+    record_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    batch_id: Mapped[str] = mapped_column(String, nullable=False)
+
+
+def _import_constraints(*extra):
+    return (
+        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "source_record_id"),
+        ForeignKeyConstraint(
+            ["tenant_id", "batch_id"],
+            ["business_import_batches.tenant_id", "business_import_batches.id"],
+        ),
+        *extra,
+    )
+
+
+class Supplier(BusinessTenantMixin, Base):
+    __tablename__ = "suppliers"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "normalized_name"),
+    )
+    # HMAC identity, never a plaintext normalized supplier name.
+    normalized_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    name_token: Mapped[str] = mapped_column(String, nullable=False)
+    country: Mapped[str | None] = mapped_column(String(2))
+    currency: Mapped[str] = mapped_column(String(3), default="MYR", nullable=False)
+    verified_bank_account_token: Mapped[str | None] = mapped_column(String)
+
+
+class SupplierBankChange(BusinessTenantMixin, Base):
+    __tablename__ = "supplier_bank_changes"
+    __table_args__ = (
+        ForeignKeyConstraint(["tenant_id", "supplier_id"], ["suppliers.tenant_id", "suppliers.id"]),
+        UniqueConstraint("tenant_id", "source_record_id"),
+    )
+    supplier_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    proposed_account_token: Mapped[str] = mapped_column(String, nullable=False)
+    source_record_id: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="quarantined", nullable=False)
+    callback_verified_by: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
+    maker_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
+    checker_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False))
+
+
+class BankTransaction(BusinessImportMixin, Base):
+    __tablename__ = "bank_transactions"
+    __table_args__ = _import_constraints(
+        Index("bank_transactions_tenant_date", "tenant_id", "posted_on")
+    )
+    posted_on: Mapped[date] = mapped_column(Date, nullable=False)
+    description_token: Mapped[str] = mapped_column(Text, nullable=False)
+    direction: Mapped[str] = mapped_column(String, nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    balance: Mapped[Decimal | None] = mapped_column(Numeric(14, 2))
+    counterparty_token: Mapped[str | None] = mapped_column(String)
+
+
+class Payable(BusinessImportMixin, Base):
+    __tablename__ = "payables"
+    __table_args__ = _import_constraints(
+        ForeignKeyConstraint(["tenant_id", "supplier_id"], ["suppliers.tenant_id", "suppliers.id"]),
+        Index("payables_tenant_due", "tenant_id", "due_date"),
+    )
+    supplier_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    bill_no: Mapped[str] = mapped_column(String, nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    fx_rate: Mapped[Decimal | None] = mapped_column(Numeric(12, 6))
+    amount_myr: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    due_date: Mapped[date] = mapped_column(Date, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="open", nullable=False)
+
+
+class PurchaseOrder(BusinessImportMixin, Base):
+    __tablename__ = "purchase_orders"
+    __table_args__ = _import_constraints(
+        ForeignKeyConstraint(["tenant_id", "supplier_id"], ["suppliers.tenant_id", "suppliers.id"]),
+        Index("purchase_orders_tenant_payment", "tenant_id", "expected_payment"),
+    )
+    supplier_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    po_no: Mapped[str] = mapped_column(String, nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    fx_rate: Mapped[Decimal | None] = mapped_column(Numeric(12, 6))
+    amount_myr: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    expected_delivery: Mapped[date] = mapped_column(Date, nullable=False)
+    expected_payment: Mapped[date] = mapped_column(Date, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="open", nullable=False)
+
+
+class InventoryItem(BusinessTenantMixin, Base):
+    __tablename__ = "inventory_items"
+    __table_args__ = (UniqueConstraint("tenant_id", "id"), UniqueConstraint("tenant_id", "sku"))
+    sku: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    reorder_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    lead_time_days: Mapped[int] = mapped_column(Integer, default=30, nullable=False)
+
+
+class StockSnapshot(BusinessImportMixin, Base):
+    __tablename__ = "stock_snapshots"
+    __table_args__ = _import_constraints(
+        ForeignKeyConstraint(
+            ["tenant_id", "item_id"], ["inventory_items.tenant_id", "inventory_items.id"]
+        ),
+        UniqueConstraint("tenant_id", "item_id", "snapshot_date"),
+    )
+    item_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    on_hand: Mapped[int] = mapped_column(Integer, nullable=False)
+    snapshot_date: Mapped[date] = mapped_column(Date, nullable=False)
+
+
+class PayrollRun(BusinessTenantMixin, Base):
+    __tablename__ = "payroll_runs"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "period"),
+        ForeignKeyConstraint(
+            ["tenant_id", "batch_id"],
+            ["business_import_batches.tenant_id", "business_import_batches.id"],
+        ),
+    )
+    batch_id: Mapped[str] = mapped_column(String, nullable=False)
+    period: Mapped[str] = mapped_column(String(7), nullable=False)
+    pay_date: Mapped[date] = mapped_column(Date, nullable=False)
+    total_gross: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    employer_contributions: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    status: Mapped[str] = mapped_column(String, default="draft", nullable=False)
+
+
+class PayrollLine(BusinessImportMixin, Base):
+    __tablename__ = "payroll_lines"
+    __table_args__ = _import_constraints(
+        ForeignKeyConstraint(
+            ["tenant_id", "run_id"], ["payroll_runs.tenant_id", "payroll_runs.id"]
+        ),
+    )
+    run_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    employee_token: Mapped[str] = mapped_column(String, nullable=False)
+    gross_amount_token: Mapped[str] = mapped_column(String, nullable=False)
+    gross_band: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class MarketingSpend(BusinessImportMixin, Base):
+    __tablename__ = "marketing_spend"
+    __table_args__ = _import_constraints(
+        Index("marketing_spend_tenant_period", "tenant_id", "period_start")
+    )
+    channel: Mapped[str] = mapped_column(String, nullable=False)
+    campaign_label: Mapped[str] = mapped_column(String, nullable=False)
+    spend: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    period_start: Mapped[date] = mapped_column(Date, nullable=False)
+    period_end: Mapped[date] = mapped_column(Date, nullable=False)
+    attributed_revenue: Mapped[Decimal | None] = mapped_column(Numeric(14, 2))
+
+
+class MarketplacePayout(BusinessImportMixin, Base):
+    __tablename__ = "marketplace_payouts"
+    __table_args__ = _import_constraints(
+        Index("marketplace_payouts_tenant_date", "tenant_id", "payout_date")
+    )
+    platform: Mapped[str] = mapped_column(String, nullable=False)
+    payout_date: Mapped[date] = mapped_column(Date, nullable=False)
+    gross: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    fees: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    net: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    status: Mapped[str] = mapped_column(String, default="expected", nullable=False)
+
+
+class SalesPipeline(BusinessImportMixin, Base):
+    __tablename__ = "sales_pipeline"
+    __table_args__ = _import_constraints(
+        Index("sales_pipeline_tenant_stage", "tenant_id", "stage"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["customers.tenant_id", "customers.id"]),
+    )
+    customer_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    # Legacy customer display/identity columns receive tokens/HMACs, never raw CSV names.
+    customer_token: Mapped[str] = mapped_column(String, nullable=False)
+    stage: Mapped[str] = mapped_column(String, nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    expected_payment_date: Mapped[date] = mapped_column(Date, nullable=False)
+    probability: Mapped[Decimal] = mapped_column(Numeric(3, 2), nullable=False)
+
+
+class SyntheticTenantSeed(Base):
+    __tablename__ = "synthetic_tenant_seeds"
+    tenant_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("tenants.id"), primary_key=True
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    as_of: Mapped[date] = mapped_column(Date, nullable=False)
+    annual_revenue_myr: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    manifest: Mapped[dict] = mapped_column(ObjectType, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

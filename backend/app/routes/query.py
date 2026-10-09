@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import CurrentUser
+from app.auth.dependencies import CurrentUser, has_recent_mfa
 from app.config import get_settings
 from app.db import get_db
 from app.models import (
@@ -66,9 +66,7 @@ SEMANTIC_TOP_K = 10
 SELECTED_CUSTOMER_IDENTITY_EVIDENCE_LIMIT = 5
 
 
-def _selected_customer_profile_context(
-    db: Session, *, tenant_id: str, customer_id: int
-) -> str:
+def _selected_customer_profile_context(db: Session, *, tenant_id: str, customer_id: int) -> str:
     """Build the authoritative protected identity bundle for a selected customer."""
     customer = db.get(Customer, customer_id)
     if customer is None or customer.tenant_id != tenant_id:
@@ -212,9 +210,7 @@ def query(
     )
     planning_history = (
         protected_planning_history(db, conversation.id, str(principal.tenant_id))
-        if payload.conversation_id
-        and not explicit_entity
-        and not ordinal_reference
+        if payload.conversation_id and not explicit_entity and not ordinal_reference
         else []
     )
     conversational_plan = (
@@ -268,9 +264,7 @@ def query(
     selected_customer_full_scope = (
         conversation.context_customer_id is not None and not ordinal_reference
     )
-    referential = (
-        reference_requested and bool(prior_hits) and not selected_customer_full_scope
-    )
+    referential = reference_requested and bool(prior_hits) and not selected_customer_full_scope
     ambiguous_person_reference = bool(
         conversation.context_customer_id is None
         and (
@@ -297,9 +291,7 @@ def query(
         else ""
     )
     resolved_follow_up = (
-        resolve_ordinal_reference(sanitized_question)
-        if ordinal_reference
-        else sanitized_question
+        resolve_ordinal_reference(sanitized_question) if ordinal_reference else sanitized_question
     )
     referential_instruction = (
         "Historical SOURCE-n labels are local to their original turn and have already "
@@ -330,8 +322,7 @@ def query(
     scoped_profile_hits: list[RetrievalHit] = []
     scoped_profile_answer: CitedAnswer | None = None
     if conversation.context_customer_id is not None and (
-        is_customer_profile_lookup(payload.question)
-        or is_customer_needs_lookup(payload.question)
+        is_customer_profile_lookup(payload.question) or is_customer_needs_lookup(payload.question)
     ):
         scoped_profile_hits = list_eligible_hits(db, plan.filters)
         if is_customer_profile_lookup(payload.question):
@@ -533,6 +524,8 @@ def query(
         query_hash_value,
         actor_ref=principal.actor_ref,
         turn_ref=str(turn.id),
+        allow_exact=has_recent_mfa(principal),
+        tenant_id=str(principal.tenant_id),
     )
     authorized_brief, brief_trace = authorize_brief_with_trace(
         db,
@@ -541,6 +534,8 @@ def query(
         query_hash=query_hash_value,
         actor_ref=principal.actor_ref,
         turn_ref=str(turn.id),
+        allow_exact=has_recent_mfa(principal),
+        tenant_id=str(principal.tenant_id),
     )
     settings = get_settings()
     reasoning_model = (
@@ -593,11 +588,7 @@ def query(
             protected_question_tokens=len(set(TOKEN_PATTERN.findall(sanitized_question))),
             protected_context_tokens=len(
                 {
-                    *(
-                        token
-                        for hit in hits
-                        for token in TOKEN_PATTERN.findall(hit.retrieval_text)
-                    ),
+                    *(token for hit in hits for token in TOKEN_PATTERN.findall(hit.retrieval_text)),
                     *(
                         token
                         for turn in planning_history

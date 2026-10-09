@@ -11,6 +11,7 @@ from app.integrations.structured_csv.parser import parse_invoice_csv
 from app.integrations.structured_csv.schemas import SCHEMA_NAME
 from app.integrations.structured_csv.service import ingest_structured_csv
 from app.integrations.telegram.extractors import ExtractionError, extract_document
+from app.models import DEFAULT_TENANT_ID
 from app.schemas import (
     CanonicalIngestionRecord,
     ProcessingStatus,
@@ -22,10 +23,10 @@ from app.schemas import (
 from app.services.ingestion import ingest_canonical_record, preview_canonical_record
 
 
-def upload_digest(data: bytes) -> str:
+def upload_digest(data: bytes, tenant_id: str | None = None) -> str:
     return hmac.new(
         get_settings().token_root_secret.encode(),
-        b"web-upload-preview\x00" + data,
+        b"web-upload-preview\x00" + ((tenant_id.encode() + b"\x00") if tenant_id else b"") + data,
         hashlib.sha256,
     ).hexdigest()
 
@@ -37,13 +38,14 @@ def _safe_suffix(filename: str) -> str:
 
 
 def _document_record(
-    data: bytes, *, filename: str, mime_type: str, record_type: str
+    data: bytes, *, filename: str, mime_type: str, record_type: str, tenant_id: str | None = None
 ) -> tuple[CanonicalIngestionRecord, str]:
     extracted = extract_document(data, filename=filename, mime_type=mime_type)
-    digest = upload_digest(data)
+    digest = upload_digest(data, tenant_id)
     record = CanonicalIngestionRecord(
         source_record_id=f"document_upload:{digest[:24]}",
         source_system="document_upload",
+        tenant_id=tenant_id or DEFAULT_TENANT_ID,
         record_type=record_type,
         text=extracted.text,
         metadata={
@@ -58,9 +60,9 @@ def _document_record(
 
 
 def preview_upload(
-    data: bytes, *, filename: str, mime_type: str, record_type: str
+    data: bytes, *, filename: str, mime_type: str, record_type: str, tenant_id: str | None = None
 ) -> UploadPreviewResponse:
-    digest = upload_digest(data)
+    digest = upload_digest(data, tenant_id)
     if _safe_suffix(filename) == ".csv":
         parsed = parse_invoice_csv(data)
         if not parsed.rows:
@@ -73,7 +75,7 @@ def preview_upload(
                 raise ExtractionError("unsupported_csv_schema")
         items: list[UploadProtectedItem] = []
         for row in parsed.rows[:10]:
-            record = adapt_invoice_row(row, batch_ref=digest)
+            record = adapt_invoice_row(row, batch_ref=digest, tenant_id=tenant_id)
             items.append(
                 UploadProtectedItem(
                     row_number=row.row_number,
@@ -95,7 +97,7 @@ def preview_upload(
         )
 
     record, input_kind = _document_record(
-        data, filename=filename, mime_type=mime_type, record_type=record_type
+        data, filename=filename, mime_type=mime_type, record_type=record_type, tenant_id=tenant_id
     )
     return UploadPreviewResponse(
         preview_digest=digest,
@@ -119,12 +121,13 @@ def commit_upload(
     mime_type: str,
     record_type: str,
     expected_digest: str,
+    tenant_id: str | None = None,
 ) -> UploadCommitResponse:
-    digest = upload_digest(data)
+    digest = upload_digest(data, tenant_id)
     if not hmac.compare_digest(digest, expected_digest):
         raise ValueError("preview_digest_mismatch")
     if _safe_suffix(filename) == ".csv":
-        result = ingest_structured_csv(db, data)
+        result = ingest_structured_csv(db, data, tenant_id=tenant_id)
         return UploadCommitResponse(
             preview_digest=digest,
             input_kind="structured_csv",
@@ -149,7 +152,7 @@ def commit_upload(
         )
 
     record, input_kind = _document_record(
-        data, filename=filename, mime_type=mime_type, record_type=record_type
+        data, filename=filename, mime_type=mime_type, record_type=record_type, tenant_id=tenant_id
     )
     result = ingest_canonical_record(db, record)
     ready = result.processing_status is ProcessingStatus.READY

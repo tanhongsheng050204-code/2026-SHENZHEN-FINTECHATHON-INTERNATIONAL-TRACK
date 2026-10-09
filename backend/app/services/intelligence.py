@@ -299,6 +299,8 @@ def authorize_brief_with_trace(
     query_hash: str,
     actor_ref: str = "legacy",
     turn_ref: str = "unbound",
+    allow_exact: bool | None = None,
+    tenant_id: str | None = None,
 ) -> tuple[CustomerIntelligenceBrief | None, DetokenizationTrace | None]:
     if brief is None:
         return None, None
@@ -309,6 +311,8 @@ def authorize_brief_with_trace(
         query_hash,
         actor_ref=actor_ref,
         turn_ref=turn_ref,
+        allow_exact=allow_exact,
+        tenant_id=tenant_id,
     )
     try:
         parsed = json.loads(trace.text, strict=False)
