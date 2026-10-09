@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AgentRunPanel } from "../components/AgentRunPanel";
 import { AssistantReply } from "../components/AssistantReply";
+import { BriefingCard } from "../components/BriefingCard";
 import { interpretCommand } from "../api/topicE";
 import { useAuth } from "../auth/AuthProvider";
 import { useAppState } from "../lib/appState";
@@ -406,6 +407,7 @@ export default function Agents() {
               <h1 className="fb-chat-welcome-title"><LogoMark large /> {t("agents.title")}</h1>
               <p>{t("agents.desc")}</p>
             </header>
+            <section className="fb-cash-card fb-run-panel is-compact" aria-label="Your briefing"><BriefingCard /></section>
             {canRunAgents && <AgentRunPanel compact />}
           </div>
         )}
@@ -433,7 +435,7 @@ export default function Agents() {
                     {msg.isFallback && (
                       <div className="fb-intel-fallback" role="status">The live request failed; no sample answer was substituted.</div>
                     )}
-                    {!msg.brief && msg.queryIntent !== "list_records" && (
+                    {!msg.brief && msg.queryIntent !== "list_records" && (msg.text || msg.showProtected) && (
                       <span style={{ whiteSpace: "pre-wrap" }}>
                         {msg.showProtected && msg.protectedText ? msg.protectedText : msg.text}
                       </span>

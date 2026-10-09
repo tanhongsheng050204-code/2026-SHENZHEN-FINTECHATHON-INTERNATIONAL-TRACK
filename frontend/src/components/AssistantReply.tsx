@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppState } from "../lib/appState";
+import { BriefingCard } from "./BriefingCard";
 import { SCREENS, type Screen } from "../lib/screens";
 import { friendlyLoadError } from "../api/client";
 import {
@@ -40,12 +41,10 @@ export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNa
 
   if (plan.kind === "run_goal" && plan.goal) return <GoalRun goal={plan.goal} message={plan.message} />;
   if (plan.kind === "decide") return <DecisionCard plan={plan} />;
+  if (plan.kind === "briefing") return <BriefingCard onNavigate={onNavigate} />;
   return (
     <div className="fb-assistant">
       <p>{plan.message}</p>
-      {plan.kind === "briefing" && (
-        <button type="button" className="fb-cash-more" onClick={() => { onNavigate?.(); show("home"); }}>Open Today →</button>
-      )}
     </div>
   );
 }

@@ -34,3 +34,31 @@ class AssistantPlan(BaseModel):
     needs_confirmation: bool = False
     needs_step_up: bool = False
     understood_by: Literal["rules", "model"] = "rules"
+
+
+class BriefingLine(BaseModel):
+    kind: Literal["inbox", "cash", "sharing", "guardrails", "data"]
+    text: str
+    screen: str | None = None
+    tone: Literal["ok", "attention", "risk"] = "ok"
+
+
+class Briefing(BaseModel):
+    """What needs this person today, built from their own records and role."""
+
+    greeting: str
+    lines: list[BriefingLine]
+
+
+class BriefingPreferenceRequest(BaseModel):
+    email: bool
+    telegram_chat_id: str | None = Field(default=None, pattern=r"^\d{5,15}$")
+
+
+class BriefingPreference(BaseModel):
+    email: bool
+    telegram: bool
+
+
+class BriefingSendResult(BaseModel):
+    sent: list[Literal["email", "telegram"]]

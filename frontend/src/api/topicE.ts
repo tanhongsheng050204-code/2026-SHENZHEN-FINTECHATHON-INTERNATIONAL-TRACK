@@ -938,3 +938,42 @@ export interface AssistantPlan {
 export async function interpretCommand(text: string): Promise<AssistantPlan> {
   return parse<AssistantPlan>(await authenticatedFetch("/assistant/interpret", json({ text })));
 }
+
+export interface BriefingLine {
+  kind: "inbox" | "cash" | "sharing" | "guardrails" | "data";
+  text: string;
+  screen: string | null;
+  tone: "ok" | "attention" | "risk";
+}
+
+export interface Briefing {
+  greeting: string;
+  lines: BriefingLine[];
+}
+
+export async function fetchBriefing(): Promise<Briefing> {
+  return parse<Briefing>(await authenticatedFetch("/assistant/briefing"));
+}
+
+export interface BriefingPreference {
+  email: boolean;
+  telegram: boolean;
+}
+
+export async function fetchBriefingPreference(): Promise<BriefingPreference> {
+  return parse<BriefingPreference>(await authenticatedFetch("/assistant/briefing/preferences"));
+}
+
+export async function saveBriefingPreference(email: boolean, telegramChatId: string | null): Promise<BriefingPreference> {
+  return parse<BriefingPreference>(
+    await authenticatedFetch("/assistant/briefing/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, telegram_chat_id: telegramChatId }),
+    }),
+  );
+}
+
+export async function sendBriefingNow(): Promise<{ sent: ("email" | "telegram")[] }> {
+  return parse<{ sent: ("email" | "telegram")[] }>(await authenticatedFetch("/assistant/briefing/send-now", { method: "POST" }));
+}

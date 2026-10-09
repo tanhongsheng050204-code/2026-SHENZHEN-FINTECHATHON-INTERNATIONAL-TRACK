@@ -1,6 +1,8 @@
+import asyncio
 import logging
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime
 from time import perf_counter
 
 from fastapi import Depends, FastAPI, Request, Response
@@ -54,6 +56,28 @@ init_sentry(settings)
 logger = logging.getLogger(__name__)
 
 
+async def _briefing_loop() -> None:
+    """Opt-in morning briefings: check once a minute, send at the configured hour."""
+    from zoneinfo import ZoneInfo
+
+    from app.db import SessionLocal
+    from app.services import briefing_push
+
+    def tick() -> int:
+        now = datetime.now(ZoneInfo(settings.application_timezone)).replace(tzinfo=None)
+        with SessionLocal() as db:
+            return briefing_push.run_due(db, now)
+
+    while True:
+        try:
+            sent = await asyncio.to_thread(tick)
+            if sent:
+                logger.info("briefings_pushed", extra={"count": sent})
+        except Exception as error:  # a failed tick must not stop tomorrow's briefing
+            logger.warning("briefing_push_failed", extra={"error_type": type(error).__name__})
+        await asyncio.sleep(60)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     if (
@@ -83,7 +107,10 @@ async def lifespan(_: FastAPI):
                 "failure_code": detector.failure_code,
             },
         )
+    briefings = asyncio.create_task(_briefing_loop()) if settings.briefing_push_enabled else None
     yield
+    if briefings is not None:
+        briefings.cancel()
 
 
 app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)

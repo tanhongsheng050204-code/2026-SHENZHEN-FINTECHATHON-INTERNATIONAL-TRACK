@@ -92,6 +92,9 @@ class Settings(BaseSettings):
     structured_csv_max_columns: int = 20
     structured_csv_max_cell_chars: int = 4_000
     application_timezone: str = "Asia/Kuala_Lumpur"
+    # Opt-in morning briefings by email/Telegram (app.services.briefing_push).
+    briefing_push_enabled: bool = False
+    briefing_push_hour: int = Field(default=8, ge=0, le=23)
     service_instance_id: str | None = None
     railway_service_id: str | None = None
     supabase_url: str = ""
