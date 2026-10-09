@@ -11,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.auth.dependencies import get_current_user
 from app.db import get_db
-from app.models import Base, Tenant, WorkflowAuditEntry
+from app.models import AuthUserRole, Base, Tenant, WorkflowAuditEntry
 from app.routes.assistant import router
 from app.schemas import UserRole
 from app.security import rate_limit
@@ -40,6 +40,14 @@ def db():
     Base.metadata.create_all(engine)
     session = Session(engine)
     session.add(Tenant(id=str(TENANT_A), slug="tenant-a", name="Tenant A"))
+    session.add(
+        AuthUserRole(
+            user_id=str(_owner().user_id),
+            tenant_id=str(TENANT_A),
+            user_role=UserRole.OWNER_DIRECTOR.value,
+            job_functions=["owner"],
+        )
+    )
     session.commit()
     return session
 
@@ -88,6 +96,28 @@ def test_opted_in_person_gets_one_push_per_channel_each_morning(db, sent):
     assert channels == ["email", "telegram"]
     assert all("Sign in to DuitDuit" in body for _, _, body in sent)
     assert all("RM29,440.00" not in body for _, _, body in sent)
+
+
+def test_people_removed_from_the_team_get_no_push(db, sent):
+    _client(db).put(
+        "/assistant/briefing/preferences", json={"email": True, "telegram_chat_id": None}
+    )
+    db.delete(db.get(AuthUserRole, (str(_owner().user_id), str(TENANT_A))))
+    db.commit()
+
+    assert briefing_push.run_due(db, dt.datetime(2026, 10, 12, 8, 0)) == 0
+    assert sent == []
+
+
+def test_deactivated_people_get_no_push(db, sent):
+    _client(db).put(
+        "/assistant/briefing/preferences", json={"email": True, "telegram_chat_id": None}
+    )
+    db.get(AuthUserRole, (str(_owner().user_id), str(TENANT_A))).active = False
+    db.commit()
+
+    assert briefing_push.run_due(db, dt.datetime(2026, 10, 12, 8, 0)) == 0
+    assert sent == []
 
 
 def test_telegram_id_is_stored_encrypted(db, sent):

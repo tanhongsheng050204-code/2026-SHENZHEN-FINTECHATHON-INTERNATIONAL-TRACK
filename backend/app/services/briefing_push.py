@@ -83,8 +83,6 @@ def set_preference(
     contacts = {
         "email": principal.email if email else None,
         "telegram": telegram_chat_id,
-        "role": principal.role.value,
-        "job_functions": list(getattr(principal, "job_functions", ()) or ()),
     }
     write_workflow_event(
         db,
@@ -189,11 +187,12 @@ def send_now(db, principal: AuthPrincipal) -> list[str]:
 
 
 def _principal_for(db, tenant_id: str, user_id: str, contacts: dict) -> AuthPrincipal | None:
+    # The current membership is the only authority: no active row, no briefing.
     row = db.get(AuthUserRole, (user_id, tenant_id))
-    if row is not None and not row.active:
+    if row is None or not row.active:
         return None
-    role = UserRole(row.user_role if row is not None else contacts["role"])
-    jobs = tuple(row.job_functions) if row is not None else tuple(contacts.get("job_functions", ()))
+    role = UserRole(row.user_role)
+    jobs = tuple(row.job_functions or ())
     extra = {}
     if "job_functions" in getattr(AuthPrincipal, "__dataclass_fields__", {}):
         extra["job_functions"] = jobs
