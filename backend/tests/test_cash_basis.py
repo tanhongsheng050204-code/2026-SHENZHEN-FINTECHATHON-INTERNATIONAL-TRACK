@@ -290,3 +290,86 @@ def test_live_agent_run_asks_for_early_payment_and_saves_proposals_once(monkeypa
         proposals["cashflow"].action_id,
         proposals["receivables"].action_id,
     }
+
+
+@needs_plan3
+def test_live_scorecard_scores_the_same_facts_the_financing_rules_read():
+    db = _synthetic_tenant()
+    forecast = cashflow_engine.build_forecast(
+        cash_basis.load(db, TENANT, AS_OF), horizon_days=90, as_of=AS_OF
+    )
+    profile = financing_profile.compute(db, TENANT, forecast)
+
+    card = financing.scorecard(profile, shortfall_day=forecast.shortfall.day, public=True)
+    factors = {f.key: f for f in card.factors}
+
+    assert card.data_mode == "live"
+    assert (factors["cash_runway"].value, factors["cash_runway"].points) == (
+        "Shortfall on day 23",
+        20,
+    )
+    assert (factors["top_customer_share"].value, factors["top_customer_share"].points) == (
+        "31%",
+        45,
+    )
+    # No source yet: zero points, said plainly, never the demo value.
+    assert (factors["months_trading"].value, factors["months_trading"].points) == (
+        "Not on record",
+        0,
+    )
+    assert (
+        factors["bank_lines_matched_share"].value,
+        factors["bank_lines_matched_share"].points,
+    ) == ("Not measured", 0)
+    assert card.score == card.base_points + sum(f.points for f in card.factors)
+
+
+def test_live_scorecard_without_public_signals_scores_them_zero():
+    profile = financing.Profile(DataMode.LIVE, {})
+
+    card = financing.scorecard(profile, shortfall_day=None, public=False)
+    reputation = next(f for f in card.factors if f.key == "public_reputation")
+
+    assert (reputation.value, reputation.points) == ("Not connected", 0)
+    assert card.public_signals == []
+    assert next(f for f in card.factors if f.key == "cash_runway").points == 80
+
+
+@needs_plan3
+def test_months_trading_comes_from_the_declared_registration_date():
+    from app.services.settings_catalog import default_settings
+
+    db = _synthetic_tenant()
+    settings = default_settings("SYNTHETIC importer")
+    settings.profile.registered_on = dt.date(2023, 8, 1)
+    document = settings.model_dump(mode="json")
+    db.add(models.TenantSettingsRecord(tenant_id=TENANT, version=1, document=document))
+    db.commit()
+    forecast = cashflow_engine.build_forecast(
+        cash_basis.load(db, TENANT, AS_OF), horizon_days=90, as_of=AS_OF
+    )
+
+    values = financing_profile.compute(db, TENANT, forecast).values
+
+    assert values["months_trading"] == Decimal("38")
+
+
+@needs_plan3
+def test_chase_with_nobody_late_drafts_requests_for_invoices_due_before_the_gap(monkeypatch):
+    from app.services import playbooks
+
+    db = _synthetic_tenant()
+    def on_seed_date(db, principal, *, horizon=90):
+        basis = cash_basis.load(db, TENANT, AS_OF)
+        return basis, cashflow_engine.build_forecast(basis, horizon_days=horizon, as_of=AS_OF)
+
+    monkeypatch.setattr(playbooks, "_forecast", on_seed_date)
+    owner = principal(UserRole.OWNER_DIRECTOR, tenant_id=__import__("uuid").UUID(TENANT))
+
+    steps, ids, _, _ = playbooks._chase_late_payers(db, owner)
+
+    # Nothing is past due on the seed date; invoices due by day 23 are the ones
+    # worth asking about, one request per customer, each waiting for review.
+    assert "No invoice is past due" in steps[0].text
+    assert "due before the cash gap on day 23" in steps[0].text
+    assert len(ids) == 2

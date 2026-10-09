@@ -130,6 +130,7 @@ function AreaForm({ area, draft, setDraft, readOnly }: {
                   {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>{new Date(2026, i, 1).toLocaleString("en-MY", { month: "long" })}</option>)}
                 </select>
               </Field>
+              <Field label="Registered on (sets months trading)"><input type="date" value={p.registered_on ?? ""} max={new Date().toISOString().slice(0, 10)} onChange={(e) => set("profile", { ...p, registered_on: e.target.value || null })} /></Field>
             </div>
             <Checks legend="Working days" options={WEEK} value={p.working_days} onChange={(v) => set("profile", { ...p, working_days: v })} label={(d) => d[0].toUpperCase() + d.slice(1)} />
             <Checks legend="Languages" options={LANGS} value={p.languages} onChange={(v) => set("profile", { ...p, languages: v })} label={(l) => ({ en: "English", ms: "Malay", zh: "Chinese" })[l]} />

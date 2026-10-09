@@ -59,6 +59,7 @@ _PHRASES = {
     "month_end": r"\b(close the month|month[ -]end( checklist)?)\b",
 }
 _ZERO = Decimal("0.00")
+_BEFORE_GAP = "invoices due before the cash gap"
 
 
 def match(text: str) -> PlaybookId | None:
@@ -195,10 +196,30 @@ def _reminder_groups(db, principal, forecast):
         ).all()
         for row in rows:
             groups[f"customer:{row.customer_id}"].append(f"pipeline:{row.id}")
+        if not rows and forecast.shortfall:
+            # Nobody is late yet. The invoices that land before the gap are the ones
+            # worth a polite request to confirm payment dates.
+            due = db.scalars(
+                select(SalesPipeline).where(
+                    SalesPipeline.tenant_id == tenant_id,
+                    SalesPipeline.stage == "invoiced",
+                    SalesPipeline.expected_payment_date >= forecast.as_of,
+                    SalesPipeline.expected_payment_date <= forecast.shortfall.date,
+                )
+            ).all()
+            for row in due:
+                groups[f"customer:{row.customer_id}"].append(f"pipeline:{row.id}")
+            return groups, _BEFORE_GAP
     return (
         groups,
         "late-payment risks" if forecast.data_mode == DataMode.STUB else "overdue pipeline",
     )
+
+
+def _customer_label(ref: str) -> str:
+    """Ids only (titles live on the audit chain); the inbox links to the record."""
+    kind, _, key = ref.partition(":")
+    return f"synthetic customer {key}" if kind == "synthetic-customer" else f"customer #{key}"
 
 
 def _chase_late_payers(db, principal):
@@ -213,7 +234,7 @@ def _chase_late_payers(db, principal):
                 agent_id="receivables",
                 reviewer=JobFunction.FINANCE,
                 level=AutonomyLevel.L2,
-                title=f"Review payment reminder — {customer_ref}",
+                title=f"Payment reminder for {_customer_label(customer_ref)}",
                 summary=f"Review one reminder covering {len(record_refs)} {source}. "
                 "Verify the recipient, balance and timing before sending. Nothing has been sent.",
                 draft="Please confirm the payment date for the outstanding invoices "
@@ -230,7 +251,11 @@ def _chase_late_payers(db, principal):
             _step(
                 "Receivables",
                 "attention" if groups else "done",
-                f"{len(groups)} customers with {source} found.",
+                f"No invoice is past due. {len(groups)} customers have {source} "
+                f"on day {forecast.shortfall.day}; asking them to confirm payment dates "
+                "helps cover it."
+                if source == _BEFORE_GAP
+                else f"{len(groups)} customers with {source} found.",
             ),
             _step(
                 "Reminder drafts",

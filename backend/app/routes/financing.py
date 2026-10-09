@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
 from app.auth.principal import AuthPrincipal
+from app.contracts.common import DataMode
 from app.contracts.financing import (
     ApplicationPackRequest,
     ApplicationPackResponse,
@@ -13,6 +14,7 @@ from app.contracts.financing import (
     ScorecardResponse,
 )
 from app.db import get_db
+from app.models import SyntheticTenantSeed
 from app.schemas import UserRole
 from app.services import cashflow_engine, financing_profile
 from app.services.cashflow import basis_for
@@ -58,6 +60,21 @@ def create_application_pack(
 @router.get("/financing/scorecard", response_model=ScorecardResponse)
 def financing_scorecard(
     principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+    db: Session = Depends(get_db),
 ) -> ScorecardResponse:
-    """A points scorecard a lender can read line by line, with public signals as one factor."""
-    return stub.scorecard()
+    """A points scorecard a lender can read line by line, on the same facts as the matches."""
+    today = dt.date.today()
+    forecast = cashflow_engine.build_forecast(
+        basis_for(db, principal, today), horizon_days=90, as_of=today
+    )
+    profile = financing_profile.compute(db, str(principal.tenant_id), forecast)
+    if profile.data_mode != DataMode.LIVE:
+        return stub.scorecard()
+    # Public ratings exist only as labelled synthetic demo data, so only a
+    # synthetic tenant shows them.
+    synthetic = db.get(SyntheticTenantSeed, str(principal.tenant_id)) is not None
+    return stub.scorecard(
+        profile,
+        shortfall_day=forecast.shortfall.day if forecast.shortfall else None,
+        public=synthetic,
+    )

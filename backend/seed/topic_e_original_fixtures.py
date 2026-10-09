@@ -6,20 +6,35 @@ Data sources, Ask DuitDuit) read e-invoices and protected email/Telegram records
 which seed/seed_data.py only puts in the default tenant. Running this after
 topic_e.py adds the same fixtures to the synthetic tenant, so one company tells
 the whole story. Non-destructive and idempotent; refuses any non-synthetic tenant.
+
+Two adjustments keep that one story consistent:
+- The fixture bills are dated August, before the cash story's seed date. The opening
+  bank balance on that date already reflects them, so unpaid ones are recorded as
+  paid on their due date instead of showing as overdue next to the cash forecast.
+- The synthetic company declares a registration date (as an owner would in Company
+  settings), which is the source of months trading for financing.
 """
 
 import argparse
+import datetime as dt
 
 from sqlalchemy import select
 
 from app.db import SessionLocal, initialize_local_schema
-from app.models import Tenant, TokenizedContent
+from app.models import (
+    SyntheticTenantSeed,
+    Tenant,
+    TenantSettingsRecord,
+    TenantSettingsVersion,
+    TokenizedContent,
+)
 from app.services.ingestion import ingest_canonical_record
 from seed.sample_records import SAMPLE_RECORDS
 from seed.seed_data import EINVOICE_SEED_RECORDS, adapt_seed_record, seed_einvoice_records
 
 SYNTHETIC_SLUG_PREFIX = "synthetic-"
 ORIGINAL_BUYER = "FINBRAIN Sdn Bhd"
+SYNTHETIC_REGISTERED_ON = dt.date(2023, 8, 1)
 
 
 def _synthetic_tenant(db, tenant_id: str) -> Tenant:
@@ -34,17 +49,37 @@ def _scoped(tenant_id: str, source_record_id: str) -> str:
     return f"t{tenant_id.replace('-', '')[:12]}:{source_record_id}"
 
 
+def _declare_registration(db, tenant_id: str) -> None:
+    row = db.get(TenantSettingsRecord, tenant_id)
+    if row is None or row.document.get("profile", {}).get("registered_on"):
+        return
+    document = dict(row.document)
+    document["profile"] = {
+        **document["profile"],
+        "registered_on": SYNTHETIC_REGISTERED_ON.isoformat(),
+    }
+    row.version += 1
+    row.document = document
+    db.add(TenantSettingsVersion(tenant_id=tenant_id, version=row.version, document=document))
+    db.commit()
+
+
 def seed_original_fixtures(db, tenant_id: str) -> None:
     tenant = _synthetic_tenant(db, str(tenant_id))
     tenant_id = str(tenant.id)
+    marker = db.get(SyntheticTenantSeed, tenant_id)
 
     invoices = []
     for fields in EINVOICE_SEED_RECORDS:
         record = dict(fields, tenant_id=tenant_id)
         if record.get("buyer_name") == ORIGINAL_BUYER:
             record["buyer_name"] = tenant.name
+        due = record.get("due_date")
+        if marker is not None and record.get("paid_at") is None and due and due < marker.as_of:
+            record["paid_at"] = due
         invoices.append(record)
     seed_einvoice_records(db, invoices)
+    _declare_registration(db, tenant_id)
 
     for record in SAMPLE_RECORDS:
         canonical = adapt_seed_record(record).model_copy(

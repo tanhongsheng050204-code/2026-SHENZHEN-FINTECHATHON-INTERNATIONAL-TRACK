@@ -12,7 +12,9 @@ than passing on an invented value:
 - top_customer_share: the largest customer's share of open invoiced and ordered pipeline.
 - import_payables_share: foreign-currency open payables and purchase orders, by MYR amount.
 - annual_revenue: the synthetic seed's declared revenue, when the tenant is synthetic.
-- months_trading and anchor_buyer_programme: no source yet.
+- months_trading: whole months since the registration date the owner declares in
+  company settings.
+- anchor_buyer_programme: no source yet.
 """
 
 import datetime as dt
@@ -104,6 +106,16 @@ def compute(db, tenant_id: str, forecast: ForecastResponse) -> Profile:
 
     if cash_basis._plan3_deployed():
         _business_facts(db, tenant_id, as_of, values)
+
+    settings = db.get(m.TenantSettingsRecord, tenant_id)
+    registered = (settings.document.get("profile") or {}).get("registered_on") if settings else None
+    if registered:
+        start = dt.date.fromisoformat(registered)
+        months = (as_of.year - start.year) * 12 + as_of.month - start.month
+        if as_of.day < start.day:
+            months -= 1
+        if months >= 0:
+            values["months_trading"] = Decimal(months)
 
     seed_type = getattr(m, "SyntheticTenantSeed", None)
     seed = db.get(seed_type, tenant_id) if seed_type is not None else None

@@ -54,6 +54,10 @@ class CompanyProfile(BaseModel):
         min_length=1
     )
     languages: list[Literal["en", "ms", "zh"]] = Field(min_length=1)
+    registered_on: dt.date | None = Field(
+        default=None,
+        description="Company registration date, declared by the owner; sets months trading",
+    )
 
     @field_validator("working_days")
     @classmethod

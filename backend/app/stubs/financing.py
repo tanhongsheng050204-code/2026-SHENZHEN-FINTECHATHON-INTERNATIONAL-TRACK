@@ -498,9 +498,23 @@ def grade_for(score: int) -> str:
     return "E"
 
 
-def _band_factor(key: str) -> ScoreFactor:
+def _band_factor(key: str, values: dict[str, Decimal] | None = None) -> ScoreFactor:
     label, unit, evidence, max_points, direction, bands = _BANDS[key]
-    value = _SCORE_INPUTS[key]
+    value = (_SCORE_INPUTS if values is None else values).get(key)
+    if value is None:
+        # No source in the tenant's records: no points, and no borrowed demo value.
+        measured = key != "bank_lines_matched_share"
+        return ScoreFactor(
+            key=key,
+            label=label,
+            value="Not on record" if measured else "Not measured",
+            points=0,
+            max_points=max_points,
+            reason="No source in your records yet, so this factor earns no points."
+            if measured
+            else "DuitDuit does not match bank lines to records yet, so this earns no points.",
+            evidence=[evidence],
+        )
     points = factor_points(key, value)
     bound = next(b for b, p in bands if p == points)
     if direction == "higher":
@@ -518,46 +532,77 @@ def _band_factor(key: str) -> ScoreFactor:
     )
 
 
-def scorecard() -> ScorecardResponse:
+def scorecard(
+    profile: Profile | None = None,
+    *,
+    shortfall_day: int | None = _SHORTFALL_DAY,
+    public: bool = True,
+) -> ScorecardResponse:
+    """Score a profile. With no profile, the synthetic demo company is scored.
+
+    A live profile is scored on exactly the facts its financing rules read, so the
+    scorecard and the matches can never disagree. Bank-line matching is not measured
+    yet; public signals are synthetic demo data and count only when `public` is set.
+    """
+    live = profile is not None and profile.data_mode == DataMode.LIVE
+    values = profile.values if live else None
     factors = [
-        _band_factor(key)
+        _band_factor(key, values)
         for key in (
             "validated_einvoice_share",
             "receivables_over_90_share",
             "months_trading",
         )
     ]
-    runway = runway_points(_SHORTFALL_DAY)
+    runway = runway_points(shortfall_day)
     factors.append(
         ScoreFactor(
             key="cash_runway",
             label="Cash runway",
-            value=f"Shortfall on day {_SHORTFALL_DAY}",
+            value=f"Shortfall on day {shortfall_day}"
+            if shortfall_day is not None
+            else "No shortfall in 90 days",
             points=runway,
             max_points=80,
-            reason="Cash falls below the minimum within 30 days, even though matched invoice "
-            "financing covers the gap.",
+            reason="Cash falls below the minimum within 30 days."
+            if shortfall_day is not None and shortfall_day <= 30
+            else "The earlier cash falls below the minimum, the fewer points.",
             evidence=[EvidenceRef(label="90-day forecast", source="cashflow:forecast")],
         )
     )
-    factors += [_band_factor(key) for key in ("top_customer_share", "bank_lines_matched_share")]
-    reputation = reputation_points(_RATING_NOW, _RATING_90_DAYS_AGO)
-    factors.append(
-        ScoreFactor(
-            key="public_reputation",
-            label="Public reputation",
-            value=f"Rating {_RATING_NOW} (was {_RATING_90_DAYS_AGO} 90 days ago)",
-            points=reputation,
-            max_points=50,
-            reason="A rating of 4.2 or more that fell by less than 0.2 earns full points.",
-            evidence=[
-                EvidenceRef(label="Public ratings (synthetic demo)", source="public:ratings")
-            ],
+    factors += [
+        _band_factor(key, values) for key in ("top_customer_share", "bank_lines_matched_share")
+    ]
+    if public:
+        reputation = reputation_points(_RATING_NOW, _RATING_90_DAYS_AGO)
+        factors.append(
+            ScoreFactor(
+                key="public_reputation",
+                label="Public reputation",
+                value=f"Rating {_RATING_NOW} (was {_RATING_90_DAYS_AGO} 90 days ago)",
+                points=reputation,
+                max_points=50,
+                reason="A rating of 4.2 or more that fell by less than 0.2 earns full points.",
+                evidence=[
+                    EvidenceRef(label="Public ratings (synthetic demo)", source="public:ratings")
+                ],
+            )
         )
-    )
+    else:
+        factors.append(
+            ScoreFactor(
+                key="public_reputation",
+                label="Public reputation",
+                value="Not connected",
+                points=0,
+                max_points=50,
+                reason="No platform ratings are connected, so this factor earns no points.",
+                evidence=[EvidenceRef(label="Public ratings", source="public:ratings")],
+            )
+        )
     score = SCORE_BASE + sum(f.points for f in factors)
     return ScorecardResponse(
-        data_mode=DataMode.STUB,
+        data_mode=DataMode.LIVE if live else DataMode.STUB,
         method="expert_weights",
         method_note=SCORE_METHOD_NOTE,
         score=score,
@@ -566,7 +611,7 @@ def scorecard() -> ScorecardResponse:
         grade=grade_for(score),
         base_points=SCORE_BASE,
         factors=factors,
-        public_signals=list(_PUBLIC_SIGNALS),
+        public_signals=list(_PUBLIC_SIGNALS) if public else [],
         public_data_note=PUBLIC_DATA_NOTE,
         disclaimer=DISCLAIMER,
     )

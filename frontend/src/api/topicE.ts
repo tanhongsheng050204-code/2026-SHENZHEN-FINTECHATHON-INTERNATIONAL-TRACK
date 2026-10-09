@@ -653,6 +653,8 @@ export interface CompanyProfile {
   size: "micro" | "small" | "medium";
   currency: string;
   fiscal_year_start_month: number;
+  /** Company registration date the owner declares; sets months trading for financing. */
+  registered_on?: string | null;
   state: string;
   working_days: string[];
   languages: ("en" | "ms" | "zh")[];

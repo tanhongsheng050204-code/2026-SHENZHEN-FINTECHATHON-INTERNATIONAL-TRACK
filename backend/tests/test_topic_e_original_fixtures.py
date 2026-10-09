@@ -86,3 +86,58 @@ def test_refuses_tenants_that_are_not_synthetic(tenant_id):
         seed_original_fixtures(db, tenant_id)
 
     assert _count(db, EInvoiceRecord, tenant_id) == 0
+
+
+def _with_seed_marker(db):
+    import datetime as dt
+    from decimal import Decimal
+
+    from app.models import SyntheticTenantSeed
+    from app.services.tenant_settings import initialize_settings
+
+    initialize_settings(db, SYNTHETIC_ID, SYNTHETIC_NAME)
+    db.add(
+        SyntheticTenantSeed(
+            tenant_id=SYNTHETIC_ID,
+            version=1,
+            as_of=dt.date(2026, 10, 9),
+            annual_revenue_myr=Decimal("2600000.00"),
+            manifest={"synthetic": True},
+        )
+    )
+    db.commit()
+
+
+def test_bills_due_before_the_cash_story_starts_are_already_paid():
+    import datetime as dt
+
+    db = _db()
+    _with_seed_marker(db)
+
+    seed_original_fixtures(db, SYNTHETIC_ID)
+
+    # The opening bank balance on the seed date already reflects these August bills,
+    # so none may still look overdue next to the cash forecast.
+    unpaid_before = db.scalars(
+        select(EInvoiceRecord).where(
+            EInvoiceRecord.tenant_id == SYNTHETIC_ID,
+            EInvoiceRecord.paid_at.is_(None),
+            EInvoiceRecord.due_date < dt.date(2026, 10, 9),
+        )
+    ).all()
+    assert unpaid_before == []
+
+
+def test_the_synthetic_company_declares_its_registration_date_once():
+    from app.models import TenantSettingsRecord, TenantSettingsVersion
+
+    db = _db()
+    _with_seed_marker(db)
+
+    seed_original_fixtures(db, SYNTHETIC_ID)
+    seed_original_fixtures(db, SYNTHETIC_ID)
+
+    row = db.get(TenantSettingsRecord, SYNTHETIC_ID)
+    assert row.document["profile"]["registered_on"] == "2023-08-01"
+    assert row.version == 2
+    assert _count(db, TenantSettingsVersion, SYNTHETIC_ID) == 2

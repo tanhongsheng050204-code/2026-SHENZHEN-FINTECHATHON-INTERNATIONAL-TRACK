@@ -10,6 +10,7 @@ from app.models import (
     CustomerRecordLink,
     EInvoiceRecord,
     ProtectedTokenRegistry,
+    SalesPipeline,
     TokenizedContent,
 )
 from app.schemas import (
@@ -22,6 +23,7 @@ from app.services.customer_attention import latest_attention
 
 
 def _financials(db: Session, tenant_id: str, customer_id: int) -> tuple[Decimal, Decimal, int]:
+    """Open and overdue amounts from validated e-invoices and the imported sales ledger."""
     rows = db.scalars(
         select(EInvoiceRecord).where(
             EInvoiceRecord.tenant_id == tenant_id,
@@ -31,10 +33,21 @@ def _financials(db: Session, tenant_id: str, customer_id: int) -> tuple[Decimal,
     now = datetime.now(UTC).date()
     outstanding = [row for row in rows if row.status == "validated" and row.paid_at is None]
     overdue = [row for row in outstanding if row.due_date and row.due_date < now]
+    # Invoiced lines from the company's own sales ledger are open receivables too;
+    # the cash forecast reads the same rows, so both views show the same amounts.
+    ledger = db.scalars(
+        select(SalesPipeline).where(
+            SalesPipeline.tenant_id == tenant_id,
+            SalesPipeline.customer_id == customer_id,
+            SalesPipeline.stage == "invoiced",
+        )
+    ).all()
     return (
-        sum((row.total_amount for row in outstanding), Decimal(0)),
-        sum((row.total_amount for row in overdue), Decimal(0)),
-        len(rows),
+        sum((row.total_amount for row in outstanding), Decimal(0))
+        + sum((row.amount for row in ledger), Decimal(0)),
+        sum((row.total_amount for row in overdue), Decimal(0))
+        + sum((row.amount for row in ledger if row.expected_payment_date < now), Decimal(0)),
+        len(rows) + len(ledger),
     )
 
 

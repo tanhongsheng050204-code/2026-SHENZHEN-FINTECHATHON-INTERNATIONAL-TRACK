@@ -8,7 +8,7 @@ from app.auth.dependencies import CurrentUser
 from app.auth.principal import AuthPrincipal
 from app.config import get_settings
 from app.db import get_db
-from app.models import Customer, CustomerIdentityClaim
+from app.models import Customer, CustomerIdentityClaim, SalesPipeline
 from app.schemas import (
     CustomerBriefingResponse,
     CustomerDetailResponse,
@@ -48,7 +48,16 @@ def _authorized_customer_summary(
             CustomerIdentityClaim.status == "accepted",
         )
     )
-    if accepted is None:
+    # A name from the company's own imported sales ledger is the company's own
+    # record, not an identity observed in an inbound message, so it needs no claim.
+    from_ledger = db.scalar(
+        select(SalesPipeline.id).where(
+            SalesPipeline.tenant_id == str(principal.tenant_id),
+            SalesPipeline.customer_id == customer.id,
+            SalesPipeline.customer_token == customer.primary_name_token,
+        ).limit(1)
+    )
+    if accepted is None and from_ledger is None:
         return summary
     trace = detokenize_response_with_trace(
         db,

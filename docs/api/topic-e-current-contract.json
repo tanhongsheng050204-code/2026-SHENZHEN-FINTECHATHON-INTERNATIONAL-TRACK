@@ -1111,6 +1111,19 @@
             "title": "Languages",
             "type": "array"
           },
+          "registered_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Company registration date, declared by the owner; sets months trading",
+            "title": "Registered On"
+          },
           "size": {
             "enum": [
               "micro",
@@ -4710,7 +4723,7 @@
     },
     "/financing/scorecard": {
       "get": {
-        "description": "A points scorecard a lender can read line by line, with public signals as one factor.",
+        "description": "A points scorecard a lender can read line by line, on the same facts as the matches.",
         "operationId": "financing_scorecard_financing_scorecard_get",
         "responses": {
           "200": {
