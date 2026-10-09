@@ -1772,3 +1772,14 @@ html{scroll-behavior:smooth;}
 .fb-pos-tools .fb-inbox-label{margin:0 .4rem 0 0;}
 .fb-pos-tool,.fb-inbox-chip-link{font:inherit;font-size:.74rem;font-weight:600;padding:.35rem .8rem;min-height:32px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--accent);cursor:pointer;}
 .fb-pos-tool:hover,.fb-inbox-chip-link:hover{border-color:var(--accent);}
+
+/* DuitDuit assistant replies */
+.fb-assistant{display:grid;gap:.55rem;font-size:.9rem}
+.fb-assistant p{margin:0}
+.fb-assistant-items{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
+.fb-assistant-items li{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.55rem .7rem;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff)}
+.fb-assistant-item-title{font-weight:600}
+.fb-assistant-result{margin-left:auto;font-size:.8rem;font-weight:600}
+.fb-assistant-result.is-done{color:var(--chart-good,#14866d)}
+.fb-assistant-result.is-failed{color:var(--chart-attn,#b4541b)}
+.fb-assistant-actions{display:flex;flex-wrap:wrap;gap:.5rem}

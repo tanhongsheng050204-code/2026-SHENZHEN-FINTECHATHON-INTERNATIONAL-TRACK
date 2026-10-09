@@ -909,3 +909,32 @@ export interface ScorecardResponse {
 export async function fetchScorecard(): Promise<ScorecardResponse> {
   return parse<ScorecardResponse>(await authenticatedFetch("/financing/scorecard"));
 }
+
+// ── Assistant (front door) ──────────────────────────────────────────────────
+
+export type AssistantKind = "navigate" | "run_goal" | "decide" | "briefing" | "answer" | "refuse";
+
+export interface AssistantItem {
+  id: string;
+  title: string;
+  agent_id: string;
+  autonomy_level: AutonomyLevel;
+  amount: string | null;
+}
+
+/** What DuitDuit understood. It never acts by itself: the person confirms first. */
+export interface AssistantPlan {
+  kind: AssistantKind;
+  message: string;
+  screen: string | null;
+  goal: string | null;
+  decision: "approve" | "reject" | null;
+  items: AssistantItem[];
+  needs_confirmation: boolean;
+  needs_step_up: boolean;
+  understood_by: "rules" | "model";
+}
+
+export async function interpretCommand(text: string): Promise<AssistantPlan> {
+  return parse<AssistantPlan>(await authenticatedFetch("/assistant/interpret", json({ text })));
+}

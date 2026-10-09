@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AgentRunPanel } from "../components/AgentRunPanel";
+import { AssistantReply } from "../components/AssistantReply";
+import { interpretCommand } from "../api/topicE";
 import { useAuth } from "../auth/AuthProvider";
 import { useAppState } from "../lib/appState";
 import { useI18n, FB_UI_STRINGS } from "../lib/i18n";
@@ -108,7 +110,7 @@ export default function Agents() {
   const { identity } = useAuth();
   const { lang, t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([
-    { id: msgId++, from: "agent", text: "Hi, I’m DuitDuit. I can handle invoicing, spreadsheets, files, sales follow-ups, compliance checks, and more — ask me anything, or try one of the suggestions above.", timestamp: now() },
+    { id: msgId++, from: "agent", text: "Hi, I’m DuitDuit. Ask me about your records, or tell me what to do: “open cash flow”, “can I cover payroll this month?”, “approve the reminder drafts”. I always check with you before changing anything.", timestamp: now() },
   ]);
   const [input, setInput] = useState("");
   const [chips, setChips] = useState<ContextChip[]>([]);
@@ -172,6 +174,22 @@ export default function Agents() {
     scrollToBottom();
 
     setTimeout(async () => {
+      // The front door: open a page, start the agents, or prepare a decision to
+      // confirm. Anything else is a question for the protected records below.
+      try {
+        const plan = await interpretCommand(trimmed);
+        if (plan.kind !== "answer") {
+          setMessages((list) => list.map((message) => (
+            message.id === thinkingId
+              ? { ...message, thinking: false, timestamp: now(), text: "", embed: <AssistantReply plan={plan} />, rawQuestion: trimmed }
+              : message
+          )));
+          scrollToLastMessage();
+          return;
+        }
+      } catch {
+        // An older backend without the assistant: answer as before.
+      }
       const fallback: ChatReply = resolveChatReply(trimmed, lang, FB_UNIFIED_FALLBACK[lang]);
       let finalText = fallback.text;
       let protectedText: string | undefined;

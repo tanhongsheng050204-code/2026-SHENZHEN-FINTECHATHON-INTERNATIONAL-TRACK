@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useAppState } from "../lib/appState";
 import { useUiChrome } from "../lib/uiChrome";
 import { askQuestion, type QueryCitation } from "../api/client";
+import { interpretCommand } from "../api/topicE";
+import { AssistantReply } from "./AssistantReply";
 
 interface DrawerMessage {
   id: number;
@@ -10,6 +12,7 @@ interface DrawerMessage {
   citations?: QueryCitation[];
   thinking?: boolean;
   isError?: boolean;
+  node?: ReactNode;
 }
 
 let drawerMsgId = 1;
@@ -18,7 +21,7 @@ export function AskDrawer() {
   const { askOpen, closeAsk } = useUiChrome();
   const { show } = useAppState();
   const [messages, setMessages] = useState<DrawerMessage[]>([
-    { id: drawerMsgId++, from: "agent", text: "Ask a quick question about your finance data — I'll pull cited answers from your protected records." },
+    { id: drawerMsgId++, from: "agent", text: "Ask a question, or tell me what to do: \"open cash flow\", \"can I cover payroll?\", \"approve the reminder drafts\". I always check with you before changing anything." },
   ]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -38,6 +41,21 @@ export function AskDrawer() {
     const thinkingId = drawerMsgId++;
     setMessages((m) => [...m, { id: thinkingId, from: "agent", text: "", thinking: true }]);
     scrollToBottom();
+
+    try {
+      const plan = await interpretCommand(trimmed);
+      if (plan.kind !== "answer") {
+        setMessages((m) => m.map((msg) => (
+          msg.id === thinkingId
+            ? { ...msg, thinking: false, text: "", node: <AssistantReply plan={plan} onNavigate={closeAsk} /> }
+            : msg
+        )));
+        scrollToBottom();
+        return;
+      }
+    } catch {
+      // An older backend without the assistant: answer as before.
+    }
 
     let finalText: string;
     let citations: QueryCitation[] = [];
@@ -83,7 +101,8 @@ export function AskDrawer() {
                 <div className="fb-thinking" role="status"><span></span><span></span><span></span></div>
               ) : (
                 <>
-                  <span style={{ whiteSpace: "pre-wrap" }}>{msg.text}</span>
+                  {msg.text && <span style={{ whiteSpace: "pre-wrap" }}>{msg.text}</span>}
+                  {msg.node}
                   {!!msg.citations?.length && (
                     <div className="fb-fine" style={{ marginTop: ".5rem" }}>{msg.citations.length} cited source{msg.citations.length === 1 ? "" : "s"}</div>
                   )}

@@ -18,6 +18,7 @@ from app.routes import (
     agent_runs,
     agents,
     agents_live,
+    assistant,
     audit_log,
     auth,
     cashflow,
@@ -167,6 +168,7 @@ app.include_router(team.router)
 app.include_router(settings_routes.router)
 app.include_router(customization.router)
 app.include_router(imports.router)
+app.include_router(assistant.router)
 
 
 @app.exception_handler(RequestValidationError)
