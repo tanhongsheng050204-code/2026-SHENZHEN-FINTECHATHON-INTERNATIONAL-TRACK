@@ -27,7 +27,7 @@ Supabase authentication and the production backend still need deployment access.
 
 - Full backend suite after merging the remote work: 447 passed, 1 skipped.
   The PostgreSQL integration check was enabled for this run. The remaining skip
-  requires live model credentials and was not executed.
+  is a legacy test that is only meaningful before the Plan 3 tables exist.
 - Added session/recovery/import regression tests with mocked provider responses.
   No provider emails or external model calls were made.
 - Applied all 34 real SQL migrations to a fresh local PostgreSQL 17 database
