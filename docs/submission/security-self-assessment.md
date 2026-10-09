@@ -100,6 +100,15 @@ FinBrain gives every SME position an agent, so agent safety is designed in, not 
 | Expiry and revocation enforced on every view (410), HMAC-signed links checked in constant time, forged links refused (404) | Built and tested |
 | Emailed code for lenders before viewing | Planned (Wave 2) |
 
+### Web hardening and China reachability
+
+| Control | Status |
+| --- | --- |
+| Content Security Policy (scripts only from the app itself, no inline script, `frame-ancestors 'none'`, `object-src 'none'`), HSTS, `nosniff`, Referrer-Policy, Permissions-Policy, `X-Frame-Options: DENY` | Built; verified on a Vercel deployment by browsing 9 pages with no violations |
+| `noindex` on app and shared pages; `robots.txt` and a sitemap listing only the landing, security and legal pages; a title per page; `/.well-known/security.txt` (RFC 9116) pointing at `SECURITY.md` | Built |
+| No browser request to a third-party origin: bundled fonts, QR codes drawn locally (invoice UINs no longer go to an online QR service), API through the same-origin proxy | Built; checked in CI by `frontend/scripts/check-web-hardening.mjs` |
+| App served from a domain that loads in mainland China | Not done: the app is still on `vercel.app`, which GreatFire reports as mostly blocked. See `docs/deployment/china-reachability.md`. |
+
 ## 7. Company settings and safety floors
 
 Owners can shape FinBrain to the company, but not below these floors: critical cash alerts always on and always sent to the owner; authenticator app mandatory for privileged roles; idle timeout at most 60 minutes. Security changes wait for a **different** Compliance user; rollback creates a new version and cannot loosen security.

@@ -43,6 +43,7 @@ Browser → Vercel (static app and same-origin `/api` proxy) → FastAPI on Clou
 | Information disclosure | Personal data sent to a model provider | 4 | Protected text only; planner preflight refuses payloads that still contain known personal data | `conversation_planning.plan_conversation` |
 | Information disclosure | Secrets committed to git | 6 | `gitleaks` scan of the full history in CI | CI supply-chain job |
 | Denial of service | Provider outage or slowness | 4 | Timeouts and a deterministic fallback | ADV-07 |
+| Denial of service | Hammering or guessing on the public verify and share endpoints | 5 | 30 requests a minute per client address, then 429 | `test_public_endpoints_are_rate_limited` |
 | Denial of service | Oversized or malicious uploads | 1, 3 | Size, type and signature checks before parsing; CSV limits (Plan 3) | ADV-05 |
 | Elevation of privilege | An agent acting beyond its manifest | 1 | `authorize` checks agent, skill and side effect on every call; kill switch and budgets (Plan 2) | ADV-03 |
 | Elevation of privilege | Autonomy granted without a record | 1 | Promotion needs a recommendation; L3 is never delegable | F10 |
@@ -50,5 +51,5 @@ Browser → Vercel (static app and same-origin `/api` proxy) → FastAPI on Clou
 ## Not yet covered
 
 - Hosted RLS for the public verify and share endpoints, which read the chain before a tenant context exists. Needs validation on Supabase.
-- A rate limit on the public verify and share endpoints.
+- A rate limit shared across server instances (today each instance limits on its own).
 - Email one-time codes for lenders.

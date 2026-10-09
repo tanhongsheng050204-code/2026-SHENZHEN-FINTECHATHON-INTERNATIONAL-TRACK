@@ -10,6 +10,7 @@ import { StepUpPrompt } from "./components/StepUpPrompt";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LogoMark } from "./components/Logo";
 import { sharedRouteFor } from "./lib/sharedRoutes";
+import { PAGE_TITLES } from "./lib/screens";
 
 // Route-level code splitting: a visitor to the marketing landing page
 // shouldn't have to download the chat interface, invoice forms, and
@@ -48,6 +49,10 @@ function Screens() {
   useEffect(() => {
     if (identity) setAskRole(identity.role);
   }, [identity, setAskRole]);
+
+  useEffect(() => {
+    document.title = `${PAGE_TITLES[screen]} · FinBrain OS`;
+  }, [screen]);
 
   useEffect(() => {
     if (!loading && !identity && !isPublic) show("login");

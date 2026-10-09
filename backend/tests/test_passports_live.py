@@ -20,6 +20,13 @@ from app.services import external_grants, passports
 from tests.auth_support import TENANT_A, TENANT_B, principal
 
 
+@pytest.fixture(autouse=True)
+def _fresh_rate_limits():
+    from app.security import rate_limit
+
+    rate_limit.reset()
+
+
 @pytest.fixture
 def db():
     engine = create_engine(
@@ -253,3 +260,16 @@ def test_grantee_is_recorded_as_a_grant_only_reference(db):
     reference = grant["grantee_email_token"]
     assert reference.startswith("GRANTEE_")
     assert reference != derive_token("EMAIL", "credit@bank.example", str(TENANT_A))
+
+
+def test_public_endpoints_are_rate_limited(db):
+    issued = _issue(db)
+    public = _client(db, role=None)
+
+    answers = [public.post("/lender/verify", json=issued).status_code for _ in range(31)]
+
+    assert answers[:30] == [200] * 30
+    assert answers[30] == 429
+    limited = public.get("/lender/passports/grant_0000000000000000.0")
+    assert limited.status_code == 429
+    assert limited.headers["retry-after"].isdigit()

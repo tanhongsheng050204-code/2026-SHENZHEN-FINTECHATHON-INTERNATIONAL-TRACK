@@ -28,6 +28,7 @@ from app.contracts.passports import (
 )
 from app.db import get_db
 from app.schemas import UserRole
+from app.security import rate_limit
 from app.services import external_grants, passports
 
 router = APIRouter(tags=["passports"])
@@ -36,6 +37,8 @@ _READ_ROLES = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR, UserRole.COMPLIANC
 _PREPARE_ROLES = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR)
 _owner_gate = getattr(dependencies, "require_step_up", require_roles)(UserRole.OWNER_DIRECTOR)
 _hidden = {"include_in_schema": False}
+# Unauthenticated endpoints: bound guessing of links and Passport ids per client.
+_public_limit = Depends(rate_limit.limit("public-share", 30))
 
 
 def _mode(db, principal: AuthPrincipal):
@@ -124,7 +127,9 @@ def revoke_lender(
     return ExternalGrantResponse(data_mode=_mode(db, principal), grant=grant)
 
 
-@router.post("/lender/verify", response_model=VerificationResult, **_hidden)
+@router.post(
+    "/lender/verify", response_model=VerificationResult, **_hidden, dependencies=[_public_limit]
+)
 def verify_passport(document: Passport, db: Session = Depends(get_db)) -> VerificationResult:
     """Public: anyone holding a Passport document can check it against the audit chain."""
     return passports.verify(db, document)
@@ -139,7 +144,12 @@ def _open(db, kind, token: str):
         raise HTTPException(status_code=410, detail=closed.code) from closed
 
 
-@router.get("/lender/passports/{grant_token}", response_model=PassportResponse, **_hidden)
+@router.get(
+    "/lender/passports/{grant_token}",
+    response_model=PassportResponse,
+    **_hidden,
+    dependencies=[_public_limit],
+)
 def lender_passport(grant_token: str, db: Session = Depends(get_db)) -> PassportResponse:
     """Public with a valid, unexpired, unrevoked link; every view is audited."""
     opened = _open(db, "lender", grant_token)
@@ -219,7 +229,12 @@ def revoke_auditor(
     return ExternalGrantResponse(data_mode=_mode(db, principal), grant=grant)
 
 
-@router.get("/auditor/packs/{grant_token}", response_model=AuditPackResponse, **_hidden)
+@router.get(
+    "/auditor/packs/{grant_token}",
+    response_model=AuditPackResponse,
+    **_hidden,
+    dependencies=[_public_limit],
+)
 def auditor_pack(grant_token: str, db: Session = Depends(get_db)) -> AuditPackResponse:
     """Public with a valid, unexpired, unrevoked link; every view is audited."""
     opened = _open(db, "auditor", grant_token)

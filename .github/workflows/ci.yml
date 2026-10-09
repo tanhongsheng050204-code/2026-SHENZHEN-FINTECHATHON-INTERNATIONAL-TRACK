@@ -112,3 +112,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Web hardening (security headers, no third-party loads)
+        run: node scripts/check-web-hardening.mjs
