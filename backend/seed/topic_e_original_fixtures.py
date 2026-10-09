@@ -12,7 +12,7 @@ import argparse
 
 from sqlalchemy import select
 
-from app.db import SessionLocal, initialize_local_schema, set_worker_context
+from app.db import SessionLocal, initialize_local_schema
 from app.models import Tenant, TokenizedContent
 from app.services.ingestion import ingest_canonical_record
 from seed.sample_records import SAMPLE_RECORDS
@@ -67,8 +67,10 @@ def main() -> None:
     parser.add_argument("--tenant-id", required=True, help="Tenant id printed by seed/topic_e.py")
     args = parser.parse_args()
     initialize_local_schema()
+    # Runs on the operator's provisioning connection, like seed.seed_data: the
+    # restricted worker role may not write e-invoices or protected content, and
+    # seed_original_fixtures itself refuses any tenant that is not synthetic.
     with SessionLocal() as db:
-        set_worker_context(db, tenant_id=args.tenant_id, actor_ref="synthetic-seed:original")
         seed_original_fixtures(db, args.tenant_id)
     print(f"original fixtures ready in synthetic tenant {args.tenant_id}")
 
