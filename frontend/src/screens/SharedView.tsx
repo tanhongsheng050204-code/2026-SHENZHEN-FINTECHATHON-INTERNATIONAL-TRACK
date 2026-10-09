@@ -27,9 +27,9 @@ function loadError(error: unknown): string {
 function VerifyResult({ result }: { result: VerificationResult }) {
   return (
     <div className={"fb-fin-verify is-" + result.status} role="status">
-      {result.status === "verified" && <><strong>Verified.</strong> This document is exactly what FinBrain issued{result.chain_intact ? ", and the audit chain behind it is intact." : ", but the audit chain could not be confirmed."}</>}
+      {result.status === "verified" && <><strong>Verified.</strong> This document is exactly what DuitDuit issued{result.chain_intact ? ", and the audit chain behind it is intact." : ", but the audit chain could not be confirmed."}</>}
       {result.status === "mismatch" && <><strong>Does not match what was issued.</strong> Changed: {result.mismatched_fields.join(", ") || "the document"}.</>}
-      {result.status === "unknown_passport" && <><strong>Unknown document.</strong> FinBrain never issued this Passport.</>}
+      {result.status === "unknown_passport" && <><strong>Unknown document.</strong> DuitDuit never issued this Passport.</>}
       <br />
       <span className="fb-cash-fx">SHA-256 computed {result.computed_sha256.slice(0, 16)}…{result.anchor && ` · anchored in ${result.anchor.repository_path}`}</span>
     </div>
@@ -131,7 +131,7 @@ function VerifyUpload() {
     } catch (e) {
       const code = errorCode(e);
       setError(code.includes("extra") || code.includes("Field") || code.includes("missing")
-        ? "This document has fields that FinBrain never issues, so it cannot be genuine."
+        ? "This document has fields that DuitDuit never issues, so it cannot be genuine."
         : loadError(e));
     }
   };
@@ -140,7 +140,7 @@ function VerifyUpload() {
     <section className="fb-cash-card">
       <div className="fb-eyebrow">For lenders and auditors</div>
       <h1 className="fb-share-title">Check a Financing Readiness Passport</h1>
-      <p className="fb-inbox-muted">Choose the Passport file a company sent you. FinBrain recomputes its SHA-256, compares it with what was issued and checks the audit chain. The file is only checked, not stored.</p>
+      <p className="fb-inbox-muted">Choose the Passport file a company sent you. DuitDuit recomputes its SHA-256, compares it with what was issued and checks the audit chain. The file is only checked, not stored.</p>
       <label className="fb-cash-field">
         <span>Passport file (.json)</span>
         <input type="file" accept="application/json,.json" onChange={(e) => void check(e)} />
@@ -156,7 +156,7 @@ export default function SharedView({ route }: { route: SharedRoute }) {
     <div className="fb-root fb-share">
       <header className="fb-share-head">
         <Wordmark />
-        <span className="fb-inbox-muted">Shared securely through FinBrain OS</span>
+        <span className="fb-inbox-muted">Shared securely through DuitDuit</span>
       </header>
       <main className="fb-share-main">
         {route.kind === "lender" && <PassportView token={route.token} />}

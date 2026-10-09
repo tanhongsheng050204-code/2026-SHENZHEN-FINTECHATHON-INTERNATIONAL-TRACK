@@ -1,1 +1,1 @@
-"""FinBrain OS backend package."""
+"""DuitDuit backend package."""

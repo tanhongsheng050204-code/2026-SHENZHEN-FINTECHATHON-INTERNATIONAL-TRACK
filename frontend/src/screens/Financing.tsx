@@ -271,9 +271,9 @@ function PassportCard({ passport, isOwner }: { passport: Passport; isOwner: bool
       </div>
       {result && (
         <div className={"fb-fin-verify is-" + result.status} role="status">
-          {result.status === "verified" && <><strong>Verified.</strong> This document matches what FinBrain issued, and the audit chain is {result.chain_intact ? "intact" : "broken"}.</>}
+          {result.status === "verified" && <><strong>Verified.</strong> This document matches what DuitDuit issued, and the audit chain is {result.chain_intact ? "intact" : "broken"}.</>}
           {result.status === "mismatch" && <><strong>Does not match.</strong> Changed: {result.mismatched_fields.join(", ") || "the document"}.</>}
-          {result.status === "unknown_passport" && <><strong>Unknown Passport.</strong> FinBrain never issued this document.</>}
+          {result.status === "unknown_passport" && <><strong>Unknown Passport.</strong> DuitDuit never issued this document.</>}
         </div>
       )}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}

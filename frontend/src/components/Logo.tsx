@@ -11,8 +11,9 @@ export function LogoMark({ large }: { large?: boolean }) {
         </linearGradient>
       </defs>
       <rect width="32" height="32" rx="9" fill={`url(#${gradientId})`} />
-      <circle cx="16" cy="16" r="9.5" stroke="#fff" strokeWidth="2" />
-      <path d="M12 16.3 L15 19.3 L20.5 12.8" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" />
+      {/* DuitDuit: two linked coins */}
+      <circle cx="12.5" cy="16" r="6.6" stroke="#fff" strokeWidth="2.2" />
+      <circle cx="19.5" cy="16" r="6.6" stroke="#fff" strokeWidth="2.2" />
     </svg>
   );
 }
@@ -30,14 +31,14 @@ export function Wordmark({
     return (
       <div className="fb-wordmark" style={{ pointerEvents: "none", ...style }}>
         <LogoMark large={large} />
-        <span className="fb-wordmark-text">FINBRAIN OS</span>
+        <span className="fb-wordmark-text">DuitDuit</span>
       </div>
     );
   }
   return (
     <button className="fb-wordmark" style={style} onClick={onClick}>
       <LogoMark large={large} />
-      <span className="fb-wordmark-text">FINBRAIN OS</span>
+      <span className="fb-wordmark-text">DuitDuit</span>
     </button>
   );
 }

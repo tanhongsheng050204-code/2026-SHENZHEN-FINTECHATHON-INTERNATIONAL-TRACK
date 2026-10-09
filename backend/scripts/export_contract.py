@@ -42,7 +42,7 @@ CONTRACT_ROUTERS = (
 
 
 def build_contract_app() -> FastAPI:
-    app = FastAPI(title="FinBrain OS Topic E contract", version="2026-10-09")
+    app = FastAPI(title="DuitDuit Topic E contract", version="2026-10-09")
     for router in CONTRACT_ROUTERS:
         app.include_router(router)
     return app

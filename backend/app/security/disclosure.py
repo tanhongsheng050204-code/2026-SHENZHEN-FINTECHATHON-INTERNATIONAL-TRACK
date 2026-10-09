@@ -38,7 +38,7 @@ class QueryDisclosureSession:
     def _aad(self, token: str) -> bytes:
         return "\x1f".join(
             [
-                "finbrain-query-disclosure-v1",
+                "duitduit-query-disclosure-v1",
                 self.session_id,
                 self.query_hash,
                 self.turn_ref,

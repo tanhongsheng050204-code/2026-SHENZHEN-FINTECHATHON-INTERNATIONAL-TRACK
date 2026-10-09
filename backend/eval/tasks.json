@@ -1,5 +1,5 @@
 {
-  "description": "FinBrain evaluation tasks: functional checks on the demo story and adversarial cases from the standards pack. Each task names a deterministic checker in eval/checks.py and its expected values. Everything runs offline on SQLite.",
+  "description": "DuitDuit evaluation tasks: functional checks on the demo story and adversarial cases from the standards pack. Each task names a deterministic checker in eval/checks.py and its expected values. Everything runs offline on SQLite.",
   "tasks": [
     {"id": "F01", "kind": "functional", "title": "The 90-day forecast hits the planted shortfall day", "check": "forecast_shortfall", "args": {"day": 23, "likely_balance": "20560.00", "gap": "29440.00"}},
     {"id": "F02", "kind": "functional", "title": "Paying payroll and the CNY supplier 5 days early moves the shortfall 5 days earlier", "check": "scenario_moves_shortfall", "args": {"shifts": {"P2": -5, "P3": -5}, "day": 18}},

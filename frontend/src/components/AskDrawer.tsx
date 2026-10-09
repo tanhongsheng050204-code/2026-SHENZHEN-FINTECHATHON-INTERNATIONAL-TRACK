@@ -49,7 +49,7 @@ export function AskDrawer() {
       citations = response.citations;
     } catch (cause) {
       const detail = cause instanceof Error ? cause.message : "The request failed unexpectedly.";
-      finalText = `FinBrain could not answer this question: ${detail}`;
+      finalText = `DuitDuit could not answer this question: ${detail}`;
       isError = true;
     }
 
@@ -65,9 +65,9 @@ export function AskDrawer() {
 
   return (
     <div className="fb-drawer-backdrop" onClick={closeAsk}>
-      <aside className="fb-drawer" role="dialog" aria-modal="true" aria-label="Ask FinBrain" onClick={(event) => event.stopPropagation()}>
+      <aside className="fb-drawer" role="dialog" aria-modal="true" aria-label="Ask DuitDuit" onClick={(event) => event.stopPropagation()}>
         <div className="fb-drawer-head">
-          <span className="fb-drawer-title">Ask FinBrain</span>
+          <span className="fb-drawer-title">Ask DuitDuit</span>
           <button className="fb-icon-btn" type="button" onClick={closeAsk} aria-label="Close">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>

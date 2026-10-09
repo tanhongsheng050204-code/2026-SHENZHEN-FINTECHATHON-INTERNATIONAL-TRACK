@@ -52,7 +52,7 @@ const MESSAGES: Record<string, string> = {
   auth_provider_unavailable: "The sign-in service is unavailable right now. Please retry shortly.",
   supabase_auth_not_configured: "Sign-in is not configured on this server yet.",
   mfa_verification_failed: "That authenticator code didn't work. Codes change every 30 seconds — try the current one.",
-  csrf_origin_denied: "This page's address is not allowed to sign in. Open FinBrain from its usual address.",
+  csrf_origin_denied: "This page's address is not allowed to sign in. Open DuitDuit from its usual address.",
   email_verification_required: "Check your email for the sign-in code.",
   session_expired: "Your session has ended. Please sign in again.",
   session_idle_timeout: "You were signed out after a period of inactivity.",

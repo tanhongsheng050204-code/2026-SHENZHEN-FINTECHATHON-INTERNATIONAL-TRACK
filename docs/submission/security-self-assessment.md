@@ -1,4 +1,4 @@
-# FinBrain OS — Security Self-Assessment
+# DuitDuit — Security Self-Assessment
 
 2026 Shenzhen International FinTech Competition · International Track · Topic E: SME Finance Copilot
 Draft of 2026-10-09. Every control below carries its real status; nothing is claimed beyond it.
@@ -55,7 +55,7 @@ All data shown in the demonstration is synthetic and labelled as such.
 
 ## 4. AI agent safety
 
-FinBrain gives every SME position an agent, so agent safety is designed in, not added on.
+DuitDuit gives every SME position an agent, so agent safety is designed in, not added on.
 
 | Control | Status |
 | --- | --- |
@@ -69,7 +69,7 @@ FinBrain gives every SME position an agent, so agent safety is designed in, not 
 
 ### OWASP Top 10 for Agentic Applications (2026)
 
-| Risk | FinBrain control | Status |
+| Risk | DuitDuit control | Status |
 | --- | --- | --- |
 | ASI01 Agent goal hijack | Untrusted text treated as data; injection patterns quarantined before enrichment | Built, verification pending |
 | ASI02 Tool misuse and exploitation | Per-agent skill allowlist; side-effect classes; external/money skills refused at the tool entry point | Built, verification pending |
@@ -111,18 +111,18 @@ FinBrain gives every SME position an agent, so agent safety is designed in, not 
 
 ## 7. Company settings and safety floors
 
-Owners can shape FinBrain to the company, but not below these floors: critical cash alerts always on and always sent to the owner; authenticator app mandatory for privileged roles; idle timeout at most 60 minutes. Security changes wait for a **different** Compliance user; rollback creates a new version and cannot loosen security.
+Owners can shape DuitDuit to the company, but not below these floors: critical cash alerts always on and always sent to the owner; authenticator app mandatory for privileged roles; idle timeout at most 60 minutes. Security changes wait for a **different** Compliance user; rollback creates a new version and cannot loosen security.
 Status: rules built and tested in the contract; database constraints built, verification pending.
 
 ## 8. Regulatory alignment
 
-| Area | How FinBrain supports it |
+| Area | How DuitDuit supports it |
 | --- | --- |
 | PDPA 2010 (Malaysia) | Data minimisation through tokenization; access and erasure workflows for data subjects; purpose-bound disclosure with audit |
 | LHDN MyInvois e-invoicing | Readiness checks and validated e-invoice share used in the Passport |
 | China cross-border trade (RMB) | Supplier payables in CNY shown with conversion; China financing catalogue; no browser dependency on services blocked in mainland China |
 
-FinBrain is not certified under any standard, and we do not claim partnerships with banks or regulators. Financing products are real categories with illustrative terms, not offers.
+DuitDuit is not certified under any standard, and we do not claim partnerships with banks or regulators. Financing products are real categories with illustrative terms, not offers.
 
 ## 9. Known limitations (residual risk)
 

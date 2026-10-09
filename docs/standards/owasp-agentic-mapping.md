@@ -1,12 +1,12 @@
-# OWASP Top 10 for Agentic Applications (2026): FinBrain mapping
+# OWASP Top 10 for Agentic Applications (2026): DuitDuit mapping
 
-Each row lists the risk, FinBrain's control, where the control lives, and the evaluation task or test that checks it. Task IDs refer to `backend/eval/tasks.json`.
+Each row lists the risk, DuitDuit's control, where the control lives, and the evaluation task or test that checks it. Task IDs refer to `backend/eval/tasks.json`.
 
 **Status values:**
 - **Built** — on `main` and checked.
 - **Built with Plan 2** — the control is the teammate's uncommitted Plan 2 code. It passes in a scratch copy and skips on `main` until merged.
 
-| Risk | FinBrain control | Where | Check | Status |
+| Risk | DuitDuit control | Where | Check | Status |
 |---|---|---|---|---|
 | ASI01 Agent goal hijack | <ul><li>Ingested content is classified before use; prompt injection in English, Malay and Chinese is quarantined.</li><li>Agents route goals with fixed rules and call a deterministic engine; model output cannot pick tools.</li></ul> | <ul><li>`app/security/guardrails.py` (Plan 2)</li><li>`app/services/agent_runtime.py`</li></ul> | ADV-01, ADV-02, F11–F14 | Built with Plan 2 |
 | ASI02 Tool misuse and exploitation | <ul><li>Every tool call is checked against the agent's manifest: built agent, released skill, read or draft side effect only.</li><li>Plan 2 adds a persistent kill switch and daily tool and cost budgets.</li></ul> | <ul><li>`agent_runtime.authorize`</li><li>`guardrails.authorize_tool` (Plan 2)</li></ul> | ADV-03, `tests/test_agent_runtime.py` | Built; budgets with Plan 2 |

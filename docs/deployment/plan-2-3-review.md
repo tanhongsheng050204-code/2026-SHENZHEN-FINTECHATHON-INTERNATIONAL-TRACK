@@ -61,5 +61,5 @@ The repository has a Cloud Run + Vercel runbook in
 5. Complete hosted OTP, TOTP, recovery, invitation and CSV upload checks before
    changing `VITE_AUTH_MODE` to `backend`.
 
-The accessible `finbrain-topic-e-preview` Vercel project is a preview. Publishing
+The accessible `duitduit-topic-e-preview` Vercel project is a preview. Publishing
 that frontend alone does not deploy the Plans 2 and 3 backend or SQL migrations.

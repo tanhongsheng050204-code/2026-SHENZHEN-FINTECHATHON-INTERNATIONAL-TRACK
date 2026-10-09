@@ -254,9 +254,9 @@ def test_protected_chat_generation_creates_editable_draft_without_sending(monkey
             update={
                 "morpheus_api_key": "test-key",
                 "allow_offline_demo": False,
-                "email_outreach_signature_name": "FinBrain Team",
+                "email_outreach_signature_name": "DuitDuit Team",
                 "email_outreach_signature_title": "Customer Operations",
-                "email_outreach_signature_organization": "FinBrain",
+                "email_outreach_signature_organization": "DuitDuit",
             }
         )
         monkeypatch.setattr("app.services.outreach.get_settings", lambda: settings)
@@ -323,7 +323,7 @@ def test_protected_chat_generation_creates_editable_draft_without_sending(monkey
         api_preview = _action_response(db, generated, owner)
         assert "RM 3,333" in (api_preview.body or "")
         assert (api_preview.body or "").endswith(
-            "Best regards,\nFinBrain Team\nCustomer Operations\nFinBrain"
+            "Best regards,\nDuitDuit Team\nCustomer Operations\nDuitDuit"
         )
         assert "ORG_" not in (api_preview.body or "")
         assert edited.status == "draft"
@@ -409,9 +409,9 @@ def test_telegram_generation_uses_safe_customer_label_and_same_chat_destination(
             update={
                 "morpheus_api_key": "test-key",
                 "allow_offline_demo": False,
-                "email_outreach_signature_name": "FinBrain Team",
+                "email_outreach_signature_name": "DuitDuit Team",
                 "email_outreach_signature_title": "Customer Operations",
-                "email_outreach_signature_organization": "FinBrain",
+                "email_outreach_signature_organization": "DuitDuit",
             }
         )
         monkeypatch.setattr("app.services.outreach.get_settings", lambda: settings)

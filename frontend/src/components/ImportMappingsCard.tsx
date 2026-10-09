@@ -35,7 +35,7 @@ function splitHeaders(text: string): string[] {
   return text.split(/[,\t]/).map((h) => h.trim()).filter(Boolean);
 }
 
-/** Teach FinBrain a spreadsheet layout once; matching files reuse the mapping. */
+/** Teach DuitDuit a spreadsheet layout once; matching files reuse the mapping. */
 export function ImportMappingsCard() {
   const [mappings, setMappings] = useState<ImportMapping[]>([]);
   const [schema, setSchema] = useState<ImportSchema>("payables_register_v1");
@@ -79,7 +79,7 @@ export function ImportMappingsCard() {
   return (
     <section className="fb-cash-card">
       <h2>Import column mappings</h2>
-      <p className="fb-inbox-muted">Teach FinBrain your bank and spreadsheet columns once; the next file with the same columns imports automatically.</p>
+      <p className="fb-inbox-muted">Teach DuitDuit your bank and spreadsheet columns once; the next file with the same columns imports automatically.</p>
       <ul className="fb-fin-items">
         {mappings.map((m) => (
           <li key={m.id}>

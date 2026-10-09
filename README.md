@@ -1,4 +1,4 @@
-# FinBrain OS
+# DuitDuit
 
 **The secure operating system that makes an SME financeable.**
 
@@ -15,7 +15,7 @@
 
 **Live site: <https://finbrainos.vercel.app/>**
 
-FinBrain OS is our entry for the **2026 Shenzhen International FinTech Competition
+DuitDuit is our entry for the **2026 Shenzhen International FinTech Competition
 (FinTechathon), International Track — Topic E: SME Finance Copilot**. It gives a small
 business an AI finance team that works under human control: agents forecast cash flow, chase
 receivables and match financing; owners and staff review what the agents propose; and the
@@ -85,7 +85,7 @@ Why it matters: Malaysia's MSME funding gap is estimated at RM90 billion
 ([The Edge](https://theedgemalaysia.com/node/697990)), and since 1 September 2026
 e-invoicing is mandatory only above RM3 million in annual sales
 ([The Star](https://thestar.com.my/news/nation/2026/08/30/over-11-million-businesses-to-benefit-from-higher-e-invoicing-threshold-says-lhdn)).
-FinBrain therefore treats a validated e-invoice as a credit signal — tamper-proof evidence of
+DuitDuit therefore treats a validated e-invoice as a credit signal — tamper-proof evidence of
 a receivable — and not only as a compliance task.
 
 ### Build status
@@ -162,7 +162,7 @@ unacceptable risks for a business handling customer personal data:
 
 ### The solution
 
-FinBrain enforces all three protections as **architecture, not policy**:
+DuitDuit enforces all three protections as **architecture, not policy**:
 
 1. Sensitive values are **detected, tokenized, and encrypted before any external model call**.
 2. Every answer is **role-aware** and backed by **inspectable evidence citations**.
@@ -171,7 +171,7 @@ FinBrain enforces all three protections as **architecture, not policy**:
 
 ### Business benefits
 
-| Benefit | How FinBrain delivers it |
+| Benefit | How DuitDuit delivers it |
 | --- | --- |
 | **Zero raw-PII exposure to AI vendors** | Deterministic tokens are all that ever leave the process; originals live only in an encrypted, versioned vault |
 | **PDPA-aligned by design** | Token-level access export and crypto-shredding erasure; every disclosure is audited |
@@ -329,7 +329,7 @@ flowchart LR
 ### Repository layout
 
 ```text
-FinBrain/
+DuitDuit/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app, middleware, CORS, /health
@@ -666,7 +666,7 @@ The standard install includes GLiNER and CPU PyTorch.
 <summary><b>Advanced: reuse a workstation CUDA build of PyTorch</b></summary>
 
 ```powershell
-uv venv .venv --system-site-packages --prompt FinBrain
+uv venv .venv --system-site-packages --prompt DuitDuit
 & .\.venv\Scripts\Activate.ps1
 Set-Location backend
 uv sync --active --extra dev --no-install-package torch
@@ -1102,7 +1102,7 @@ This is a proof of concept. The following boundaries are deliberate and document
 
 <div align="center">
 
-**FinBrain OS** - AI agents run the finance back office, people review every action, and
+**DuitDuit** - AI agents run the finance back office, people review every action, and
 lenders can verify the result, with customer data protected before any AI sees it.
 
 [finbrainos.vercel.app](https://finbrainos.vercel.app/)

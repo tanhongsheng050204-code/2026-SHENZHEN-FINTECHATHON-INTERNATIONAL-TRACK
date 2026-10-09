@@ -243,7 +243,7 @@ export default function Audit() {
       `${entry.resource_type}:${entry.resource_id}`, "Recorded", workflowReference(entry),
       entry.previous_hash, entry.entry_hash,
     ]));
-    downloadCsv("finbrain-audit-trail.csv", rows);
+    downloadCsv("duitduit-audit-trail.csv", rows);
   };
 
   const verificationLabel = (valid: boolean | null) => {

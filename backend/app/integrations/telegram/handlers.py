@@ -40,12 +40,12 @@ from app.security.detect import detect_spans, get_detector_status
 from app.security.tokenize import tokenize_record
 
 logger = logging.getLogger(__name__)
-RESTRICTED = "This FinBrain bot is restricted to approved operators."
+RESTRICTED = "This DuitDuit bot is restricted to approved operators."
 UNAVAILABLE = (
     "Protected capture is temporarily unavailable because the privacy detector is not ready."
 )
 PRIVACY = (
-    "Telegram transports and may retain the original message. FinBrain does not persist raw "
+    "Telegram transports and may retain the original message. DuitDuit does not persist raw "
     "content in its database; only protected text is sent to Morpheus and Gemini. Submit only "
     "information you are authorized to process."
 )
@@ -90,7 +90,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     if role is not None:
         await update.effective_message.reply_text(
-            f"FinBrain Capture is connected. Your fixed role is {role.value}.\n\n{PRIVACY}",
+            f"DuitDuit Capture is connected. Your fixed role is {role.value}.\n\n{PRIVACY}",
             reply_markup=record_type_keyboard(),
         )
         return
@@ -133,7 +133,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "What is your Gmail address?"
         if onboarding.status == "awaiting_gmail"
         else (
-            "Welcome to FinBrain. Your details and messages are stored in protected form.\n\n"
+            "Welcome to DuitDuit. Your details and messages are stored in protected form.\n\n"
             "What is your full name?"
         )
     )
@@ -282,7 +282,7 @@ async def whoami(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if user is None:
         return
     await update.effective_message.reply_text(
-        f"Your Telegram setup ID is {user.id}. Add this numeric ID to FinBrain's "
+        f"Your Telegram setup ID is {user.id}. Add this numeric ID to DuitDuit's "
         "local operator map."
     )
 
@@ -471,7 +471,7 @@ async def content_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             f"Ready to protect\n\nType: {record_type.replace('_', ' ')}\nInput: "
             f"{extracted.input_kind}\nCharacters: {len(record.text)}\n\n"
             f"Protected preview:\n{preview}\n\n"
-            "The original text will not be stored by FinBrain.",
+            "The original text will not be stored by DuitDuit.",
             reply_markup=review_keyboard(nonce, user.id),
         )
     except ExtractionError as error:
@@ -521,7 +521,7 @@ async def review_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     except Exception:
         logger.error("telegram_protect_failed", extra={"event_code": "protect_failed"})
         await query.edit_message_text(
-            "FinBrain could not safely persist this record. Please try again."
+            "DuitDuit could not safely persist this record. Please try again."
         )
         return
     context.user_data.pop("record_type", None)
@@ -565,7 +565,7 @@ async def review_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         else:
             await query.message.reply_text(
                 f"Record protected, enrichment pending\n\nReference: {reference}\n"
-                "Your protected record is safe. FinBrain can retry enrichment later."
+                "Your protected record is safe. DuitDuit can retry enrichment later."
             )
 
     context.application.create_task(enrich_in_background(result.source_record_id, notify))

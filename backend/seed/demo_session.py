@@ -253,7 +253,7 @@ def collect_readiness(db, *, active_roles: set[str] | None = None) -> list[Check
 
 
 def print_readiness(checks: list[Check]) -> None:
-    print("FinBrain demo-session readiness (read-only)")
+    print("DuitDuit demo-session readiness (read-only)")
     for check in checks:
         marker = "PASS" if check.ready else "GAP "
         print(f"[{marker}] {check.feature}: {check.observed} (need {check.requirement})")
@@ -531,7 +531,7 @@ def _ensure_telegram_invoice_and_policy(db, owner_id: str) -> None:
     if invoice is None:
         invoice = EInvoiceRecord(
             tenant_id=DEFAULT_TENANT_ID,
-            supplier_name="FinBrain Demo Supplier Sdn Bhd",
+            supplier_name="DuitDuit Demo Supplier Sdn Bhd",
             supplier_tin="C2026082101",
             buyer_name="Protected Telegram customer",
             buyer_customer_id=endpoint.customer_id,
@@ -809,7 +809,7 @@ def apply_demo_session(*, reset: bool = False) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Inspect or idempotently prepare complete FinBrain demo-session data."
+        description="Inspect or idempotently prepare complete DuitDuit demo-session data."
     )
     parser.add_argument(
         "--apply",

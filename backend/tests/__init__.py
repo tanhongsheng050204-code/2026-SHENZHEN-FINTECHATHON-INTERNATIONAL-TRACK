@@ -1,1 +1,1 @@
-"""FinBrain backend test package."""
+"""DuitDuit backend test package."""

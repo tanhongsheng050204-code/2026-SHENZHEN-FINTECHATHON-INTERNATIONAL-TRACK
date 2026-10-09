@@ -35,7 +35,7 @@ export default function Security() {
       <div className="fb-page-body" style={{ maxWidth: "760px", paddingTop: "2.8rem" }}>
         <div className="fb-eyebrow">Security &amp; Compliance</div>
         <h1 style={{ fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.7rem", fontWeight: 500, margin: ".6rem 0 1rem", textWrap: "balance" }}>How we protect your financial data</h1>
-        <p style={{ color: "var(--ink-soft)", fontSize: ".85rem", margin: "0 0 2rem", fontFamily: "Arial,Helvetica,sans-serif" }}>FINBRAIN OS is under active development. This page describes our current security architecture and our compliance roadmap as it actually stands — we'd rather be precise about where we are than overclaim.</p>
+        <p style={{ color: "var(--ink-soft)", fontSize: ".85rem", margin: "0 0 2rem", fontFamily: "Arial,Helvetica,sans-serif" }}>DuitDuit is under active development. This page describes our current security architecture and our compliance roadmap as it actually stands — we'd rather be precise about where we are than overclaim.</p>
 
         <div className="fb-security-grid">
           {ITEMS.map((item) => (
@@ -54,7 +54,7 @@ export default function Security() {
           <div className="fb-settings-row"><span>ISO/IEC 27001</span><span>Planned</span></div>
         </div>
 
-        <p style={{ fontSize: ".72rem", color: "var(--ink-soft)", marginTop: "2rem", fontFamily: "Arial,Helvetica,sans-serif" }}>Questions about our security posture? <a href="mailto:security@finbrainos.example" style={{ color: "var(--ink)" }}>security@finbrainos.example</a></p>
+        <p style={{ fontSize: ".72rem", color: "var(--ink-soft)", marginTop: "2rem", fontFamily: "Arial,Helvetica,sans-serif" }}>Questions about our security posture? <a href="mailto:security@duitduit.example" style={{ color: "var(--ink)" }}>security@duitduit.example</a></p>
       </div>
 
       <footer className="fb-footer">
@@ -67,10 +67,10 @@ export default function Security() {
             <span tabIndex={0} role="button" onClick={() => goToSecurity()}>Security</span>
             <span tabIndex={0} role="button" onClick={() => goToLegal("privacy")}>Privacy Policy</span>
             <span tabIndex={0} role="button" onClick={() => goToLegal("terms")}>Terms of Service</span>
-            <a href="mailto:hello@finbrainos.example">Contact us</a>
+            <a href="mailto:hello@duitduit.example">Contact us</a>
           </div>
         </div>
-        <div className="fb-footer-bottom">© 2026 FINBRAIN OS. Prototype for demonstration purposes — not a live product.</div>
+        <div className="fb-footer-bottom">© 2026 DuitDuit. Prototype for demonstration purposes — not a live product.</div>
       </footer>
     </div>
   );

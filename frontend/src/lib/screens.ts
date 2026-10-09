@@ -17,7 +17,7 @@ export const PAGE_TITLES: Record<Screen, string> = {
   security: "Security",
   legal: "Legal",
   home: "Today",
-  agents: "Ask FinBrain",
+  agents: "Ask DuitDuit",
   customers: "Customers",
   einvoice: "e-Invoicing",
   "einvoice-detail": "e-Invoicing",

@@ -1,4 +1,4 @@
-# FinBrain OS — Execution Evidence
+# DuitDuit — Execution Evidence
 
 Updated 2026-10-09 after the Plan 2/3 integration and completion pass. Historical
 figures below describe the earlier contract pass; current evidence is recorded in

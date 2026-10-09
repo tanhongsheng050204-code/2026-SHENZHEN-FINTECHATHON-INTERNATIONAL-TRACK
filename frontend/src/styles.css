@@ -328,7 +328,7 @@ img{max-width:100%}
 .fb-palette-kbd{color:var(--ink-soft);font-weight:600;}
 .fb-palette-hint{font-size:.68rem;color:var(--ink-soft);font-weight:500;}
 
-/* Ask FinBrain floating drawer */
+/* Ask DuitDuit floating drawer */
 .fb-drawer-backdrop{position:fixed;inset:0;z-index:180;background:rgba(16,17,18,.35);display:flex;justify-content:flex-end;}
 .fb-drawer{width:min(420px,100%);height:100%;background:var(--card);box-shadow:-24px 0 60px -20px rgba(0,0,0,.35);display:flex;flex-direction:column;animation:fb-drawer-in .28s cubic-bezier(.16,1,.3,1);font-family:'Inter Variable','Inter',-apple-system,sans-serif;}
 @keyframes fb-drawer-in{from{transform:translateX(28px);opacity:.6;}to{transform:translateX(0);opacity:1;}}

@@ -435,7 +435,7 @@ def _generate_protected_draft(
             body=(
                 f"Hello {name},\n\nThank you for contacting us. We have reviewed your request "
                 "and our team will follow up using the information provided.\n\n"
-                "Kind regards,\nFinBrain"
+                "Kind regards,\nDuitDuit"
             ),
         )
     else:
@@ -494,7 +494,7 @@ def generate_action(
         db,
     )
     settings = get_settings()
-    signature_name = settings.email_outreach_signature_name.strip() or "FinBrain Team"
+    signature_name = settings.email_outreach_signature_name.strip() or "DuitDuit Team"
     signature_title = settings.email_outreach_signature_title.strip()
     signature_organization = settings.email_outreach_signature_organization.strip()
     signature_lines = [

@@ -51,7 +51,7 @@ function Screens() {
   }, [identity, setAskRole]);
 
   useEffect(() => {
-    document.title = `${PAGE_TITLES[screen]} · FinBrain OS`;
+    document.title = `${PAGE_TITLES[screen]} · DuitDuit`;
   }, [screen]);
 
   useEffect(() => {

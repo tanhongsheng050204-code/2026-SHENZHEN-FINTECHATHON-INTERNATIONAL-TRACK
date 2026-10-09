@@ -1431,7 +1431,7 @@ def render_einvoice_pdf(
         Paragraph(footer_note_text, style_footer_note),
         Spacer(1, 3),
         Paragraph(
-            "FinBrain OS e-Invoice Readiness Platform &bull; Human-Readable Official Representation",
+            "DuitDuit e-Invoice Readiness Platform &bull; Human-Readable Official Representation",
             style_footer,
         ),
     ]
@@ -1949,14 +1949,14 @@ def render_payment_receipt_pdf(
 
     # 7. Footer
     disclaimer_text = (
-        "<b>Notice:</b> This is a computer-generated official receipt validated by FinBrain OS. "
+        "<b>Notice:</b> This is a computer-generated official receipt validated by DuitDuit. "
         "No signature is required. For inquiries regarding this receipt, please contact the supplier finance department."
     )
     story.append(Paragraph(disclaimer_text, style_footer))
     story.append(Spacer(1, 1))
     story.append(
         Paragraph(
-            "FinBrain OS &bull; Official Payment Confirmation &bull; MyInvois Auditable Record",
+            "DuitDuit &bull; Official Payment Confirmation &bull; MyInvois Auditable Record",
             style_footer,
         )
     )

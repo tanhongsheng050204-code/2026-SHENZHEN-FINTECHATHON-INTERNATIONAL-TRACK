@@ -47,7 +47,7 @@ def run_all() -> list[dict]:
 def _markdown(results: list[dict]) -> str:
     counts = {s: sum(r["status"] == s for r in results) for s in ("pass", "fail", "skip")}
     lines = [
-        "# FinBrain evaluation report",
+        "# DuitDuit evaluation report",
         "",
         f"{counts['pass']} passed, {counts['fail']} failed, {counts['skip']} skipped "
         f"of {len(results)} tasks. Offline: no network and no model provider.",

@@ -48,7 +48,7 @@ function identityErrorMessage(error: unknown): string {
     return `Your session does not contain the latest workspace access claims. Please sign in again.${suffix}`;
   }
   if (error.code === "user_not_provisioned") {
-    return `This account has not been assigned to a FinBrain workspace.${suffix}`;
+    return `This account has not been assigned to a DuitDuit workspace.${suffix}`;
   }
   if (error.code === "stale_user_role_claim") {
     return `Your assigned role changed. Please sign in again.${suffix}`;

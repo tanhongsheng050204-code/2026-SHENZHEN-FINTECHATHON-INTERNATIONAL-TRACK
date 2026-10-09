@@ -7,10 +7,10 @@ export interface RoleIdentity {
 }
 
 export const FB_ROLE_IDENTITY: Record<AskRole, RoleIdentity> = {
-  general_employee: { name: "Aiman Lee", role: "General employee", email: "aiman@finbrain.my" },
-  finance_ops: { name: "Farah Lim", role: "Finance operator", email: "farah@finbrain.my" },
+  general_employee: { name: "Aiman Lee", role: "General employee", email: "aiman@duitduit.my" },
+  finance_ops: { name: "Farah Lim", role: "Finance operator", email: "farah@duitduit.my" },
   compliance: { name: "Maya Wong", role: "Compliance reviewer", email: null },
-  owner_director: { name: "Chloe Tan", role: "Owner / director", email: "chloe@finbrain.my" },
+  owner_director: { name: "Chloe Tan", role: "Owner / director", email: "chloe@duitduit.my" },
 };
 
 export interface AgentReplyRule {
@@ -236,7 +236,7 @@ export const FB_EINVOICE_ORDER = ["inv-6", "inv-7", "inv-8", "inv-3", "inv-4", "
 export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   "inv-6": {
     id: "inv-6", date: "16 Aug 2026", supplier: "Telekom Malaysia Berhad", amount: "RM 489.00",
-    status: "pending", uin: null, submitter: "aiman@finbrain.my",
+    status: "pending", uin: null, submitter: "aiman@duitduit.my",
     description: "Unifi High-Speed Business Broadband & VoIP — Aug 2026.",
     fields: [
       ["Supplier name", "Telekom Malaysia Berhad"], ["Supplier TIN", "C0123456789"],
@@ -252,7 +252,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-7": {
     id: "inv-7", date: "15 Aug 2026", supplier: "AWS Cloud Services Malaysia", amount: "RM 2,450.00",
-    status: "pending", uin: null, submitter: "aiman@finbrain.my",
+    status: "pending", uin: null, submitter: "aiman@duitduit.my",
     description: "Cloud Compute & S3 Object Storage — Production Cluster.",
     fields: [
       ["Supplier name", "AWS Cloud Services Malaysia"], ["Supplier TIN", "C8877665544"],
@@ -268,7 +268,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-8": {
     id: "inv-8", date: "14 Aug 2026", supplier: "Dell Technologies Malaysia", amount: "RM 5,800.00",
-    status: "pending", uin: null, submitter: "aiman@finbrain.my",
+    status: "pending", uin: null, submitter: "aiman@duitduit.my",
     description: "Workstation Hardware & IT Upgrades.",
     fields: [
       ["Supplier name", "Dell Technologies Malaysia"], ["Supplier TIN", "C5544332211"],
@@ -284,7 +284,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-1": {
     id: "inv-1", date: "10 Aug 2026", supplier: "Tenaga Nasional Berhad", amount: "RM 1,240.00",
-    status: "validated", uin: "MY29A8F1Q3RT", submitter: "aiman@finbrain.my",
+    status: "validated", uin: "MY29A8F1Q3RT", submitter: "aiman@duitduit.my",
     description: "Electricity — Aug 2026 billing cycle.",
     fields: [
       ["Supplier name", "Tenaga Nasional Berhad"], ["Supplier TIN", "C1234567890"],
@@ -301,7 +301,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-2": {
     id: "inv-2", date: "9 Aug 2026", supplier: "Grab Malaysia", amount: "RM 86.40",
-    status: "submitted", uin: "MY29A7C3K1XZ", submitter: "aiman@finbrain.my",
+    status: "submitted", uin: "MY29A7C3K1XZ", submitter: "aiman@duitduit.my",
     description: "Ride-hailing — client site visit.",
     fields: [
       ["Supplier name", "Grab Malaysia Sdn Bhd"], ["Supplier TIN", "C9988776655"],
@@ -317,7 +317,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-3": {
     id: "inv-3", date: "8 Aug 2026", supplier: "Petronas Dagangan", amount: "RM 320.00",
-    status: "pending", uin: null, submitter: "aiman@finbrain.my",
+    status: "pending", uin: null, submitter: "aiman@duitduit.my",
     description: "Fleet fuel — awaiting approval before submission.",
     fields: [
       ["Supplier name", "Petronas Dagangan Berhad"], ["Supplier TIN", "C1122334455"],
@@ -333,7 +333,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-4": {
     id: "inv-4", date: "7 Aug 2026", supplier: "Office Supplies Sdn Bhd", amount: "RM 545.90",
-    status: "review", uin: null, submitter: "aiman@finbrain.my",
+    status: "review", uin: null, submitter: "aiman@duitduit.my",
     description: "Flagged: supplier TIN missing from the receipt.",
     fields: [
       ["Supplier name", "Office Supplies Sdn Bhd"], ["Supplier TIN", "— missing —"],
@@ -348,7 +348,7 @@ export const initialEinvoices = (): Record<string, EinvoiceRecord> => ({
   },
   "inv-5": {
     id: "inv-5", date: "5 Aug 2026", supplier: "Astro Malaysia", amount: "RM 129.00",
-    status: "validated", uin: "MY29A5D9M2QP", submitter: "chloe@finbrain.my",
+    status: "validated", uin: "MY29A5D9M2QP", submitter: "chloe@duitduit.my",
     description: "Office subscription — Aug 2026.",
     fields: [
       ["Supplier name", "Astro Malaysia Holdings"], ["Supplier TIN", "C5566778899"],
@@ -447,12 +447,12 @@ export interface AuditRow { time: string; actor: string; type: string; resource:
 export const FB_AUDIT_BASE_COUNT = 122;
 
 export const initialAuditRows = (): AuditRow[] => [
-  { time: "10:42:03", actor: "chloe@finbrain.my", type: "Chat Query", resource: "Board Meeting — 14 Jul 2026 minutes", grant: "owner_director", status: "Allowed", hash: "a91f3c…" },
-  { time: "10:41:58", actor: "chloe@finbrain.my", type: "Chat Query", resource: "Finance Dashboard — Q3 summary", grant: "owner_director", status: "Allowed", hash: "7e2b10…" },
+  { time: "10:42:03", actor: "chloe@duitduit.my", type: "Chat Query", resource: "Board Meeting — 14 Jul 2026 minutes", grant: "owner_director", status: "Allowed", hash: "a91f3c…" },
+  { time: "10:41:58", actor: "chloe@duitduit.my", type: "Chat Query", resource: "Finance Dashboard — Q3 summary", grant: "owner_director", status: "Allowed", hash: "7e2b10…" },
   { time: "09:15:22", actor: "compliance-demo", type: "Chat Query", resource: "Board Meeting — 14 Jul 2026 minutes", grant: "compliance", status: "Denied", hash: "4d8a91…" },
-  { time: "09:02:11", actor: "aiman@finbrain.my", type: "e-Invoice Submit", resource: "TNB-2026-88213", grant: "general_employee", status: "Allowed", hash: "c310ff…" },
+  { time: "09:02:11", actor: "aiman@duitduit.my", type: "e-Invoice Submit", resource: "TNB-2026-88213", grant: "general_employee", status: "Allowed", hash: "c310ff…" },
   { time: "08:47:05", actor: "invoicing-agent", type: "Agent Run", resource: "Receipt OCR — Grab Malaysia", grant: "system", status: "Allowed", hash: "9b1e77…" },
-  { time: "Yesterday 17:20", actor: "chloe@finbrain.my", type: "SOP Approval", resource: "Receipt Intake & OCR Review v2", grant: "owner_director", status: "Allowed", hash: "22af5d…" },
+  { time: "Yesterday 17:20", actor: "chloe@duitduit.my", type: "SOP Approval", resource: "Receipt Intake & OCR Review v2", grant: "owner_director", status: "Allowed", hash: "22af5d…" },
 ];
 
 export interface PendingAction { id: string; active: boolean; kind: string; agent: string; title: string; approveLabel: string; detail: string }

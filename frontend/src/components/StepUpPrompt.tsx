@@ -113,12 +113,12 @@ export function StepUpPrompt() {
         <p className="fb-inbox-muted">This action is protected. Enter the 6-digit code from your authenticator app to continue.</p>
         {loading && <p role="status">Checking your authenticator setup…</p>}
         {!loading && !factorId && <div>
-          <p>Add FinBrain to an authenticator app before your first protected action.</p>
+          <p>Add DuitDuit to an authenticator app before your first protected action.</p>
           <button className="fb-btn fb-btn-outline" type="button" disabled={busy} onClick={() => void enroll()}>Set up authenticator</button>
         </div>}
         {enrollment && <div>
           <p>Scan this QR code in your authenticator app, then enter its code below.</p>
-          <img width="190" height="190" alt="FinBrain authenticator setup QR code" src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qr_code)}`} />
+          <img width="190" height="190" alt="DuitDuit authenticator setup QR code" src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qr_code)}`} />
           <label className="fb-cash-field"><span>Or enter this setup key in your authenticator app</span><input readOnly value={enrollment.secret} /></label>
         </div>}
         <label className="fb-cash-field">

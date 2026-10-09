@@ -12,7 +12,7 @@ from app.services.query_planning import QueryIntent
 logger = logging.getLogger(__name__)
 
 PLANNER_SYSTEM_INSTRUCTION = (
-    "You are FinBrain's protected conversation planner. You never answer the user. "
+    "You are DuitDuit's protected conversation planner. You never answer the user. "
     "Interpret the latest protected question using only the bounded protected conversation. "
     "Tokens such as PERSON_xxxxxxxxxx are opaque identifiers and must remain unchanged. "
     "Choose referenced_turn only when the latest question clearly refers to evidence cited by "

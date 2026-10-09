@@ -181,7 +181,7 @@ export default function Autonomy() {
 
           {RUN_ROLES.has(role) && (
             <div className="fb-callout">
-              Agents take goals from <button type="button" className="fb-cash-more" onClick={() => show("agents")}>Ask FinBrain</button>, where their work streams in as it happens.
+              Agents take goals from <button type="button" className="fb-cash-more" onClick={() => show("agents")}>Ask DuitDuit</button>, where their work streams in as it happens.
             </div>
           )}
 

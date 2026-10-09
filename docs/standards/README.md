@@ -1,6 +1,6 @@
 # Standards pack
 
-How FinBrain's controls line up with published guidance. Each control is tied to the code that implements it and the test or evaluation task that checks it. FinBrain is not certified under any standard: "aligned" means mapped, not audited.
+How DuitDuit's controls line up with published guidance. Each control is tied to the code that implements it and the test or evaluation task that checks it. DuitDuit is not certified under any standard: "aligned" means mapped, not audited.
 
 | Document | What it covers |
 |---|---|

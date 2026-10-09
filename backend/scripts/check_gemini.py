@@ -14,12 +14,12 @@ def main() -> None:
     model = client.models.get(model=settings.gemini_reasoning_model)
     embedding = client.models.embed_content(
         model=settings.gemini_embedding_model,
-        contents="FinBrain Gemini connectivity check",
+        contents="DuitDuit Gemini connectivity check",
         config={"output_dimensionality": 768},
     )
     response = client.models.generate_content(
         model=settings.gemini_reasoning_model,
-        contents="Reply with exactly: FinBrain Gemini ready",
+        contents="Reply with exactly: DuitDuit Gemini ready",
     )
 
     print(f"Reasoning model: {model.name}")

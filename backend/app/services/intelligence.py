@@ -124,7 +124,7 @@ def build_protected_brief(
                 IntelligenceClaim(
                     id="claim-1",
                     statement=(
-                        "FinBrain could not find enough protected evidence to support a decision."
+                        "DuitDuit could not find enough protected evidence to support a decision."
                     ),
                     citation_ids=[],
                     relation="missing",

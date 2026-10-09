@@ -212,7 +212,7 @@ class Tenant(Base):
 
 
 class AuthUserRole(Base):
-    """Backend-authoritative FinBrain role assigned to a Supabase Auth user within one tenant."""
+    """Backend-authoritative DuitDuit role assigned to a Supabase Auth user within one tenant."""
 
     __tablename__ = "user_roles"
 

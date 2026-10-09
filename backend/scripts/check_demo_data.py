@@ -64,7 +64,7 @@ def main() -> None:
             if re.fullmatch(r"RM \d{1,3}(?:,\d{3})*(?:\.\d{2})?", value):
                 valid_decrypted_amounts += 1
 
-    print("FinBrain Supabase row counts:")
+    print("DuitDuit Supabase row counts:")
     for table in RESET_TABLES:
         print(f"  {table}: {counts[table]}")
     print("Protected content by source/status:")

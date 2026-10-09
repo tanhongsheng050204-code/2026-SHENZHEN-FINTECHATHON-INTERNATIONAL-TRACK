@@ -190,7 +190,7 @@ _INBOX: tuple[ReviewAction, ...] = (
         JobFunction.HR,
         AutonomyLevel.L3,
         "Approve the October payroll run",
-        "HR prepared and approved it; the owner checks. The transfer happens outside FinBrain.",
+        "HR prepared and approved it; the owner checks. The transfer happens outside DuitDuit.",
         "62000.00",
         [("Payroll register", "payroll:2026-10")],
         approved_by=_FINANCE_HR_CLERK,

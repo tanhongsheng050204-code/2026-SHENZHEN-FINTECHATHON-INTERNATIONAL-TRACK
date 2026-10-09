@@ -42,7 +42,7 @@ def test_overdue_invoice_creates_one_idempotent_telegram_action():
             verification_status="verified", origin="telegram_onboarding",
         )
         invoice = EInvoiceRecord(
-            tenant_id=TENANT, buyer_customer_id=customer.id, supplier_name="FinBrain",
+            tenant_id=TENANT, buyer_customer_id=customer.id, supplier_name="DuitDuit",
             invoice_no="INV-100", total_amount=Decimal("950.00"), currency="MYR",
             status="validated", due_date=date.today() - timedelta(days=10),
         )

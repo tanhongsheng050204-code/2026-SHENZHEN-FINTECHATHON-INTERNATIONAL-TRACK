@@ -615,7 +615,7 @@ export default function Home() {
 
       {sampleBanner && (
         <div className="fb-callout fb-sample-banner">
-          <span>You're exploring FinBrain with sample data from a demo workspace — connect your own sources anytime.</span>
+          <span>You're exploring DuitDuit with sample data from a demo workspace — connect your own sources anytime.</span>
           <button className="fb-icon-btn" type="button" onClick={dismissSampleBanner} aria-label="Dismiss">✕</button>
         </div>
       )}
@@ -643,7 +643,7 @@ export default function Home() {
         <div className="fb-home-ask-cta">
           <div className="fb-home-ask-cta-copy">
             <h2>Have a question about any of this?</h2>
-            <p>Ask FinBrain in plain language — it cites every source and never shows a persona more than their role allows.</p>
+            <p>Ask DuitDuit in plain language — it cites every source and never shows a persona more than their role allows.</p>
             <div className="fb-home-ask-chips">
               {askSuggestions.map((q) => (
                 <button key={q} className="fb-home-ask-chip" type="button" onClick={() => askAbout(q)}>{q}</button>

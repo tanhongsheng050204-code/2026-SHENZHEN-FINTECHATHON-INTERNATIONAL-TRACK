@@ -1,6 +1,6 @@
 # Incident response runbook
 
-**Owner:** the company owner, with the FinBrain operator on call.
+**Owner:** the company owner, with the DuitDuit operator on call.
 
 Work through the steps in order, and record each one with its time.
 

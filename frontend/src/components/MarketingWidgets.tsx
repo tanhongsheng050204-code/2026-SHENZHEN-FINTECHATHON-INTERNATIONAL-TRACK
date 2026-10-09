@@ -62,7 +62,7 @@ let supportMsgId = 1;
 export function SupportWidget({ topics, onEmail }: { topics: SupportTopic[]; onEmail: () => void }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<SupportMessage[]>([
-    { id: supportMsgId++, from: "agent", text: "Hi — I'm the FinBrain prototype assistant. Pick a topic below, or email the team directly." },
+    { id: supportMsgId++, from: "agent", text: "Hi — I'm the DuitDuit prototype assistant. Pick a topic below, or email the team directly." },
   ]);
   const [input, setInput] = useState("");
 
@@ -84,7 +84,7 @@ export function SupportWidget({ topics, onEmail }: { topics: SupportTopic[]; onE
         id: supportMsgId++,
         from: "agent",
         text: "This prototype doesn't have a live support inbox yet — email the team and a real person will get back to you.",
-        action: { label: "Email hello@finbrainos.example", onClick: onEmail },
+        action: { label: "Email hello@duitduit.example", onClick: onEmail },
       },
     ]);
     setInput("");
@@ -93,10 +93,10 @@ export function SupportWidget({ topics, onEmail }: { topics: SupportTopic[]; onE
   return (
     <>
       {open && (
-        <aside className="fb-mkt-support-panel" role="dialog" aria-label="FinBrain support">
+        <aside className="fb-mkt-support-panel" role="dialog" aria-label="DuitDuit support">
           <div className="fb-mkt-support-head">
             <div>
-              <strong>FinBrain Support</strong>
+              <strong>DuitDuit Support</strong>
               <span>Prototype assistant — not a live team</span>
             </div>
             <button className="fb-mkt-btn is-ghost" type="button" onClick={() => setOpen(false)} aria-label="Close">

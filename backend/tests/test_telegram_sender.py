@@ -41,7 +41,7 @@ def test_dispatch_sends_to_decrypted_chat_and_marks_sent(monkeypatch):
         verification_status="verified", origin="telegram_onboarding",
     )
     invoice = EInvoiceRecord(
-        tenant_id=TENANT, buyer_customer_id=customer.id, supplier_name="FinBrain",
+        tenant_id=TENANT, buyer_customer_id=customer.id, supplier_name="DuitDuit",
         total_amount=Decimal("950"), status="validated",
         due_date=date.today() - timedelta(days=5),
     )

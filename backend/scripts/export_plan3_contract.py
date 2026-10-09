@@ -9,7 +9,7 @@ from app.routes import customization, imports
 
 
 def main():
-    app = FastAPI(title="FinBrain OS - Plan 3 imports", version="3.0.0")
+    app = FastAPI(title="DuitDuit - Plan 3 imports", version="3.0.0")
     app.include_router(customization.router)
     app.include_router(imports.router)
     document = app.openapi()

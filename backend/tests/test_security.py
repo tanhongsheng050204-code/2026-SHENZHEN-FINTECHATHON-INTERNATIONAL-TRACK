@@ -130,7 +130,7 @@ def test_detokenization_resolves_legacy_nested_tokens():
         inner = protect_scalar(
             db,
             entity_type="ORG",
-            value="FinBrain",
+            value="DuitDuit",
             source_record_id="inner-signature",
             tenant_id=DEFAULT_TENANT_ID,
         )
@@ -145,7 +145,7 @@ def test_detokenization_resolves_legacy_nested_tokens():
 
         restored = detokenize_response(db, outer, "owner_director", "nested-signature")
 
-        assert restored == "FinBrain"
+        assert restored == "DuitDuit"
 
 
 def test_role_gate_and_audit_chain():

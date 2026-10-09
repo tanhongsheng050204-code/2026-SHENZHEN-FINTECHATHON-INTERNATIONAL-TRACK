@@ -450,7 +450,7 @@ def main() -> None:
     if insecure_tables:
         raise SystemExit(f"RLS is not enabled and forced for: {', '.join(insecure_tables)}")
     if security_roles != {"finbrain_app": False, "finbrain_worker": False}:
-        raise SystemExit("FinBrain database roles are missing or can bypass RLS.")
+        raise SystemExit("DuitDuit database roles are missing or can bypass RLS.")
     if append_only_triggers != {
         "audit_log_append_only",
         "workflow_audit_log_append_only",

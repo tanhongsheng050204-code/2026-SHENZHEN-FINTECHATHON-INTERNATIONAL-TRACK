@@ -97,7 +97,7 @@ def main() -> None:
         if invoice is None:
             invoice = EInvoiceRecord(
                 tenant_id=DEFAULT_TENANT_ID,
-                supplier_name="FinBrain Demo Supplier Sdn Bhd",
+                supplier_name="DuitDuit Demo Supplier Sdn Bhd",
                 supplier_tin="C2026082001",
                 buyer_name=CUSTOMER_NAME,
                 buyer_customer_id=customer.id,

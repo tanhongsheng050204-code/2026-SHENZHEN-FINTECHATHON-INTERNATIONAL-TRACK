@@ -397,7 +397,7 @@ def adapt_seed_record(record: dict) -> CanonicalIngestionRecord:
 
 
 def reset_demo_data() -> None:
-    """Clear only FinBrain application rows while preserving schema, migrations, and RLS."""
+    """Clear only DuitDuit application rows while preserving schema, migrations, and RLS."""
     settings = get_settings()
     with SessionLocal() as db:
         if settings.database_backend == "postgresql":
@@ -418,7 +418,7 @@ def run(
     initialize_local_schema()
     if reset:
         reset_demo_data()
-        print("cleared FinBrain application data; schema and migrations preserved")
+        print("cleared DuitDuit application data; schema and migrations preserved")
     excluded = excluded_sources or set()
     with SessionLocal() as db:
         for record in SAMPLE_RECORDS:
@@ -434,7 +434,7 @@ def run(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Seed FinBrain through the protected pipeline.")
+    parser = argparse.ArgumentParser(description="Seed DuitDuit through the protected pipeline.")
     parser.add_argument(
         "--refresh",
         action="store_true",
@@ -443,7 +443,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reset",
         action="store_true",
-        help="Delete all FinBrain application rows before inserting the clean demo dataset.",
+        help="Delete all DuitDuit application rows before inserting the clean demo dataset.",
     )
     parser.add_argument(
         "--yes",
@@ -462,7 +462,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     if args.reset and not args.yes:
-        parser.error("--reset requires --yes because it deletes existing FinBrain application data")
+        parser.error("--reset requires --yes because it deletes existing DuitDuit application data")
     run(
         refresh=args.refresh,
         reset=args.reset,

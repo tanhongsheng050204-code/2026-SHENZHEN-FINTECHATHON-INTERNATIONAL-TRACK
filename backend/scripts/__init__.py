@@ -1,1 +1,1 @@
-"""Developer utility scripts for FinBrain OS."""
+"""Developer utility scripts for DuitDuit."""

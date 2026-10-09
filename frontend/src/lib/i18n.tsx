@@ -27,9 +27,9 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
   "nav.financing": { en: "Financing & Passport", ms: "Pembiayaan & Pasport", zh: "融资与护照" },
   "nav.company": { en: "Company settings", ms: "Tetapan syarikat", zh: "公司设置" },
   "company.desc": {
-    en: "Shape FinBrain to your company: profile, positions, approval limits, alerts, templates and imports, within safety floors nobody can switch off.",
-    ms: "Sesuaikan FinBrain dengan syarikat anda: profil, jawatan, had kelulusan, amaran, templat dan import, dalam had keselamatan yang tidak boleh dimatikan.",
-    zh: "按贵公司需要配置 FinBrain：公司资料、岗位、审批额度、预警、模板与导入，并受不可关闭的安全底线保护。",
+    en: "Shape DuitDuit to your company: profile, positions, approval limits, alerts, templates and imports, within safety floors nobody can switch off.",
+    ms: "Sesuaikan DuitDuit dengan syarikat anda: profil, jawatan, had kelulusan, amaran, templat dan import, dalam had keselamatan yang tidak boleh dimatikan.",
+    zh: "按贵公司需要配置 DuitDuit：公司资料、岗位、审批额度、预警、模板与导入，并受不可关闭的安全底线保护。",
   },
   "nav.team": { en: "Team", ms: "Pasukan", zh: "团队" },
   "nav.trust": { en: "Trust center", ms: "Pusat amanah", zh: "信任中心" },
@@ -119,7 +119,7 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
   "home.greeting.morning": { en: "Good morning", ms: "Selamat pagi", zh: "早上好" },
   "home.greeting.afternoon": { en: "Good afternoon", ms: "Selamat tengah hari", zh: "下午好" },
   "home.greeting.evening": { en: "Good evening", ms: "Selamat petang", zh: "晚上好" },
-  "nav.aiAgents": { en: "Ask FinBrain", ms: "Tanya FinBrain", zh: "询问 FinBrain" },
+  "nav.aiAgents": { en: "Ask DuitDuit", ms: "Tanya DuitDuit", zh: "询问 DuitDuit" },
   "nav.customers": { en: "Customers", ms: "Pelanggan", zh: "客户" },
   "nav.einvoicing": { en: "e-Invoicing", ms: "e-Invois", zh: "电子发票" },
   "nav.financeDashboard": { en: "Financial Intelligence", ms: "Risikan Kewangan", zh: "财务情报" },
@@ -160,7 +160,7 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
     ms: "Semua yang disediakan oleh ejen AI bagi pihak anda — tidak ada yang dihantar atau digunakan sehingga anda meluluskannya di sini.",
     zh: "所有由 AI 代理代您准备的事项——在您在此处操作之前，绝不会提交、发送或采用。",
   },
-  "agents.title": { en: "Ask FinBrain", ms: "Tanya FinBrain", zh: "询问 FinBrain" },
+  "agents.title": { en: "Ask DuitDuit", ms: "Tanya DuitDuit", zh: "询问 DuitDuit" },
   "agents.desc": {
     en: "Evidence-backed answers across protected company records, with permission-aware actions.",
     ms: "Jawapan berasaskan bukti merentas rekod syarikat terlindung, dengan tindakan mengikut kebenaran.",
@@ -177,9 +177,9 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
 };
 
 export const FB_UI_STRINGS: Record<Lang, { placeholder: string; send: string; switched: string }> = {
-  en: { placeholder: "Ask FinBrain anything, or tell it what to do...", send: "Send", switched: "Switched to English." },
-  ms: { placeholder: "Tanya FinBrain apa-apa, atau beritahu ia apa yang perlu dilakukan...", send: "Hantar", switched: "Ditukar kepada Bahasa Malaysia." },
-  zh: { placeholder: "向 FinBrain 提问，或告诉它该做什么...", send: "发送", switched: "已切换为中文。" },
+  en: { placeholder: "Ask DuitDuit anything, or tell it what to do...", send: "Send", switched: "Switched to English." },
+  ms: { placeholder: "Tanya DuitDuit apa-apa, atau beritahu ia apa yang perlu dilakukan...", send: "Hantar", switched: "Ditukar kepada Bahasa Malaysia." },
+  zh: { placeholder: "向 DuitDuit 提问，或告诉它该做什么...", send: "发送", switched: "已切换为中文。" },
 };
 
 interface I18nContextValue {

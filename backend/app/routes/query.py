@@ -309,7 +309,7 @@ def query(
     )
     reasoning_question = customer_scope_instruction + (
         (
-            "FinBrain's deterministic conversation resolver has already selected the "
+            "DuitDuit's deterministic conversation resolver has already selected the "
             "protected evidence supplied with this request as the user's intended referent. "
             f"{referential_instruction}"
         )

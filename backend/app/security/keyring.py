@@ -25,7 +25,7 @@ def _wrap_aad(version: int) -> bytes:
 
 def _entry_aad(*, token: str, entity_type: str, source_record_id: str, version: int) -> bytes:
     return "\x1f".join(
-        ["finbrain-vault-v1", token, entity_type, source_record_id, str(version)]
+        ["duitduit-vault-v1", token, entity_type, source_record_id, str(version)]
     ).encode()
 
 

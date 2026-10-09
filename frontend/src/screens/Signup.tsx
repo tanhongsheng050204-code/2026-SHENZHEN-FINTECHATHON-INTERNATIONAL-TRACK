@@ -24,7 +24,7 @@ export default function Signup() {
             aria-hidden="true"
           />
           <button className="fb-mkt-wordmark" style={{ position: "relative", zIndex: 1 }} onClick={() => show("landing")}>
-            <LogoMark large />FINBRAIN OS
+            <LogoMark large />DuitDuit
           </button>
           <div className="fb-mkt-auth-copy">
             <div className="fb-mkt-eyebrow" style={{ position: "relative", zIndex: 1 }}>Controlled provisioning</div>
@@ -39,8 +39,8 @@ export default function Signup() {
           ) : (
           <div className="fb-mkt-auth-form">
             <div className="fb-mkt-eyebrow is-plain">Request access</div>
-            <h2>Ask the FinBrain administrator to provision your account.</h2>
-            <p className="fb-mkt-fine">The administrator creates your Supabase Auth user and assigns one backend-controlled FinBrain role.</p>
+            <h2>Ask the DuitDuit administrator to provision your account.</h2>
+            <p className="fb-mkt-fine">The administrator creates your Supabase Auth user and assigns one backend-controlled DuitDuit role.</p>
             <button className="fb-mkt-btn is-accent is-lg" style={{ width: "100%", justifyContent: "center" }} type="button" onClick={() => show("login")}>Return to login</button>
           </div>
           )}

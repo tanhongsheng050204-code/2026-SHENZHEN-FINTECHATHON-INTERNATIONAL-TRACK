@@ -247,7 +247,7 @@ def enroll(request: Request, response: Response, db: Session = Depends(get_db)):
         "POST",
         "/factors",
         token=credentials(row)["access_token"],
-        payload={"factor_type": "totp", "friendly_name": "FinBrain"},
+        payload={"factor_type": "totp", "friendly_name": "DuitDuit"},
     )
     db.commit()
     response.headers["Cache-Control"] = "no-store"

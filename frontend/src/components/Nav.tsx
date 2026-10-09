@@ -56,7 +56,7 @@ export function MarketingNav() {
     <>
       <nav className={"fb-mkt-nav" + (scrollY > 12 ? " is-scrolled" : "")}>
         <button className="fb-mkt-wordmark" onClick={() => show("landing")}>
-          <LogoMark large />FINBRAIN OS
+          <LogoMark large />DuitDuit
         </button>
         <div className="fb-mkt-nav-links">
           {MARKETING_NAV_ITEMS.map((item) => (
@@ -291,7 +291,7 @@ export function AppTopBar({ current }: { current: Screen }) {
         <NotificationBell />
         <button className="fb-topbar-ask" type="button" onClick={openAsk}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h13a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H9l-5 3v-3a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" /></svg>
-          <span>Ask FinBrain</span>
+          <span>Ask DuitDuit</span>
         </button>
 
         <div

@@ -1,6 +1,6 @@
 # Security policy
 
-FinBrain OS is a competition entry for the 2026 Shenzhen FinTech competition (International Track). It is not a commercial service yet. Only the `main` branch is maintained.
+DuitDuit is a competition entry for the 2026 Shenzhen FinTech competition (International Track). It is not a commercial service yet. Only the `main` branch is maintained.
 
 ## Reporting a vulnerability
 

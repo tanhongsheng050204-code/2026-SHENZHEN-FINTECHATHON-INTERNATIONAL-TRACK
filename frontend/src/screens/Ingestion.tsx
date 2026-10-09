@@ -226,7 +226,7 @@ function RecordCard({ record, kind, onAskFinBrain }: { record: ProtectedIngestio
       )}
       <div className="fb-record-card-ref" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: ".8rem" }}>
         <span>{shortReference(record.source_record_id)}</span>
-        <button className="fb-link-toggle" type="button" onClick={onAskFinBrain} style={{ fontSize: ".68rem" }}>Ask FinBrain about this →</button>
+        <button className="fb-link-toggle" type="button" onClick={onAskFinBrain} style={{ fontSize: ".68rem" }}>Ask DuitDuit about this →</button>
       </div>
     </article>
   );
@@ -410,7 +410,7 @@ function TelegramCapturePanel() {
         </button>
         {howOpen && (
           <div className="fb-callout" style={{ marginTop: ".6rem" }}>
-            Message your workspace's FinBrain Telegram bot and send <code>/capture</code> followed by your note —
+            Message your workspace's DuitDuit Telegram bot and send <code>/capture</code> followed by your note —
             ask your administrator for the bot link if you don't have it yet. Personal details (names, phone
             numbers, IC numbers) are masked automatically before anything is stored.
           </div>
@@ -506,7 +506,7 @@ export default function Ingestion() {
         <EmailCapturePanel />
         <div className="fb-callout">
           Your assigned <strong>{PERSONAS[role].label}</strong> role determines what protected content you can see.
-          Raw text goes only to FinBrain's backend; AI services and Supabase receive only protected content.
+          Raw text goes only to DuitDuit's backend; AI services and Supabase receive only protected content.
         </div>
 
         <PersonaSelector />

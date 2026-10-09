@@ -302,7 +302,7 @@ function CustomerInsightsSection() {
             type="button"
             onClick={() => askAbout("Which customers should I prioritize for collections this week, and why?")}
           >
-            Ask FinBrain about this →
+            Ask DuitDuit about this →
           </button>
         </div>
         {atRisk.length === 0 ? (
@@ -497,7 +497,7 @@ export default function Finance() {
       ["Top customer", "Amount", "Invoices"],
       ...data.top_customers.map((c) => [c.name, c.total_amount, c.invoice_count]),
     ];
-    downloadCsv("finbrain-finance-dashboard.csv", rows);
+    downloadCsv("duitduit-finance-dashboard.csv", rows);
   };
 
   return (

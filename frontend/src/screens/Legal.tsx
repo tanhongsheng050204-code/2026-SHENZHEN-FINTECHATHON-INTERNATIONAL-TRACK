@@ -24,15 +24,15 @@ export default function Legal() {
           <p className="fb-fine" style={{ marginBottom: "1.2rem" }}>Last updated 10 August 2026 · Placeholder content for this prototype — not a binding legal document.</p>
           <p style={pStyle}>We collect the account information you give us (name, work email, company) and the data you connect (email, documents, spreadsheets) solely to operate your workspace — retrieve answers, run agents, and maintain the audit trail described on our Security page.</p>
           <p style={pStyle}>We don't sell your data, and we don't use your connected content to train models shared with other customers. Access within your workspace follows the permission model described on the Security page — your role determines what you can retrieve, not what plan you're on.</p>
-          <p style={{ ...pStyle, margin: 0 }}>You can request an export or deletion of your account data at any time by contacting <a href="mailto:hello@finbrainos.example" style={{ color: "var(--ink)" }}>hello@finbrainos.example</a>.</p>
+          <p style={{ ...pStyle, margin: 0 }}>You can request an export or deletion of your account data at any time by contacting <a href="mailto:hello@duitduit.example" style={{ color: "var(--ink)" }}>hello@duitduit.example</a>.</p>
         </section>
 
         <section id="legal-terms" style={{ marginTop: "3rem" }}>
           <h1 style={h1Style}>Terms of Service</h1>
           <p className="fb-fine" style={{ marginBottom: "1.2rem" }}>Last updated 10 August 2026 · Placeholder content for this prototype — not a binding legal document.</p>
-          <p style={pStyle}>By creating a workspace, you agree to use FINBRAIN OS for legitimate business purposes and to keep your login credentials confidential. You're responsible for reviewing and approving any action an AI agent prepares before it's submitted or sent — that sign-off step exists precisely so responsibility stays with your team.</p>
+          <p style={pStyle}>By creating a workspace, you agree to use DuitDuit for legitimate business purposes and to keep your login credentials confidential. You're responsible for reviewing and approving any action an AI agent prepares before it's submitted or sent — that sign-off step exists precisely so responsibility stays with your team.</p>
           <p style={pStyle}>Subscriptions renew monthly unless cancelled before the next billing date. You can cancel at any time from your account settings; access continues until the end of the current billing period.</p>
-          <p style={{ ...pStyle, margin: 0 }}>FINBRAIN OS is provided "as is" during this trial/prototype phase without uptime guarantees. See our Security page for how we handle your data in the meantime.</p>
+          <p style={{ ...pStyle, margin: 0 }}>DuitDuit is provided "as is" during this trial/prototype phase without uptime guarantees. See our Security page for how we handle your data in the meantime.</p>
         </section>
       </div>
 
@@ -46,10 +46,10 @@ export default function Legal() {
             <span tabIndex={0} role="button" onClick={() => goToSecurity()}>Security</span>
             <span tabIndex={0} role="button" onClick={() => goToLegal("privacy")}>Privacy Policy</span>
             <span tabIndex={0} role="button" onClick={() => goToLegal("terms")}>Terms of Service</span>
-            <a href="mailto:hello@finbrainos.example">Contact us</a>
+            <a href="mailto:hello@duitduit.example">Contact us</a>
           </div>
         </div>
-        <div className="fb-footer-bottom">© 2026 FINBRAIN OS. Prototype for demonstration purposes — not a live product.</div>
+        <div className="fb-footer-bottom">© 2026 DuitDuit. Prototype for demonstration purposes — not a live product.</div>
       </footer>
     </div>
   );

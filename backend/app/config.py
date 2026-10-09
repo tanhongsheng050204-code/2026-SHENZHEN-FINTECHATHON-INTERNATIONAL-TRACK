@@ -10,7 +10,7 @@ from app.schemas import UserRole
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "FinBrain OS"
+    app_name: str = "DuitDuit"
     database_url: str = "sqlite:///./finbrain.db"
     token_root_secret: str = "development-only-secret-change-me-now"
     token_hash_secret: str | None = None
@@ -81,9 +81,9 @@ class Settings(BaseSettings):
     email_smtp_password: str = ""
     email_smtp_use_starttls: bool = True
     email_smtp_from_address: str = ""
-    email_outreach_signature_name: str = "FinBrain Team"
+    email_outreach_signature_name: str = "DuitDuit Team"
     email_outreach_signature_title: str = "Customer Operations"
-    email_outreach_signature_organization: str = "FinBrain"
+    email_outreach_signature_organization: str = "DuitDuit"
     email_outbound_batch_size: int = 5
     email_send_timeout_seconds: int = 15
     email_sending_stale_seconds: int = 120

@@ -29,7 +29,7 @@ async def post_init(application: Application) -> None:
     await application.bot.delete_webhook(drop_pending_updates=False)
     await application.bot.set_my_commands(
         [
-            BotCommand("start", "Connect to FinBrain"),
+            BotCommand("start", "Connect to DuitDuit"),
             BotCommand("capture", "Capture a protected business record"),
             BotCommand("status", "Show recent submission status"),
             BotCommand("cancel", "Cancel the active capture"),

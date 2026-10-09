@@ -19,7 +19,7 @@ const HERO_NAV_ICONS: Record<string, ReactNode> = {
 const HERO_NAV_GROUPS: { label: string | null; items: { key: string; label: string }[] }[] = [
   { label: null, items: [
     { key: "home", label: "Today" },
-    { key: "agents", label: "Ask FinBrain" },
+    { key: "agents", label: "Ask DuitDuit" },
     { key: "approvals", label: "Review inbox" },
     { key: "finance", label: "Cash & finance" },
     { key: "customers", label: "Customers" },
@@ -156,7 +156,7 @@ const FAQ_ITEMS = [
     a: "Personal identifiers like IC numbers and phone numbers are masked immediately after OCR — before any extracted field is stored or sent to an AI model. Only the fields MyInvois requires are retained.",
   },
   {
-    q: "Can FinBrain actually submit e-invoices to LHDN?",
+    q: "Can DuitDuit actually submit e-invoices to LHDN?",
     a: "Yes — receipts and invoices are mapped to the MyInvois schema, validated for missing fields before submission, and tracked through the same status pipeline your finance team would use manually.",
   },
   {
@@ -233,7 +233,7 @@ function PricingCard({ tier, highlighted, price, note, features, cta, onCta, ind
         {features.map((f) => <li key={f}>{f}</li>)}
       </ul>
       {cta === "Contact us" ? (
-        <a className="fb-mkt-btn is-outline" style={{ width: "100%", justifyContent: "center" }} href="mailto:hello@finbrainos.example">Contact us</a>
+        <a className="fb-mkt-btn is-outline" style={{ width: "100%", justifyContent: "center" }} href="mailto:hello@duitduit.example">Contact us</a>
       ) : (
         <button className={"fb-mkt-btn " + (highlighted ? "is-accent" : "is-outline")} style={{ width: "100%", justifyContent: "center" }} type="button" onClick={onCta}>{cta}</button>
       )}
@@ -335,7 +335,7 @@ export default function Landing() {
             <div className="fb-mkt-preview-chrome"><span /><span /><span /></div>
             <div className="fb-mkt-preview-shell">
               <div className="fb-mkt-preview-sidebar">
-                <div className="fb-mkt-preview-sidebar-logo"><LogoMark /><span>FINBRAIN OS</span></div>
+                <div className="fb-mkt-preview-sidebar-logo"><LogoMark /><span>DuitDuit</span></div>
                 {HERO_NAV_GROUPS.map((group) => (
                   <div className="fb-mkt-preview-nav-group" key={group.label ?? "primary"}>
                     {group.label && <div className="fb-mkt-preview-nav-label">{group.label}</div>}
@@ -419,7 +419,7 @@ export default function Landing() {
                   <div className="fb-mkt-preview-pane">
                     <div className="fb-mkt-eyebrow is-plain" style={{ marginBottom: ".8rem" }}>Audit &amp; Access</div>
                     <div className="fb-mkt-preview-chain-ok"><span className="fb-mkt-dot" />Valid hash chain · 128 entries</div>
-                    <div className="fb-mkt-preview-log-row"><span>chloe@finbrain.my · Chat Query</span><span className="fb-mkt-pill is-allowed">Allowed</span></div>
+                    <div className="fb-mkt-preview-log-row"><span>chloe@duitduit.my · Chat Query</span><span className="fb-mkt-pill is-allowed">Allowed</span></div>
                     <div className="fb-mkt-preview-log-row"><span>invoicing-agent · Agent Run</span><span className="fb-mkt-pill is-allowed">Allowed</span></div>
                     <div className="fb-mkt-preview-log-row"><span>guest-7f2a · Chat Query</span><span className="fb-mkt-pill is-restricted">Denied</span></div>
                   </div>
@@ -453,16 +453,16 @@ export default function Landing() {
             <h3>Receipt / invoice in →</h3>
             <p>Agent watches your Telegram bot and inbox for receipts and invoices.</p>
             <div className="fb-mkt-flow-chain">
-              <span>Telegram · Email</span><span>→</span><strong>FINBRAIN Agent</strong><span>→</span><span>MyInvois · Finance</span>
+              <span>Telegram · Email</span><span>→</span><strong>DuitDuit Agent</strong><span>→</span><span>MyInvois · Finance</span>
             </div>
             <div className="fb-mkt-flow-note">OCR-extracts fields, masks PII, maps to a MyInvois e-invoice.</div>
           </div>
           <div className="fb-mkt-flow-card">
             <div className="fb-mkt-icon-badge is-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 1 0 9 9" /><path d="M12 3v9l6 3" /></svg></div>
             <h3>Question in →</h3>
-            <p>Ask from the Ask screen — or the Ask FinBrain panel available on every screen.</p>
+            <p>Ask from the Ask screen — or the Ask DuitDuit panel available on every screen.</p>
             <div className="fb-mkt-flow-chain">
-              <span>Ask FinBrain</span><span>→</span><strong>FINBRAIN Agent</strong><span>→</span><span>Cited answer</span>
+              <span>Ask DuitDuit</span><span>→</span><strong>DuitDuit Agent</strong><span>→</span><span>Cited answer</span>
             </div>
             <div className="fb-mkt-flow-note">Every answer cites its source and respects your role's access.</div>
           </div>
@@ -492,14 +492,14 @@ export default function Landing() {
           <div className="fb-mkt-proof-panel">
             <div className="fb-mkt-eyebrow is-plain" style={{ marginBottom: "1rem" }}>Briefing</div>
             <div className="fb-mkt-proof-shot-frame">
-              <img src="/screenshots/briefing.png" alt="FinBrain Briefing screen listing customers ranked by attention score, most urgent first" loading="lazy" />
+              <img src="/screenshots/briefing.png" alt="DuitDuit Briefing screen listing customers ranked by attention score, most urgent first" loading="lazy" />
             </div>
             <button className="fb-mkt-btn is-outline" style={{ width: "100%", justifyContent: "center" }} type="button" onClick={() => show("signup")}>See your own briefing</button>
           </div>
           <div className="fb-mkt-proof-panel">
             <div className="fb-mkt-eyebrow is-plain" style={{ marginBottom: "1rem" }}>Customers</div>
             <div className="fb-mkt-proof-shot-frame">
-              <img src="/screenshots/customers.png" alt="FinBrain Customers screen showing every customer ranked by attention score, outstanding and overdue amounts" loading="lazy" />
+              <img src="/screenshots/customers.png" alt="DuitDuit Customers screen showing every customer ranked by attention score, outstanding and overdue amounts" loading="lazy" />
             </div>
             <button className="fb-mkt-btn is-outline" style={{ width: "100%", justifyContent: "center" }} type="button" onClick={() => show("signup")}>See the full customer list</button>
           </div>
@@ -508,14 +508,14 @@ export default function Landing() {
 
       <Reveal className="fb-mkt-section" id="landing-why">
         <div className="fb-mkt-section-head">
-          <div className="fb-mkt-eyebrow is-plain">Why FinBrain</div>
-          <h2>Why finance teams choose FINBRAIN over a general AI tool</h2>
+          <div className="fb-mkt-eyebrow is-plain">Why DuitDuit</div>
+          <h2>Why finance teams choose DuitDuit over a general AI tool</h2>
           <p>A general assistant can answer a question. It can't natively file with LHDN, mask PDPA-covered data, or gate a table by role.</p>
         </div>
         <div className="fb-mkt-compare-wrap">
           <table className="fb-mkt-compare">
             <thead>
-              <tr><th>Capability</th><th>General AI assistant<br />(ChatGPT, Copilot + manual setup)</th><th>Generic accounting software</th><th className="is-highlight">FINBRAIN OS</th></tr>
+              <tr><th>Capability</th><th>General AI assistant<br />(ChatGPT, Copilot + manual setup)</th><th>Generic accounting software</th><th className="is-highlight">DuitDuit</th></tr>
             </thead>
             <tbody>
               <tr><td>MyInvois / LHDN e-invoicing</td><td className="fb-mkt-no">Not built in</td><td className="fb-mkt-partial">Varies by vendor</td><td className="fb-mkt-yes is-highlight">Native</td></tr>
@@ -590,14 +590,14 @@ export default function Landing() {
             <span tabIndex={0} role="button" onClick={() => goToSecurity("landing")}>Security</span>
             <span tabIndex={0} role="button" onClick={() => goToLegal("privacy", "landing")}>Privacy Policy</span>
             <span tabIndex={0} role="button" onClick={() => goToLegal("terms", "landing")}>Terms of Service</span>
-            <a href="mailto:hello@finbrainos.example">Contact us</a>
+            <a href="mailto:hello@duitduit.example">Contact us</a>
           </div>
         </div>
-        <div className="fb-mkt-footer-bottom">© 2026 FINBRAIN OS. Prototype for demonstration purposes — not a live product.</div>
+        <div className="fb-mkt-footer-bottom">© 2026 DuitDuit. Prototype for demonstration purposes — not a live product.</div>
       </footer>
 
       <CookieConsentBanner onReadMore={() => goToLegal("privacy", "landing")} />
-      <SupportWidget topics={supportTopics} onEmail={() => { window.location.href = "mailto:hello@finbrainos.example"; }} />
+      <SupportWidget topics={supportTopics} onEmail={() => { window.location.href = "mailto:hello@duitduit.example"; }} />
     </div>
   );
 }

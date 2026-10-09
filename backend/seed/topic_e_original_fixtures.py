@@ -2,7 +2,7 @@
 
 seed/topic_e.py builds a dedicated synthetic tenant (bank, payables, payroll, pipeline)
 for the cash-flow, financing and position pages. The original pages (e-Invoicing,
-Data sources, Ask FinBrain) read e-invoices and protected email/Telegram records,
+Data sources, Ask DuitDuit) read e-invoices and protected email/Telegram records,
 which seed/seed_data.py only puts in the default tenant. Running this after
 topic_e.py adds the same fixtures to the synthetic tenant, so one company tells
 the whole story. Non-destructive and idempotent; refuses any non-synthetic tenant.

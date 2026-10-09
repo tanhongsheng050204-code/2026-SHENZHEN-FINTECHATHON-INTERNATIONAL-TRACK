@@ -258,7 +258,7 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
             "run_completed",
             "supervisor",
             "No built agent covers this goal. Agents can work on cash, collections or "
-            "financing; ask FinBrain in the chat for anything else.",
+            "financing; ask DuitDuit in the chat for anything else.",
         )
         return _events(run_id, steps)
 

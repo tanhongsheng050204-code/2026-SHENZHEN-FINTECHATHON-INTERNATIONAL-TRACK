@@ -304,7 +304,7 @@ def backup(output: Path, schemas: tuple[str, ...]) -> None:
     }
     _json(output / "manifest.json", manifest)
     (output / "README.txt").write_text(
-        "FinBrain pre-reset Supabase backup. Contains sensitive encrypted business, "
+        "DuitDuit pre-reset Supabase backup. Contains sensitive encrypted business, "
         "Auth, audit, and Storage data. Do not commit or share. Table files are "
         "gzip-compressed PostgreSQL binary COPY streams and require the matching "
         "schema/server compatibility recorded in manifest.json.\n",

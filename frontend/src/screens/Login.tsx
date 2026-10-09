@@ -50,12 +50,12 @@ export default function Login() {
             aria-hidden="true"
           />
           <button className="fb-mkt-wordmark" style={{ position: "relative", zIndex: 1 }} onClick={() => show("landing")}>
-            <LogoMark large />FINBRAIN OS
+            <LogoMark large />DuitDuit
           </button>
           <div className="fb-mkt-auth-copy">
             <div className="fb-mkt-eyebrow" style={{ position: "relative", zIndex: 1 }}>Verified access</div>
             <h1>Ask your business.<br />Get answers you can prove.</h1>
-            <p>{authMode === "backend" ? "Password, an emailed code and an authenticator app protect every sign-in. FinBrain applies your assigned role to every request." : "Supabase verifies your identity. FinBrain applies your assigned role to every protected API call."}</p>
+            <p>{authMode === "backend" ? "Password, an emailed code and an authenticator app protect every sign-in. DuitDuit applies your assigned role to every request." : "Supabase verifies your identity. DuitDuit applies your assigned role to every protected API call."}</p>
           </div>
           <div className="fb-mkt-trust-list">
             <div className="fb-mkt-trust-row">
@@ -80,7 +80,7 @@ export default function Login() {
           <form className="fb-mkt-auth-form" onSubmit={submit}>
             <div className="fb-mkt-eyebrow is-plain">Welcome back</div>
             <h2>Enter the secure workspace</h2>
-            <p>Use a provisioned Supabase account. Your FinBrain role is assigned by an administrator.</p>
+            <p>Use a provisioned Supabase account. Your DuitDuit role is assigned by an administrator.</p>
             <div key={shakeToken} className={"fb-mkt-auth-fields" + (hasError ? " is-shake" : "")}>
               <label className="fb-mkt-field" htmlFor="fb-login-username">Email
                 <input
@@ -128,9 +128,9 @@ export default function Login() {
             </div>
             <button className="fb-mkt-btn is-accent is-lg" style={{ width: "100%", justifyContent: "center", marginTop: ".2rem" }} type="submit" disabled={submitting}>
               {submitting && <span className="fb-mkt-btn-spinner" aria-hidden="true" />}
-              {submitting ? "Authenticating…" : "Sign in to FINBRAIN"}
+              {submitting ? "Authenticating…" : "Sign in to DuitDuit"}
             </button>
-            <div className="fb-mkt-fine">Accounts and roles are provisioned by the FinBrain administrator.</div>
+            <div className="fb-mkt-fine">Accounts and roles are provisioned by the DuitDuit administrator.</div>
           </form>
           )}
         </div>

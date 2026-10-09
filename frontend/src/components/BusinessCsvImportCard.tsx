@@ -44,7 +44,7 @@ function Issues({ issues }: { issues: ImportIssue[] }) {
   );
 }
 
-/** Raw file bytes stay in memory and are sent only to FinBrain's backend. */
+/** Raw file bytes stay in memory and are sent only to DuitDuit's backend. */
 export function BusinessCsvImportCard() {
   const { identity } = useAuth();
   const canConfigure = identity?.role === "owner_director" || identity?.role === "finance_ops";

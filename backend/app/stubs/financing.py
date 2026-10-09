@@ -381,7 +381,7 @@ SCORE_METHOD_NOTE = (
 )
 PUBLIC_DATA_NOTE = (
     "Public signals come only from official platform APIs or exports the business owner "
-    "provides; FinBrain does not scrape. The signals shown here are synthetic demo data."
+    "provides; DuitDuit does not scrape. The signals shown here are synthetic demo data."
 )
 
 # (label, unit, evidence, max points, bands). A band is (lower bound, points):

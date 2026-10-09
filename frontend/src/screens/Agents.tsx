@@ -108,7 +108,7 @@ export default function Agents() {
   const { identity } = useAuth();
   const { lang, t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([
-    { id: msgId++, from: "agent", text: "Hi, I’m FinBrain. I can handle invoicing, spreadsheets, files, sales follow-ups, compliance checks, and more — ask me anything, or try one of the suggestions above.", timestamp: now() },
+    { id: msgId++, from: "agent", text: "Hi, I’m DuitDuit. I can handle invoicing, spreadsheets, files, sales follow-ups, compliance checks, and more — ask me anything, or try one of the suggestions above.", timestamp: now() },
   ]);
   const [input, setInput] = useState("");
   const [chips, setChips] = useState<ContextChip[]>([]);
@@ -206,8 +206,8 @@ export default function Agents() {
         isFallback = true;
         embed = undefined;
         finalText = error instanceof ApiError
-          ? `FinBrain could not complete this request (${error.code}).${error.requestId ? ` Reference: ${error.requestId}` : ""}`
-          : "FinBrain could not reach the backend. Check the connection and try again.";
+          ? `DuitDuit could not complete this request (${error.code}).${error.requestId ? ` Reference: ${error.requestId}` : ""}`
+          : "DuitDuit could not reach the backend. Check the connection and try again.";
       }
 
       setMessages((messages) => messages.map((message) => (
@@ -277,7 +277,7 @@ export default function Agents() {
       {
         id: msgId++,
         from: "agent",
-        text: `Continuing "${entry.title}" — ask your next question and FinBrain will pick up where that conversation left off.`,
+        text: `Continuing "${entry.title}" — ask your next question and DuitDuit will pick up where that conversation left off.`,
         timestamp: now(),
       },
     ]);
@@ -377,7 +377,7 @@ export default function Agents() {
       <div className="fb-chat-page">
         {sampleBanner && (
           <div className="fb-callout fb-sample-banner">
-            <span>You're exploring FinBrain with sample data from a demo workspace — connect your own sources anytime.</span>
+            <span>You're exploring DuitDuit with sample data from a demo workspace — connect your own sources anytime.</span>
             <button className="fb-icon-btn" type="button" onClick={dismissSampleBanner} aria-label="Dismiss">✕</button>
           </div>
         )}
@@ -691,7 +691,7 @@ export default function Agents() {
                 <button className="fb-icon-btn" type="button" title="Upload a file" onClick={() => fileInputRef.current?.click()} aria-label="Upload from computer">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
                 </button>
-                <span className="fb-composer-privacy-note" title="FinBrain masks personal details before any question reaches the AI model.">
+                <span className="fb-composer-privacy-note" title="DuitDuit masks personal details before any question reaches the AI model.">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
                   Privacy protected{protectedTurnCount > 0 ? ` · ${protectedTurnCount} ${protectedTurnCount === 1 ? "reply" : "replies"}` : ""}
                 </span>
