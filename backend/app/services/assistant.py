@@ -24,9 +24,8 @@ from app.contracts.agents import ReviewAction
 from app.contracts.assistant import AssistantItem, AssistantPlan
 from app.contracts.common import AutonomyLevel
 from app.schemas import UserRole
-from app.services import agent_runtime, job_scope, live_agents, review_inbox
+from app.services import agent_runtime, live_agents, playbooks
 from app.services.workflow_audit import write_workflow_event
-from app.stubs import inbox as stub_inbox
 
 _EVERYONE = tuple(UserRole)
 _FINANCE_READ = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR, UserRole.COMPLIANCE)
@@ -126,16 +125,7 @@ def _screen_named(text: str) -> str | None:
 
 
 def _inbox(db, principal: AuthPrincipal) -> list[ReviewAction]:
-    if live_agents.is_live(db, principal):
-        _, actions = review_inbox.inbox(db, principal, None)
-    else:
-        _, actions = job_scope.call_stub(
-            stub_inbox.review_inbox,
-            principal.role,
-            str(principal.user_id),
-            None,
-            principal=principal,
-        )
+    _, actions = live_agents.inbox_for(db, principal, None)
     return [action for action in actions if action.status in _OPEN]
 
 
@@ -238,6 +228,16 @@ def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
         screen = _screen_named(text)
         if screen:
             return _navigate(principal, screen, "rules")
+    playbook = playbooks.match(text)
+    if playbook:
+        if not playbooks.allowed(principal, playbook):
+            return _refuse("This playbook is not available to your role.", "rules")
+        return AssistantPlan(
+            kind="playbook",
+            playbook=playbook,
+            message=f"Preparing {playbooks.TITLES[playbook].lower()}. "
+            "External actions will wait for review in the inbox.",
+        )
     if _GOAL.search(text) and not agent_runtime.plan(text).empty:
         return _run_goal(principal, text, "rules")
     return None
@@ -303,6 +303,7 @@ def interpret(db, principal: AuthPrincipal, text: str) -> AssistantPlan:
             event_payload={
                 "kind": plan.kind,
                 "screen": plan.screen,
+                "playbook": plan.playbook,
                 "decision": plan.decision,
                 "item_ids": [item.id for item in plan.items],
                 "understood_by": plan.understood_by,

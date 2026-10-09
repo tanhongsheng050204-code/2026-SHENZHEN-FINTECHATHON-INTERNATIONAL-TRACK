@@ -1,8 +1,45 @@
 # DuitDuit — Execution Evidence
 
-Updated 2026-10-09 after the Plan 2/3 integration and completion pass. Historical
+Updated 2026-10-10 after building the four assistant playbooks. Historical
 figures below describe the earlier contract pass; current evidence is recorded in
 `docs/REMAINING_WORK.md` and `docs/deployment/plan-2-3-review.md`.
+
+## Assistant playbooks: Oct 10 local verification
+
+Section 1 of `docs/handoff/2026-10-10-assistant-remaining-work.md` is implemented.
+These are local automated results, not hosted deployment or browser evidence.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Backend lint | `backend/`: `python -m ruff check .` | All checks passed |
+| Full backend suite | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **506 passed, 2 skipped** |
+| Playbook regression tests | `backend/`: `python -m pytest tests/test_playbooks.py -p no:cacheprovider -W ignore` | **36 passed** |
+| Existing offline evaluation | `backend/`: `python -m eval.run ../output/playbook-evaluation` | **30 passed, 0 failed, 0 skipped**; separate output folder preserves the earlier committed report |
+| Frontend typecheck | `frontend/`: `npx tsc -b` | Passed |
+| Frontend build | `frontend/`: `npm run build` | Passed |
+| Frontend lint | `frontend/`: `npm run lint` | 0 errors, 14 existing warnings |
+| Web hardening | `frontend/`: `node scripts/check-web-hardening.mjs` | Passed |
+
+The two backend skips are the legacy pre-Plan-3 test (the tables now exist) and the
+optional integration test requiring a disposable migrated PostgreSQL database.
+PostgreSQL and hosted Supabase verification were not rerun for this playbook pass.
+The test process used an explicit local SQLite URL, not the production database.
+
+The new tests cover all four playbooks, phrase routing before generic goals,
+sales refusal, compliance's read-only boundary, lender and reminder L2 proposals,
+one open reminder per customer, tenant isolation, no sendable outreach or active
+grants, kill switches, recent-MFA decisions, missing financing facts, accurate cash
+minimum arithmetic, and id-only playbook events on a valid workflow hash chain.
+Synthetic forecast checks retain day 23, RM20,560.00 likely balance and RM29,440.00
+gap. Bank reconciliation is always explicitly **not measured**.
+
+Approving a bank-sharing proposal records the decision; the owner then uses the
+existing Passport controls to select a recipient and expiry and issue the link.
+Reminder delivery is likewise not implemented by the playbook. No external action
+is performed by interpreting or building either playbook.
+
+Sections 2–4 of the handoff remain open. Interactive browser, hosted authentication,
+production deployment and real external delivery are **not measured** here.
 
 ## Automated checks
 

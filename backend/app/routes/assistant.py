@@ -10,13 +10,29 @@ from app.contracts.assistant import (
     BriefingPreference,
     BriefingPreferenceRequest,
     BriefingSendResult,
+    PlaybookResult,
 )
 from app.db import get_db
 from app.schemas import UserRole
 from app.security import rate_limit
-from app.services import assistant, briefing, briefing_push
+from app.services import assistant, briefing, briefing_push, playbooks
 
 router = APIRouter(tags=["assistant"])
+
+
+@router.post("/assistant/playbooks/{playbook_id}", response_model=PlaybookResult)
+def run_playbook(
+    playbook_id: str,
+    principal: AuthPrincipal = Depends(
+        require_roles(
+            UserRole.OWNER_DIRECTOR,
+            UserRole.FINANCE_OPS,
+            UserRole.COMPLIANCE,
+        )
+    ),
+    db: Session = Depends(get_db),
+) -> PlaybookResult:
+    return playbooks.run(db, principal, playbook_id)
 
 
 @router.post("/assistant/interpret", response_model=AssistantPlan)

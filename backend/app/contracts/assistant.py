@@ -5,7 +5,26 @@ from pydantic import BaseModel, Field
 
 from app.contracts.common import AutonomyLevel
 
-AssistantKind = Literal["navigate", "run_goal", "decide", "briefing", "answer", "refuse"]
+AssistantKind = Literal[
+    "navigate", "run_goal", "decide", "briefing", "playbook", "answer", "refuse"
+]
+PlaybookId = Literal["bank_meeting", "chase_late_payers", "pay_everyone", "month_end"]
+
+
+class PlaybookStep(BaseModel):
+    label: str
+    status: Literal["done", "attention", "not_measured"]
+    text: str
+
+
+class PlaybookResult(BaseModel):
+    playbook: PlaybookId
+    title: str
+    steps: list[PlaybookStep]
+    inbox_item_ids: list[str] = Field(default_factory=list)
+    next_screen: str | None = None
+    synthetic: bool = False
+    data_note: str
 
 
 class AssistantCommand(BaseModel):
@@ -29,6 +48,7 @@ class AssistantPlan(BaseModel):
     message: str
     screen: str | None = None
     goal: str | None = None
+    playbook: PlaybookId | None = None
     decision: Literal["approve", "reject"] | None = None
     items: list[AssistantItem] = Field(default_factory=list)
     needs_confirmation: bool = False

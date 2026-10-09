@@ -63,6 +63,23 @@ def _events(db, tenant_id: str):
     ).all()
 
 
+def has_item(db, tenant_id: str, action_id: str) -> bool:
+    return (
+        db is not None
+        and db.scalar(
+            select(WorkflowAuditEntry.id)
+            .where(
+                WorkflowAuditEntry.tenant_id == tenant_id,
+                WorkflowAuditEntry.event_type == "agent_proposal_created",
+                WorkflowAuditEntry.resource_type == "agent_action",
+                WorkflowAuditEntry.resource_id == action_id,
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
 def _replayable(action: ReviewAction, decision: str, approver_id: str) -> bool:
     """The ladder's invariants, enforced again on the recorded order of decisions."""
     if action.status in ("approved", "rejected"):

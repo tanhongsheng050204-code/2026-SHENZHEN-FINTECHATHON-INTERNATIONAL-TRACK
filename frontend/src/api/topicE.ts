@@ -912,7 +912,22 @@ export async function fetchScorecard(): Promise<ScorecardResponse> {
 
 // ── Assistant (front door) ──────────────────────────────────────────────────
 
-export type AssistantKind = "navigate" | "run_goal" | "decide" | "briefing" | "answer" | "refuse";
+export type AssistantKind = "navigate" | "run_goal" | "decide" | "briefing" | "playbook" | "answer" | "refuse";
+export type PlaybookId = "bank_meeting" | "chase_late_payers" | "pay_everyone" | "month_end";
+
+export interface PlaybookResult {
+  playbook: PlaybookId;
+  title: string;
+  steps: { label: string; status: "done" | "attention" | "not_measured"; text: string }[];
+  inbox_item_ids: string[];
+  next_screen: string | null;
+  synthetic: boolean;
+  data_note: string;
+}
+
+export async function runPlaybook(id: PlaybookId): Promise<PlaybookResult> {
+  return parse<PlaybookResult>(await authenticatedFetch(`/assistant/playbooks/${id}`, { method: "POST" }));
+}
 
 export interface AssistantItem {
   id: string;
@@ -928,6 +943,7 @@ export interface AssistantPlan {
   message: string;
   screen: string | null;
   goal: string | null;
+  playbook: PlaybookId | null;
   decision: "approve" | "reject" | null;
   items: AssistantItem[];
   needs_confirmation: boolean;

@@ -27,6 +27,33 @@ The "Ask DuitDuit" assistant is a front door. It turns text into **one allowed a
 
 ### 1. Four playbooks (target Oct 10–12)
 
+**Implementation update (Oct 10):** section 1 is built locally. The four playbooks
+have a typed result card, role-checked POST endpoint, and id-only
+`assistant_playbook` audit events. External work creates pending L2 inbox proposals;
+it never issues a grant, sends a message, creates a sendable outreach action, or
+changes a payment date. Proposals remain visible and decidable through the existing
+inbox even when the cash forecast uses synthetic demo data. Repeated runs reuse
+the same open proposal per customer or bank-sharing request.
+
+The bank pack offers a **sharing proposal**. After reviewing it, the owner uses the
+existing Financing & Passport controls to select a Passport, recipient and expiry
+and complete the authenticator check. Approving the proposal alone does not issue
+or send a link. Reminder approval likewise records a decision; this playbook does
+not implement delivery. This avoids the existing worker's automatic-approval queue.
+
+`pay_everyone` explicitly shows a **rolling next-30-days** window, allowing the
+synthetic day-23 story to cross a calendar-month boundary. Its gap is relative to
+the company's cash minimum, not a claim of an overdraft. Scenario shifts are
+illustrative; the stored dates are unchanged. `month_end` checks only real records
+in the tenant's scope, never treating demo sample inbox items as the company's
+books. Missing imports/invoices and bank reconciliation remain `not_measured`.
+
+Relevant implementation: `backend/app/services/playbooks.py`,
+`backend/tests/test_playbooks.py`, `frontend/src/components/AssistantReply.tsx`.
+Verification evidence is in `docs/submission/execution-evidence.md`. Interactive
+browser and hosted authentication testing are not measured in this pass. Sections
+2–4 remain open; deployment remains the separate human workflow below.
+
 A playbook is a new `AssistantPlan.kind = "playbook"` with a `playbook` id. It runs several steps and shows the result in one card. Anything that goes outside the company is a review-inbox proposal, never sent directly.
 
 | Id | Trigger phrases | Steps | Roles |

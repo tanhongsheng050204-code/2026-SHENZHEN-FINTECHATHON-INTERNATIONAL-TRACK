@@ -1790,3 +1790,9 @@ html{scroll-behavior:smooth;}
 .fb-briefing-lines li.is-ok{border-left-color:var(--chart-good,#14866d)}
 .fb-briefing-push{display:grid;gap:.7rem;padding:1rem 1.15rem}
 .fb-briefing-push-row{display:flex;align-items:center;gap:.55rem;font-size:.9rem}
+.fb-playbook-steps { padding-left: 1.25rem; margin: 1rem 0; }
+.fb-playbook-steps li { margin: .8rem 0; padding-left: .25rem; }
+.fb-playbook-steps li > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.fb-playbook-steps p { margin: .3rem 0; }
+.fb-playbook-status { font-size: .75rem; color: var(--ink-soft); }
+.fb-playbook-steps .is-attention .fb-playbook-status { color: var(--accent); }

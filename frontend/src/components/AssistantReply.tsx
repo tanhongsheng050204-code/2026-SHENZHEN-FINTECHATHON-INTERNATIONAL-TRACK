@@ -8,8 +8,11 @@ import {
   errorCode,
   ringgit,
   runAgents,
+  runPlaybook,
   type AgentRunEvent,
   type AssistantPlan,
+  type PlaybookId,
+  type PlaybookResult,
 } from "../api/topicE";
 
 const LEVEL_TEXT: Record<string, string> = {
@@ -42,9 +45,57 @@ export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNa
   if (plan.kind === "run_goal" && plan.goal) return <GoalRun goal={plan.goal} message={plan.message} />;
   if (plan.kind === "decide") return <DecisionCard plan={plan} />;
   if (plan.kind === "briefing") return <BriefingCard onNavigate={onNavigate} />;
+  if (plan.kind === "playbook" && plan.playbook) return <PlaybookCard key={plan.playbook} id={plan.playbook} onNavigate={onNavigate} />;
   return (
     <div className="fb-assistant">
       <p>{plan.message}</p>
+    </div>
+  );
+}
+
+const STEP_STATUS = { done: "Done", attention: "Needs attention", not_measured: "Not measured" };
+
+/** A playbook may prepare inbox proposals; it never decides or sends them. */
+export function PlaybookCard({ id, onNavigate }: { id: PlaybookId; onNavigate?: () => void }) {
+  const { show } = useAppState();
+  const [result, setResult] = useState<PlaybookResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const request = useRef<Promise<PlaybookResult> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    // Reuse the request when StrictMode reattaches the effect. No extra draft POST.
+    request.current ??= runPlaybook(id);
+    request.current.then((value) => active && setResult(value))
+      .catch((e) => active && setError(friendlyLoadError(errorCode(e))));
+    return () => { active = false; };
+  }, [id]);
+
+  const open = (screen: string) => {
+    if (!(SCREENS as readonly string[]).includes(screen)) return;
+    onNavigate?.();
+    show(screen as Screen);
+  };
+
+  if (error) return <div className="fb-inbox-error" role="alert">{error} Open the review inbox to check whether any drafts were prepared before the error.</div>;
+  if (!result) return <p className="fb-inbox-muted" role="status">Preparing your playbook…</p>;
+
+  return (
+    <div className="fb-assistant fb-playbook" role="region" aria-label={result.title}>
+      <p><strong>{result.title}</strong></p>
+      <p className="fb-inbox-muted">{result.synthetic && <strong>Synthetic demo data · </strong>}{result.data_note}</p>
+      <ol className="fb-playbook-steps">
+        {result.steps.map((step) => (
+          <li key={step.label} className={`is-${step.status}`}>
+            <div><strong>{step.label}</strong><span className="fb-playbook-status">{STEP_STATUS[step.status]}</span></div>
+            <p>{step.text}</p>
+          </li>
+        ))}
+      </ol>
+      <div className="fb-assistant-actions">
+        {result.inbox_item_ids.length > 0 && <button type="button" className="fb-cash-more" onClick={() => open("inbox")}>Open review inbox →</button>}
+        {result.next_screen && !(result.next_screen === "inbox" && result.inbox_item_ids.length > 0) && <button type="button" className="fb-cash-more" onClick={() => open(result.next_screen!)}>Open →</button>}
+      </div>
     </div>
   );
 }

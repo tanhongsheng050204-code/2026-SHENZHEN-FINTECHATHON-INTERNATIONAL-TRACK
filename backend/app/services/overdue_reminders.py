@@ -31,20 +31,33 @@ def _idempotency_key(
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
-def plan_due_reminders(
-    db: Session, tenant_id: str, as_of: date
-) -> ReminderPlanResult:
+def due_invoices(db: Session, tenant_id: str, as_of: date) -> list[EInvoiceRecord]:
+    """Read-only selection shared by the worker and human-reviewed playbooks.
+
+    No outreach action is created here, including when the worker's policy allows
+    automatic approval. Never hand playbook drafts to that worker.
+    """
+    return list(
+        db.scalars(
+            select(EInvoiceRecord)
+            .where(
+                EInvoiceRecord.tenant_id == tenant_id,
+                EInvoiceRecord.status == "validated",
+                EInvoiceRecord.paid_at.is_(None),
+                EInvoiceRecord.due_date.is_not(None),
+                EInvoiceRecord.due_date < as_of,
+                EInvoiceRecord.buyer_customer_id.is_not(None),
+            )
+            .order_by(EInvoiceRecord.buyer_customer_id, EInvoiceRecord.id)
+        ).all()
+    )
+
+
+def plan_due_reminders(db: Session, tenant_id: str, as_of: date) -> ReminderPlanResult:
     policy = db.get(TenantOutreachPolicy, tenant_id)
     if policy is None or not policy.telegram_reminders_enabled:
         return ReminderPlanResult()
-    invoices = db.scalars(select(EInvoiceRecord).where(
-        EInvoiceRecord.tenant_id == tenant_id,
-        EInvoiceRecord.status == "validated",
-        EInvoiceRecord.paid_at.is_(None),
-        EInvoiceRecord.due_date.is_not(None),
-        EInvoiceRecord.due_date < as_of,
-        EInvoiceRecord.buyer_customer_id.is_not(None),
-    )).all()
+    invoices = due_invoices(db, tenant_id, as_of)
     eligible = created = skipped = 0
     for invoice in invoices:
         overdue_days = (as_of - invoice.due_date).days
@@ -59,13 +72,17 @@ def plan_due_reminders(
         ):
             skipped += 1
             continue
-        endpoint = db.scalar(select(CustomerEndpoint).where(
-            CustomerEndpoint.tenant_id == tenant_id,
-            CustomerEndpoint.customer_id == customer.id,
-            CustomerEndpoint.channel == "telegram",
-            CustomerEndpoint.verification_status == "verified",
-            CustomerEndpoint.delivery_token.is_not(None),
-        ).order_by(CustomerEndpoint.id))
+        endpoint = db.scalar(
+            select(CustomerEndpoint)
+            .where(
+                CustomerEndpoint.tenant_id == tenant_id,
+                CustomerEndpoint.customer_id == customer.id,
+                CustomerEndpoint.channel == "telegram",
+                CustomerEndpoint.verification_status == "verified",
+                CustomerEndpoint.delivery_token.is_not(None),
+            )
+            .order_by(CustomerEndpoint.id)
+        )
         if endpoint is None:
             skipped += 1
             continue
@@ -74,13 +91,13 @@ def plan_due_reminders(
         if stage > policy.max_reminders:
             skipped += 1
             continue
-        key = _idempotency_key(
-            tenant_id, invoice.id, endpoint.id, stage, policy.policy_version
+        key = _idempotency_key(tenant_id, invoice.id, endpoint.id, stage, policy.policy_version)
+        existing = db.scalar(
+            select(OutreachAction).where(
+                OutreachAction.tenant_id == tenant_id,
+                OutreachAction.idempotency_key == key,
+            )
         )
-        existing = db.scalar(select(OutreachAction).where(
-            OutreachAction.tenant_id == tenant_id,
-            OutreachAction.idempotency_key == key,
-        ))
         if existing is not None:
             skipped += 1
             continue

@@ -28,6 +28,7 @@ from app.schemas import UserRole
 from app.services import cashflow, cashflow_engine, financing_profile, review_inbox
 from app.services.workflow_audit import write_workflow_event
 from app.stubs import agents as manifests
+from app.stubs import inbox as stub_inbox
 from app.stubs.financing import matches
 from app.stubs.positions import DISPLAY_NAMES
 
@@ -45,6 +46,25 @@ def is_live(db, principal: AuthPrincipal) -> bool:
     if db is None:
         return False
     return cashflow.basis_for(db, principal, dt.date.today()).data_mode == DataMode.LIVE
+
+
+def inbox_for(db, principal: AuthPrincipal, job_function: JobFunction | None):
+    """Keep persisted proposals visible even without an imported bank balance."""
+    if is_live(db, principal):
+        return review_inbox.inbox(db, principal, job_function)
+    from app.services import job_scope
+
+    scope, actions = job_scope.call_stub(
+        stub_inbox.review_inbox,
+        principal.role,
+        str(principal.user_id),
+        job_function,
+        principal=principal,
+    )
+    if db is not None:
+        _, persisted = review_inbox.inbox(db, principal, job_function)
+        actions = [*actions, *persisted]
+    return scope, actions
 
 
 def _grants(db, tenant_id: str) -> dict[str, list[ScopedAutonomy]]:

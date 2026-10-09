@@ -93,16 +93,7 @@ def review(
 ) -> ReviewInboxResponse:
     live = live_agents.is_live(db, principal)
     try:
-        if live:
-            scope, actions = review_inbox.inbox(db, principal, job_function)
-        else:
-            scope, actions = job_scope.call_stub(
-                stub_inbox.review_inbox,
-                principal.role,
-                str(principal.user_id),
-                job_function,
-                principal=principal,
-            )
+        scope, actions = live_agents.inbox_for(db, principal, job_function)
     except (review_inbox.InboxError, stub_inbox.InboxError) as error:
         raise HTTPException(status_code=error.status_code, detail=error.code) from error
     return ReviewInboxResponse(
@@ -124,7 +115,7 @@ def decide(
 ) -> ReviewDecisionResponse:
     live = live_agents.is_live(db, principal)
     try:
-        if live:
+        if live or review_inbox.has_item(db, str(principal.tenant_id), action_id):
             action = review_inbox.decide(db, principal, action_id, request)
         else:
             action = job_scope.call_stub(
