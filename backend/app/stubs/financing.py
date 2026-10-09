@@ -105,9 +105,31 @@ def _format(value: Decimal, unit: str) -> str:
     return f"{value:.0f} months"
 
 
-def _evaluate(rule: _Rule) -> RuleResult:
+@dataclass(frozen=True)
+class Profile:
+    """The facts eligibility rules read. A missing fact fails its rule as not on record."""
+
+    data_mode: DataMode
+    values: dict[str, Decimal]
+
+
+DEMO_PROFILE = Profile(DataMode.STUB, _PROFILE)
+
+
+def _evaluate(rule: _Rule, profile: Profile = DEMO_PROFILE) -> RuleResult:
     label, unit, evidence = _METRICS[rule.metric]
-    value = _PROFILE[rule.metric]
+    value = profile.values.get(rule.metric)
+    if value is None:
+        bound = "at least" if rule.op == ">=" else "at most"
+        requirement = (
+            "required" if unit == "flag" else f"requires {bound} " + _format(rule.threshold, unit)
+        )
+        return RuleResult(
+            rule=rule.rule,
+            passed=False,
+            detail=f"{label}: not on record ({requirement})",
+            evidence=[evidence],
+        )
     passed = value >= rule.threshold if rule.op == ">=" else value <= rule.threshold
     if unit == "flag":
         detail = f"{label}: {'yes' if value else 'no'} (required)"
@@ -283,8 +305,8 @@ _CATALOGUE: tuple[_Product, ...] = (
 )
 
 
-def _match(entry: _Product) -> FinancingMatch:
-    results = [_evaluate(rule) for rule in entry.rules]
+def _match(entry: _Product, profile: Profile = DEMO_PROFILE) -> FinancingMatch:
+    results = [_evaluate(rule, profile) for rule in entry.rules]
     failed = [result.detail for result in results if not result.passed]
     explanation = (
         f"Eligible: meets all {len(results)} requirements."
@@ -300,14 +322,18 @@ def _match(entry: _Product) -> FinancingMatch:
     )
 
 
-def matches(jurisdiction: Jurisdiction) -> FinancingMatchesResponse:
-    found = [_match(entry) for entry in _CATALOGUE if entry.product.jurisdiction == jurisdiction]
+def matches(
+    jurisdiction: Jurisdiction, profile: Profile = DEMO_PROFILE
+) -> FinancingMatchesResponse:
+    found = [
+        _match(entry, profile) for entry in _CATALOGUE if entry.product.jurisdiction == jurisdiction
+    ]
     found.sort(key=lambda match: (not match.eligible, -match.fit_score))
     return FinancingMatchesResponse(
-        data_mode=DataMode.STUB,
+        data_mode=profile.data_mode,
         jurisdiction=jurisdiction,
         disclaimer=DISCLAIMER,
-        shortfall_gap=SHORTFALL_GAP,
+        shortfall_gap=profile.values.get("projected_shortfall_gap"),
         matches=found,
     )
 
@@ -319,11 +345,11 @@ class PackError(ValueError):
         self.status_code = status_code
 
 
-def application_pack(product_id: str) -> ReviewAction:
+def application_pack(product_id: str, profile: Profile = DEMO_PROFILE) -> ReviewAction:
     entry = next((e for e in _CATALOGUE if e.product.id == product_id), None)
     if entry is None:
         raise PackError("product_not_found", 404)
-    match = _match(entry)
+    match = _match(entry, profile)
     if not match.eligible:
         raise PackError("product_not_eligible", 409)
     return ReviewAction(

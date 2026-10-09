@@ -11,7 +11,9 @@ import {
   fetchFinancingMatches,
   fetchGrants,
   fetchPassports,
+  issuePassport,
   prepareApplicationPack,
+  prepareAuditPack,
   revokeGrant,
   ringgit,
   verifyPassport,
@@ -301,6 +303,56 @@ function AuditPackCard({ pack, isOwner }: { pack: AuditPack; isOwner: boolean })
   );
 }
 
+function currentQuarter(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-Q${Math.floor(now.getMonth() / 3) + 1}`;
+}
+
+function Issue({ isOwner, hasPassport, onPassport, onPack, onError }: {
+  isOwner: boolean;
+  hasPassport: boolean;
+  onPassport: (p: Passport) => void;
+  onPack: (p: AuditPack) => void;
+  onError: (message: string | null) => void;
+}) {
+  const [busy, setBusy] = useState<"passport" | "pack" | null>(null);
+  const [period, setPeriod] = useState(currentQuarter);
+
+  const act = async (kind: "passport" | "pack") => {
+    setBusy(kind);
+    onError(null);
+    try {
+      if (kind === "passport") onPassport(await issuePassport());
+      else onPack(await prepareAuditPack(period));
+    } catch (e) {
+      onError(errorText(e));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <section className="fb-cash-card" aria-label="Issue documents">
+      <h2>Documents for lenders and auditors</h2>
+      <p className="fb-inbox-muted">Each one is computed from your records, hashed, and written to your audit chain, so anyone you share it with can check it was not changed.</p>
+      <div className="fb-cash-whatif">
+        {isOwner && (
+          <button className="fb-btn fb-btn-solid" type="button" disabled={busy !== null} onClick={() => void act("passport")}>
+            {busy === "passport" ? "Issuing…" : hasPassport ? "Issue a new Passport version" : "Issue a Passport"}
+          </button>
+        )}
+        <label className="fb-cash-field">
+          <span>Audit period</span>
+          <input value={period} maxLength={7} onChange={(e) => setPeriod(e.target.value.toUpperCase())} aria-label="Audit period, for example 2026-Q3" />
+        </label>
+        <button className="fb-btn fb-btn-outline" type="button" disabled={busy !== null || !/^\d{4}(-Q[1-4])?$/.test(period)} onClick={() => void act("pack")}>
+          {busy === "pack" ? "Preparing…" : "Prepare audit pack"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function Financing() {
@@ -338,8 +390,11 @@ export default function Financing() {
           <ScorecardCard />
           <Matches canPrepare={PACK_ROLES.has(role)} />
           {error && <div className="fb-callout" role="alert">{error}</div>}
-          {passport && <PassportCard passport={passport} isOwner={isOwner} />}
-          {pack && <AuditPackCard pack={pack} isOwner={isOwner} />}
+          {PACK_ROLES.has(role) && (
+            <Issue isOwner={isOwner} hasPassport={passport !== null} onPassport={setPassport} onPack={setPack} onError={setError} />
+          )}
+          {passport && <PassportCard key={passport.id} passport={passport} isOwner={isOwner} />}
+          {pack && <AuditPackCard key={pack.id} pack={pack} isOwner={isOwner} />}
           {!isOwner && (passport || pack) && <p className="fb-inbox-muted">Only the owner can share these with a lender or auditor.</p>}
         </div>
       </div>

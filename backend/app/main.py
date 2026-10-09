@@ -15,7 +15,9 @@ from app.config import get_settings
 from app.db import get_db, initialize_local_schema
 from app.observability import configure_logging, init_sentry
 from app.routes import (
+    agent_runs,
     agents,
+    agents_live,
     audit_log,
     auth,
     cashflow,
@@ -32,6 +34,7 @@ from app.routes import (
     integrations,
     outreach,
     passports,
+    passports_live,
     positions,
     privacy,
     query,
@@ -141,10 +144,13 @@ app.include_router(customers.router)
 app.include_router(privacy.router)
 app.include_router(health.router)
 app.include_router(cashflow.router)
+app.include_router(agent_runs.router)  # before agents: serves the run endpoints
+app.include_router(agents_live.router)  # before agents, inbox, positions: live tenants
 app.include_router(agents.router)
 app.include_router(inbox.router)
 app.include_router(positions.router)
 app.include_router(financing.router)
+app.include_router(passports_live.router)  # before passports: serves those paths
 app.include_router(passports.router)
 app.include_router(trust.router)
 app.include_router(team.router)

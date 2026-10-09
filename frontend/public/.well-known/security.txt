@@ -1,0 +1,4 @@
+Contact: https://github.com/tanhongsheng050204-code/2026-SHENZHEN-FINTECHATHON-INTERNATIONAL-TRACK/security/advisories/new
+Expires: 2027-10-09T00:00:00.000Z
+Policy: https://github.com/tanhongsheng050204-code/2026-SHENZHEN-FINTECHATHON-INTERNATIONAL-TRACK/blob/main/SECURITY.md
+Preferred-Languages: en, ms, zh

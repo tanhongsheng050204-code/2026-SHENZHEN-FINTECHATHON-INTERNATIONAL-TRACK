@@ -16,6 +16,7 @@ import {
   type EInvoiceUpdatePayload,
 } from "../api/client";
 import { isOverdue, openEinvoiceDocument } from "./Einvoice";
+import { QrCode } from "../components/QrCode";
 
 function RealEinvoiceDetail({ recordId }: { recordId: number }) {
   const { askRole, show } = useAppState();
@@ -333,11 +334,7 @@ function RealEinvoiceDetail({ recordId }: { recordId: number }) {
 
       {showUinPanel && (
         <div className="fb-uin-panel" style={{ maxWidth: "920px", margin: "1.4rem auto 0" }}>
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://myinvois.hasil.gov.my/${displayUin}`)}`}
-            alt="MyInvois Verification QR Code"
-            style={{ width: "64px", height: "64px", flex: "0 0 auto", borderRadius: "8px", border: "1px solid var(--line)", background: "#fff" }}
-          />
+          <QrCode value={`https://myinvois.hasil.gov.my/${displayUin}`} label="MyInvois verification QR code" />
           <div>
             <div className="fb-eyebrow" style={{ marginBottom: ".3rem" }}>Verified by LHDN MyInvois (Sandbox)</div>
             <div className="fb-uin-code">UIN {displayUin}</div>
@@ -760,11 +757,7 @@ export default function EinvoiceDetail() {
 
       {showUinPanel && (
         <div className="fb-uin-panel" style={{ maxWidth: "920px", margin: "1.4rem auto 0" }}>
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://myinvois.hasil.gov.my/${displayUin}`)}`}
-            alt="MyInvois Verification QR Code"
-            style={{ width: "64px", height: "64px", flex: "0 0 auto", borderRadius: "8px", border: "1px solid var(--line)", background: "#fff" }}
-          />
+          <QrCode value={`https://myinvois.hasil.gov.my/${displayUin}`} label="MyInvois verification QR code" />
           <div>
             <div className="fb-eyebrow" style={{ marginBottom: ".3rem" }}>Verified by LHDN MyInvois (Sandbox)</div>
             <div className="fb-uin-code">UIN {displayUin}</div>

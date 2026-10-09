@@ -27,7 +27,12 @@ CI (`.github/workflows/ci.yml`) runs the backend lint and tests and the frontend
 | Passport | Documents with fields that were never issued are rejected; verification recomputes the SHA-256 |
 | Settings | Safety floors (owner alerts, MFA for privileged roles, 60-minute idle cap); security changes and security rollbacks wait for Compliance; equivalent submissions are not changes |
 | Templates and imports | Unknown or malformed placeholders and personal numbers refused; import mappings match on every header regardless of order, case and byte-order mark |
-| Agent runs | Events stream in order and are documented as `AgentRunEvent` items in the contract |
+| Agent runs | The Supervisor routes English, Malay and Chinese goals; each agent calls the real forecast, late-receivables scenario and financing rule engine, and every message is built from their results; off-topic goals get an honest refusal; every tool call is checked against the agent manifest; run ids are HMAC-bound to tenant and person, so tampered or foreign ids return 404 (`tests/test_agent_runtime.py`) |
+| Finance engine on tenant data | Forecast, scenarios and financing rules run on a tenant's imported records; on the synthetic importer's data the forecast reconciles to the documented day-23 shortfall (RM20,560.00 likely balance, RM29,440.00 gap); facts with no source fail their rule as "not on record" instead of using a made-up value (`tests/test_cash_basis.py`; the live-data tests run once Plan 3 is merged) |
+| Passport, audit packs and share links | Issued onto the tenant's audit chain; verification names a changed field only for the holder of the issued digest; expired and revoked links return 410, forged ones 404; every external view is a chain event (`tests/test_passports_live.py`) |
+| Persisted review inbox and earned autonomy | Agent-run proposals saved once to the review inbox on the audit chain; L1/L2/L3 decision rules with maker and checker; review records counted from decisions; promotion refused until 30 approvals, then persisted (`tests/test_review_inbox_live.py`) |
+| Evaluation harness | 30 tasks as data (`backend/eval/tasks.json`): 22 functional, 8 adversarial mapped to OWASP agentic risks; on `main` 26 pass and 4 skip until Plan 2/3 merge, and 30/30 pass with that code applied (`output/eval-report.md`) |
+| Supply chain | `pip-audit` found 76 known vulnerabilities in 5 Python packages and `npm audit` 1 high; all fixed by upgrading, and CI now runs both audits, a full-history `gitleaks` scan and an SPDX SBOM on every push |
 
 ## Live demonstrations
 

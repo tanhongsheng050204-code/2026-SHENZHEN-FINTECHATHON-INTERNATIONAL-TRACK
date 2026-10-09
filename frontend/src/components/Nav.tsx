@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useAppState, type Screen } from "../lib/appState";
+import { PAGE_TITLES } from "../lib/screens";
 import { useAuth } from "../auth/AuthProvider";
 import { PARENT_SCREEN, canOpen } from "../lib/access";
 import { useI18n } from "../lib/i18n";
@@ -254,27 +255,6 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
   );
 }
 
-const SCREEN_TITLES: Partial<Record<Screen, string>> = {
-  home: "Today",
-  agents: "Ask FinBrain",
-  customers: "Customers",
-  einvoice: "e-Invoicing",
-  "einvoice-detail": "e-Invoicing",
-  finance: "Cash & finance",
-  audit: "Trust & audit",
-  approvals: "Review inbox",
-  ingestion: "Data sources",
-  settings: "My preferences",
-  inbox: "Review inbox",
-  positions: "Positions",
-  autonomy: "Agents & autonomy",
-  cashflow: "Cash & finance",
-  financing: "Financing & Passport",
-  team: "Team",
-  trust: "Trust & audit",
-  company: "Company settings",
-};
-
 export function AppTopBar({ current }: { current: Screen }) {
   const { show, askRole, displayName } = useAppState();
   const { openAsk, openPalette } = useUiChrome();
@@ -289,14 +269,14 @@ export function AppTopBar({ current }: { current: Screen }) {
     <div className="fb-topbar">
       <div className="fb-topbar-crumb">
         {current === "home" ? (
-          <span className="fb-topbar-current">{SCREEN_TITLES.home}</span>
+          <span className="fb-topbar-current">{PAGE_TITLES.home}</span>
         ) : (
           <>
-            <span className="fb-topbar-home-link" tabIndex={0} role="button" onClick={() => show("home")} aria-label={`Go to ${SCREEN_TITLES.home}`} title={`Go to ${SCREEN_TITLES.home}`}>
+            <span className="fb-topbar-home-link" tabIndex={0} role="button" onClick={() => show("home")} aria-label={`Go to ${PAGE_TITLES.home}`} title={`Go to ${PAGE_TITLES.home}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7" /><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" /></svg>
             </span>
             <span className="fb-topbar-sep">/</span>
-            <span className="fb-topbar-current">{SCREEN_TITLES[current] ?? current}</span>
+            <span className="fb-topbar-current">{PAGE_TITLES[current] ?? current}</span>
           </>
         )}
       </div>
