@@ -1,7 +1,7 @@
 # DuitDuit — Security Self-Assessment
 
 2026 Shenzhen International FinTech Competition · International Track · Topic E: SME Finance Copilot
-Draft of 2026-10-09. Every control below carries its real status; nothing is claimed beyond it.
+Draft updated 2026-10-10 for assistant security evaluation. Every control below carries its real status; nothing is claimed beyond it.
 
 ## Status words
 
@@ -20,7 +20,7 @@ All data shown in the demonstration is synthetic and labelled as such.
 
 | Asset | Why it matters | Main protections |
 | --- | --- | --- |
-| Customer personal data (names, phones, emails, IC numbers, bank accounts) | PDPA 2010 (Malaysia); trust of the SME's customers | Detection and tokenization before any AI model sees it; encrypted vault; role-gated, audited disclosure |
+| Customer personal data (names, phones, emails, IC numbers, bank accounts) | PDPA 2010 (Malaysia); trust of the SME's customers | Text detection and tokenization before AI enrichment; encrypted vault; role-gated, audited disclosure. Voice audio goes to Gemini for transcription before the returned text is protected. |
 | Company financial records (invoices, bank lines, payables, payroll) | Leaks harm the SME and its lenders | Per-tenant isolation with forced row-level security; tokenized amounts shown as bands |
 | Employee data (payroll, leave) | Highest sensitivity inside the company | Separate token namespace; exact values need Owner/HR plus a recent authenticator check |
 | Credentials and sessions | Account takeover is the shortest path to everything above | Password + emailed code + authenticator app; server-owned sessions; step-up for sensitive actions |
@@ -45,8 +45,8 @@ All data shown in the demonstration is synthetic and labelled as such.
 | Control | Status |
 | --- | --- |
 | Personal data detection: deterministic patterns (Malaysian NRIC, phones, emails, bank accounts, RM amounts) plus an optional on-device NER model; detection failure falls back to patterns | Built and tested |
-| Fail-closed gate: no external model call and no stored AI output may contain known personal data | Built and tested |
-| Tokenization: values become per-tenant HMAC tokens; amounts become bands, so models never see exact figures | Built and tested |
+| Fail-closed text gate: text interpretation skips the model when known personal data remains; stored AI text is protected. Voice transcription sends audio first, then protects the returned text. | Built and tested locally; real voice/provider rehearsal pending |
+| Text tokenization: values become per-tenant HMAC tokens and amounts become bands before AI enrichment. Voice audio may contain exact spoken values before transcription. | Built and tested |
 | Token vault: three-tier key hierarchy (HKDF-SHA256, AES-256-GCM), context-bound ciphertext, resumable key rotation | Built and tested |
 | Disclosure of an exact value: 30-second single-use grants bound to the request, every allow and deny audited; unauthorized roles see shaped masks | Built and tested |
 | Database: row-level security enabled and forced on every table, public Data API grants revoked, audit tables reject updates and deletes | Built and tested |
@@ -81,6 +81,38 @@ DuitDuit gives every SME position an agent, so agent safety is designed in, not 
 | ASI08 Cascading failures | Daily budgets, kill switch, every external effect behind a person | Built, verification pending |
 | ASI09 Human–agent trust exploitation | Evidence on every proposal; two-person rule for money; callback rule for bank changes | Contract and demo |
 | ASI10 Rogue agents | Kill switch, autonomy only from review history, full audit of every proposal and decision | Built, verification pending |
+
+### Assistant front door: security evaluation added Oct 10
+
+The following tasks are registered in `backend/eval/tasks.json`, with checkers in
+`backend/eval/checks.py` and regressions in `tests/test_assistant_security.py`.
+They use real HTTP routes, injected authenticated identities, mocked/disabled
+providers and disposable SQLite databases containing persisted synthetic proposals.
+
+| Task | Control verified offline |
+| --- | --- |
+| `A-trick-typed` | Employee injection refused; finance's L3 payment plan still requires confirmation and step-up; no foreign-tenant proposal or decision |
+| `A-trick-spoken` | Mocked transcription previews the words without acting; submitted transcript has the same role, confirmation and step-up result as typed text |
+| `A-role-limits` | Employee restricted pages and goals refused; direct Team, workflow-audit and agent-run routes denied; sales bank playbook denied; Compliance cannot decide |
+| `A-no-confirm` | Interpretation alone leaves persisted statuses, approvals and drafts unchanged in both tenants and appends only command audit events |
+| `A-provider-outage` | An exercised model timeout falls back to an answer; recognized rules bypass the provider; no 500 or proposal change |
+| `A-no-words-in-audit` | All six command kinds emit fixed audit metadata and ids only; typed words and private canaries are absent; tenant workflow chain verifies |
+
+Additional tests check hostile/invalid model picks, private provider exceptions,
+recent-MFA enforcement and distinct L3 maker/checker approvals. Injected faults
+verify that the evaluation detects state changes without confirmation, missing
+step-up flags and words recorded on an otherwise valid hash chain.
+
+**Status: built and locally tested.** See `execution-evidence.md` for counts from
+the actual run. Scripted injection cases do not prove coverage of all paraphrases
+or production authorization. Identities are injected in these tests; hosted login,
+sessions and PostgreSQL policies require their separate verification.
+
+Voice sends raw audio to Gemini for transcription. Personal data in speech is not
+redacted before that provider call; the returned text is protected before it is
+shown. The voice path does not persist audio, transcripts or its generated tokens.
+Real acoustic quality, browser capture and provider retention behavior are **not
+measured** here. Offline tests send no real audio and make no provider call.
 
 ## 5. Audit and evidence
 
@@ -134,6 +166,7 @@ DuitDuit is not certified under any standard, and we do not claim partnerships w
 
 ## 10. Evidence
 
+- Assistant security: the six `A-*` tasks above and `tests/test_assistant_security.py`; current local suite and evaluation counts are in `execution-evidence.md`.
 - Backend contract tests: 387 passing at commit `569e7bf` (FastAPI TestClient; role, rule and safety-floor cases).
 - API contract: `docs/api/topic-e-contract.json` (54 operations), with a test that fails if it drifts from the code.
 - Frontend: TypeScript build and lint pass on every commit; sign-in, step-up and every Topic E page exercised in a browser against simulated responses.

@@ -1,9 +1,57 @@
 # DuitDuit — Execution Evidence
 
-Updated 2026-10-10 after building the four assistant playbooks and voice input. Historical
+Updated 2026-10-10 after building the playbooks, voice input and assistant security evaluation. Historical
 figures below describe the earlier contract pass. The assistant evidence is below;
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
+
+## Assistant security evaluation: Oct 10 local verification
+
+Section 3 of `docs/handoff/2026-10-10-assistant-remaining-work.md` is implemented.
+The original 30 evaluation tasks are retained and six `A-*` tasks are added.
+These are local automated results with injected identities and mocked/disabled
+providers, not evidence of hosted login or production authorization.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Backend lint | `backend/`: `python -m ruff check .` | All checks passed |
+| Full backend suite | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **565 passed, 2 skipped** |
+| Focused assistant security and harness tests | `backend/`: `python -m pytest tests/test_assistant_security.py tests/test_eval_harness.py -p no:cacheprovider -W ignore` | **28 passed**: 26 new security tests plus 2 harness tests |
+| Offline evaluation | `backend/`: `python -m eval.run ../output/assistant-security-evaluation` | **36 passed, 0 failed, 0 skipped**: original 30 plus all 6 new tasks |
+| Frontend typecheck | `frontend/`: `npx tsc -b` | Passed |
+| Frontend build | `frontend/`: `npm run build` | Passed |
+| Frontend lint | `frontend/`: `npm run lint` | 0 errors, 14 existing warnings |
+| Web hardening | `frontend/`: `node scripts/check-web-hardening.mjs` | Passed |
+| Microphone policy regressions | `frontend/`: `node --test scripts/permissions-policy.test.mjs` | **8 passed** |
+
+The new tasks are `A-trick-typed`, `A-trick-spoken`, `A-role-limits`, `A-no-confirm`,
+`A-provider-outage` and `A-no-words-in-audit`. They exercise real HTTP routes and
+persisted synthetic L1/L3 proposals in two disposable SQLite tenants. The tests
+compare replayed statuses, approvals and drafts before and after interpretation;
+they require real proposal ids in confirmation plans, refuse employee/sales and
+Compliance requests, check direct route denial, exercise the mocked provider
+timeout, and verify private audit canaries are absent on a valid workflow chain.
+
+Additional regressions check hostile model picks, invalid picks and provider
+exception privacy, and verify that a plan does not bypass the decision endpoint's
+recent-MFA and distinct maker/checker requirements. Deliberate faults are detected:
+an actual decision during interpretation, a false step-up flag and typed words in
+audit payloads even when the chain hashes are valid. No production source change
+was needed for these tested safeguards.
+
+The test process used an explicit local SQLite URL. The two skips remain the
+legacy pre-Plan-3 case and the optional disposable PostgreSQL integration test.
+PostgreSQL was not rerun locally for this section. No real audio or model/provider
+request was sent. Acoustic quality, browser microphone capture, hosted sessions,
+production tenant isolation and provider retention are **not measured**. Raw voice
+audio reaches the transcription provider before the returned text is protected.
+These scripted cases do not prove coverage of every possible injection.
+
+Section 2 commit `51b5dfa` was pushed with approval, and all four jobs in
+[CI run 37963433980](https://github.com/tanhongsheng050204-code/2026-SHENZHEN-FINTECHATHON-INTERNATIONAL-TRACK/actions/runs/37963433980)
+passed. That CI run covers section 2; the section 3 results above are local.
+Section 4's demo-script rewrite remains open. Evaluation output was written to a
+separate folder to preserve historical committed reports.
 
 ## Assistant voice: Oct 10 local verification
 
@@ -46,8 +94,8 @@ environment was repaired outside the repository, retaining the locked Pydantic
 
 Microphone capture, acoustic transcription quality, hosted authentication and
 production deployment are **not measured**. These results cover local code only.
-Sections 3–4 remain open; their additional evaluation tasks and demo script are
-not included in this pass.
+At the end of this voice pass, sections 3–4 remained open. The security evaluation
+above subsequently completed section 3; the demo-script rewrite remains open.
 
 ## Assistant playbooks: Oct 10 local verification
 
@@ -116,7 +164,7 @@ CI (`.github/workflows/ci.yml`) runs the backend lint and tests and the frontend
 | Finance engine on tenant data | Forecast, scenarios and financing rules run on a tenant's imported records; on the synthetic importer's data the forecast reconciles to the documented day-23 shortfall (RM20,560.00 likely balance, RM29,440.00 gap); facts with no source fail their rule as "not on record" instead of using a made-up value (`tests/test_cash_basis.py`; the live-data tests run once Plan 3 is merged) |
 | Passport, audit packs and share links | Issued onto the tenant's audit chain; verification names a changed field only for the holder of the issued digest; expired and revoked links return 410, forged ones 404; every external view is a chain event (`tests/test_passports_live.py`) |
 | Persisted review inbox and earned autonomy | Agent-run proposals saved once to the review inbox on the audit chain; L1/L2/L3 decision rules with maker and checker; review records counted from decisions; promotion refused until 30 approvals, then persisted (`tests/test_review_inbox_live.py`) |
-| Evaluation harness | 30 tasks as data (`backend/eval/tasks.json`): 22 functional, 8 adversarial mapped to OWASP agentic risks; all 30 pass after the Plan 2/3 merge. The complete demo command writes a fresh report in its evidence directory. |
+| Evaluation harness | Historical Plan 2/3 pass: 30 tasks (22 functional, 8 adversarial). The Oct 10 assistant pass extends this to **36 tasks** (22 functional, 14 adversarial), all passing offline; see the section above. The complete demo command writes a fresh report in its evidence directory. |
 | Supply chain | `pip-audit` found 76 known vulnerabilities in 5 Python packages and `npm audit` 1 high; all fixed by upgrading, and CI now runs both audits, a full-history `gitleaks` scan and an SPDX SBOM on every push |
 
 ## Live demonstrations
