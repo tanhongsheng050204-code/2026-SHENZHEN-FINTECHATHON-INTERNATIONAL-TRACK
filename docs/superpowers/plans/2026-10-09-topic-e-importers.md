@@ -3,11 +3,12 @@
 **Implemented:** 2026-10-09. Backend import pipeline, persistence, mapped CSV schemas,
 and local synthetic seed. **Evidence:** the seed command completed against an isolated
 SQLite database, importing 53 rows in eight batches. Static checks are recorded below.
-Automated tests and hosted PostgreSQL/RLS validation have not been run for this plan.
+Follow-up: automated tests and disposable PostgreSQL/RLS checks now pass. Hosted
+Supabase validation remains pending; see `docs/REMAINING_WORK.md` for current evidence.
 
 **Owner:** B3. Depends on Plan 2 identity, tenant settings and vault. Feeds Plan 4
-finance calculations and Plan 5 position skills. The existing frontend has not yet
-been connected to these import APIs.
+finance calculations and Plan 5 position skills. The Data sources screen now connects
+all eight formats to preview, commit and history, with full column mapping support.
 
 ## Delivered
 

@@ -126,9 +126,9 @@ FinBrain is not certified under any standard, and we do not claim partnerships w
 
 ## 9. Known limitations (residual risk)
 
-- Plan 2 identity and session controls have passed static checks only; end-to-end tests against real Supabase (email delivery, TOTP, refresh, revocation, RLS triggers) are outstanding.
+- Plan 2 identity and session controls have mocked-provider regression coverage and disposable PostgreSQL permission/trigger checks. End-to-end tests against hosted Supabase (real email delivery, TOTP, refresh and revocation) remain outstanding.
 - A company on its own records gets a persisted review inbox, real review records and persisted autonomy grants, all on its audit chain. A company on the demo data still sees sample inbox items and sample agent metrics, labelled as such.
-- Guardrails are deterministic patterns; they will miss paraphrased injections until adversarial evaluation (Plan 7) tunes them.
+- Guardrails are deterministic patterns. The offline adversarial evaluation passes its scripted cases; this does not prove coverage of paraphrased or novel injections.
 - Passport anchors appear only where the anchor files are deployed with the backend; the public verification endpoint has not been validated against hosted PostgreSQL row-level security.
 - The backend is currently reached through a temporary tunnel; production needs a fixed HTTPS hostname under the app's parent domain.
 

@@ -143,6 +143,9 @@ def _external_guard(db, *, tenant_id: str, agent_id: str, skill_id: str, side_ef
     authorize_tool(
         db, tenant_id=tenant_id, agent_id=agent_id, skill_id=skill_id, side_effect=side_effect
     )
+    # Persist the reservation before invoking the tool. A read-only run or a
+    # subsequent tool failure must not roll back earlier budget charges.
+    db.commit()
 
 
 def authorize(db, principal: AuthPrincipal, agent_id: str, skill_id: str) -> None:

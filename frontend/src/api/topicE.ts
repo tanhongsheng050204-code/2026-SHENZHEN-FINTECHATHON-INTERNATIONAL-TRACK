@@ -1,6 +1,8 @@
 // Topic E endpoints. Shapes mirror docs/api/topic-e-contract.json; every
 // response says whether its data is a canned stub or computed live.
 import { ApiError, authenticatedFetch, parse, publicFetch, type Role } from "./client";
+import type { ImportSchema } from "./importSchemas";
+export { IMPORT_FIELDS, type ImportSchema } from "./importSchemas";
 
 export type DataMode = "stub" | "live";
 
@@ -790,19 +792,6 @@ export async function approveMessageTemplate(id: string): Promise<MessageTemplat
     )
   ).template;
 }
-
-export type ImportSchema = "bank_statement_v1" | "payables_register_v1";
-
-export const IMPORT_FIELDS: Record<ImportSchema, { all: string[]; required: string[] }> = {
-  bank_statement_v1: {
-    all: ["date", "description", "debit", "credit", "balance", "counterparty", "reference"],
-    required: ["date", "description", "debit", "credit"],
-  },
-  payables_register_v1: {
-    all: ["bill_id", "supplier", "amount", "currency", "due_date", "status", "bank_account"],
-    required: ["bill_id", "supplier", "amount", "currency", "due_date"],
-  },
-};
 
 export interface ImportMapping {
   id: string;

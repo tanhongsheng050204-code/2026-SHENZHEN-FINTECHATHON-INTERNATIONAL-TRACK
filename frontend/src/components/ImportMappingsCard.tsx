@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { friendlyLoadError } from "../api/client";
+import { IMPORT_LABELS } from "../api/businessImports";
 import {
   IMPORT_FIELDS,
   createImportMapping,
@@ -34,7 +35,7 @@ function splitHeaders(text: string): string[] {
   return text.split(/[,\t]/).map((h) => h.trim()).filter(Boolean);
 }
 
-/** Teach FinBrain a bank or spreadsheet layout once; matching files then import automatically. */
+/** Teach FinBrain a spreadsheet layout once; matching files reuse the mapping. */
 export function ImportMappingsCard() {
   const [mappings, setMappings] = useState<ImportMapping[]>([]);
   const [schema, setSchema] = useState<ImportSchema>("payables_register_v1");
@@ -58,7 +59,7 @@ export function ImportMappingsCard() {
     const columnMap = Object.fromEntries(Object.entries(map).filter(([h, f]) => f && headers.includes(h)));
     try {
       const created = await createImportMapping(schema, name, headers, columnMap);
-      setMappings((list) => [...list, created]);
+      setMappings((list) => [...list.filter((item) => item.id !== created.id), created]);
     } catch (e) {
       setError(message(e));
     }
@@ -68,7 +69,7 @@ export function ImportMappingsCard() {
     setError(null);
     setMatchResult(null);
     try {
-      const found = await matchImportMapping("bank_statement_v1", splitHeaders(matchText));
+      const found = await matchImportMapping(schema, splitHeaders(matchText));
       setMatchResult(`Matches "${found.name}". Columns can be in any order or case.`);
     } catch (e) {
       setMatchResult(message(e));
@@ -82,7 +83,7 @@ export function ImportMappingsCard() {
       <ul className="fb-fin-items">
         {mappings.map((m) => (
           <li key={m.id}>
-            <span><strong>{m.name}</strong> · {m.schema_name === "bank_statement_v1" ? "Bank statement" : "Payables register"}<br />
+            <span><strong>{m.name}</strong> · {IMPORT_LABELS[m.schema_name]}<br />
               <span className="fb-inbox-muted">{Object.entries(m.column_map).map(([h, f]) => `${h} → ${f}`).join(" · ")}</span></span>
           </li>
         ))}
@@ -90,7 +91,7 @@ export function ImportMappingsCard() {
       <div className="fb-cs-subform">
         <div className="fb-inbox-label">Does a file match a saved mapping?</div>
         <div className="fb-cash-whatif">
-          <Field label="Bank statement column headers, comma-separated" wide><input value={matchText} onChange={(e) => setMatchText(e.target.value)} /></Field>
+          <Field label={`${IMPORT_LABELS[schema]} column headers, comma-separated`} wide><input value={matchText} onChange={(e) => setMatchText(e.target.value)} /></Field>
           <button className="fb-btn fb-btn-outline" type="button" onClick={() => void match()}>Check</button>
         </div>
         {matchResult && <p className="fb-fin-done" role="status">{matchResult}</p>}
@@ -101,7 +102,7 @@ export function ImportMappingsCard() {
           <Field label="Name"><input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></Field>
           <Field label="File type">
             <select value={schema} onChange={(e) => { setSchema(e.target.value as ImportSchema); setMap({}); }}>
-              <option value="payables_register_v1">Payables register</option><option value="bank_statement_v1">Bank statement</option>
+              {Object.entries(IMPORT_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
             </select>
           </Field>
           <Field label="Every column header in the file" wide><input value={headerText} onChange={(e) => setHeaderText(e.target.value)} /></Field>

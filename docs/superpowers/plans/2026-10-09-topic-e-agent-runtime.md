@@ -45,5 +45,5 @@ A company on the demo data still sees the sample inbox, sample agent cards and s
 |---|---|
 | Inbox proposals from position skills other than cash, collections and financing | Only agent runs create proposals |
 | Showing an approved proposal as acted on | Approval records the decision; nothing is sent or paid by design, and outbound sending stays with the existing outreach flow |
-| Per-tenant promotion thresholds | Fixed at 30 and 90%; the tenant settings values (`approvals.promotion_min_sample`, `promotion_min_unedited_rate`) are not read yet |
+| Per-tenant promotion thresholds | Implemented after the Plan 2/3 merge; recommendations read the current tenant settings and compare the exact approval rate before display rounding |
 | Daily briefing and the other planned (W2) skills | Not built |

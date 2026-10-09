@@ -30,7 +30,7 @@ from app.contracts.agents import (
     ReviewDecisionRequest,
 )
 from app.contracts.common import AutonomyLevel, EvidenceRef, JobFunction
-from app.models import WorkflowAuditEntry
+from app.models import TenantSettingsRecord, WorkflowAuditEntry
 from app.schemas import UserRole
 from app.services import job_scope
 from app.services.workflow_audit import write_workflow_event
@@ -259,6 +259,10 @@ def pending_count(db, tenant_id: str, job_function: JobFunction) -> int:
 
 def metrics(db, tenant_id: str) -> dict[str, AgentMetrics]:
     """Each agent's review record, from the decisions people made on its proposals."""
+    setting = db.get(TenantSettingsRecord, tenant_id)
+    approvals = setting.document.get("approvals", {}) if setting else {}
+    minimum_sample = approvals.get("promotion_min_sample", PROMOTION_MIN_SAMPLE)
+    minimum_rate = approvals.get("promotion_min_unedited_rate", PROMOTION_MIN_UNEDITED_RATE)
     counts: dict[str, list[int]] = {}
     for item in _replay(db, tenant_id).values():
         tally = counts.setdefault(item.action.agent_id, [0, 0, 0, 0])
@@ -270,14 +274,15 @@ def metrics(db, tenant_id: str) -> dict[str, AgentMetrics]:
     result = {}
     for agent_id, (proposals, unedited, edited, rejected) in counts.items():
         decided = unedited + edited + rejected
-        rate = round(unedited / decided, 2) if decided else None
+        exact_rate = unedited / decided if decided else None
+        rate = round(exact_rate, 2) if exact_rate is not None else None
         result[agent_id] = AgentMetrics(
             proposals=proposals,
             approved_unedited=unedited,
             approved_edited=edited,
             rejected=rejected,
             unedited_approval_rate=rate,
-            promotion_recommended=decided >= PROMOTION_MIN_SAMPLE
-            and (rate or 0) >= PROMOTION_MIN_UNEDITED_RATE,
+            promotion_recommended=decided >= minimum_sample
+            and (exact_rate or 0) >= minimum_rate,
         )
     return result

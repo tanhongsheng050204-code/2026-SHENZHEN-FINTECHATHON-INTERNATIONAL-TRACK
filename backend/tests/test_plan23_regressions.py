@@ -185,3 +185,81 @@ def test_finance_assignment_does_not_grant_payroll_import():
         authorize(finance, "payroll_v1")
     assert error.value.status_code == 403
     authorize(replace(finance, job_functions=("finance", "hr")), "payroll_v1")
+
+
+def test_frontend_import_fields_match_the_backend():
+    from scripts.export_import_ui import OUTPUT, render
+
+    assert OUTPUT.read_text(encoding="utf-8") == render()
+
+
+def test_agent_budget_reservation_survives_request_rollback(db, monkeypatch):
+    from app.models import AgentBudgetWindow
+    from app.services import agent_runtime
+
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    tenant_id = str(owner.tenant_id)
+    db.add(Tenant(id=tenant_id, name="SYNTHETIC budgets", slug="synthetic-budgets"))
+    db.commit()
+    monkeypatch.setattr(get_settings(), "agent_daily_tool_limit", 1)
+    agent_runtime.start_run(db, owner, "Can I cover payroll?")
+    db.rollback()
+    db.expire_all()
+    assert db.get(AgentBudgetWindow, (tenant_id, "supervisor", utcnow().date())).tool_calls == 1
+    with pytest.raises(HTTPException) as error:
+        agent_runtime.start_run(db, owner, "Can I cover payroll?")
+    assert error.value.detail == "agent_budget_exhausted"
+
+
+def test_promotion_uses_tenant_threshold_and_exact_rate(db):
+    from app.contracts.agents import ReviewDecisionRequest
+    from app.contracts.common import JobFunction
+    from app.models import TenantSettingsRecord
+    from app.services import review_inbox
+    from app.services.tenant_settings import initialize_settings
+
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    tenant_id = str(owner.tenant_id)
+    db.add(Tenant(id=tenant_id, name="SYNTHETIC promotion", slug="synthetic-promotion"))
+    db.flush()
+    record = initialize_settings(db, tenant_id, "SYNTHETIC promotion")
+    document = {
+        **record.document,
+        "approvals": {
+            **record.document["approvals"],
+            "promotion_min_sample": 5,
+            "promotion_min_unedited_rate": 1.0,
+        },
+    }
+    record.document = document
+    db.commit()
+    for number in range(29):
+        action_id = review_inbox.propose(
+            db,
+            tenant_id,
+            agent_id="receivables",
+            reviewer=JobFunction.FINANCE,
+            title=f"Synthetic {number}",
+            summary="Synthetic draft",
+        )
+        review_inbox.decide(
+            db,
+            owner,
+            action_id,
+            ReviewDecisionRequest(decision="approve" if number < 26 else "reject"),
+        )
+        if number == 4:
+            assert review_inbox.metrics(db, tenant_id)["receivables"].promotion_recommended
+    record = db.get(TenantSettingsRecord, tenant_id)
+    record.document = {
+        **document,
+        "approvals": {
+            **document["approvals"],
+            "promotion_min_sample": 29,
+            "promotion_min_unedited_rate": 0.9,
+        },
+    }
+    db.commit()
+    metrics = review_inbox.metrics(db, tenant_id)["receivables"]
+    assert metrics.unedited_approval_rate == 0.9
+    assert not metrics.promotion_recommended  # 26/29 rounds to .9 but is below .9.

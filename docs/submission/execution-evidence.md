@@ -1,15 +1,17 @@
 # FinBrain OS — Execution Evidence
 
-Recorded 2026-10-09 on commit `2e334fd` (`main`). Every figure below came from a run on that commit; the commands reproduce it.
+Updated 2026-10-09 after the Plan 2/3 integration and completion pass. Historical
+figures below describe the earlier contract pass; current evidence is recorded in
+`docs/REMAINING_WORK.md` and `docs/deployment/plan-2-3-review.md`.
 
 ## Automated checks
 
 | Check | Command (from the folder shown) | Result |
 | --- | --- | --- |
-| Backend test suite | `backend/`: `uv run pytest -q` | **394 passed** |
+| Backend test suite | `backend/`: `uv run pytest -q` | Earlier contract pass: **394 passed**; Plan 2/3 review: **447 passed, 1 skipped** with PostgreSQL enabled. See the completion ledger for the latest run. |
 | Topic E contract tests | `backend/`: `uv run pytest -q tests/test_contract_*.py` | **132 passed** |
 | Backend lint | `backend/`: `uv run ruff check .` | All checks passed |
-| API contract drift | included in the suite (`test_committed_contract_matches_the_code`) | `docs/api/topic-e-contract.json` matches the code |
+| API contract drift | included in the suite (`test_committed_contract_matches_the_code`) | Current code matches `docs/api/topic-e-current-contract.json`; the original `topic-e-contract.json` remains frozen and its operations are preserved |
 | Frontend type-check and build | `frontend/`: `npm ci && npm run build` | Built with no errors |
 | Frontend lint | `frontend/`: `npx eslint .` | 0 errors (14 pre-existing warnings) |
 | Same-origin API proxy | local test against a fake backend (method, body, cookies, CSRF, streaming, refused paths) | All assertions passed |
@@ -31,7 +33,7 @@ CI (`.github/workflows/ci.yml`) runs the backend lint and tests and the frontend
 | Finance engine on tenant data | Forecast, scenarios and financing rules run on a tenant's imported records; on the synthetic importer's data the forecast reconciles to the documented day-23 shortfall (RM20,560.00 likely balance, RM29,440.00 gap); facts with no source fail their rule as "not on record" instead of using a made-up value (`tests/test_cash_basis.py`; the live-data tests run once Plan 3 is merged) |
 | Passport, audit packs and share links | Issued onto the tenant's audit chain; verification names a changed field only for the holder of the issued digest; expired and revoked links return 410, forged ones 404; every external view is a chain event (`tests/test_passports_live.py`) |
 | Persisted review inbox and earned autonomy | Agent-run proposals saved once to the review inbox on the audit chain; L1/L2/L3 decision rules with maker and checker; review records counted from decisions; promotion refused until 30 approvals, then persisted (`tests/test_review_inbox_live.py`) |
-| Evaluation harness | 30 tasks as data (`backend/eval/tasks.json`): 22 functional, 8 adversarial mapped to OWASP agentic risks; on `main` 26 pass and 4 skip until Plan 2/3 merge, and 30/30 pass with that code applied (`output/eval-report.md`) |
+| Evaluation harness | 30 tasks as data (`backend/eval/tasks.json`): 22 functional, 8 adversarial mapped to OWASP agentic risks; all 30 pass after the Plan 2/3 merge. The complete demo command writes a fresh report in its evidence directory. |
 | Supply chain | `pip-audit` found 76 known vulnerabilities in 5 Python packages and `npm audit` 1 high; all fixed by upgrading, and CI now runs both audits, a full-history `gitleaks` scan and an SPDX SBOM on every push |
 
 ## Live demonstrations
@@ -46,9 +48,9 @@ CI (`.github/workflows/ci.yml`) runs the backend lint and tests and the frontend
 
 Stated plainly so nothing is over-claimed:
 
-- **Plan 2 identity and security backend** (cookie sessions, email codes, TOTP, persisted settings, guardrails): code exists in a teammate's working copy; it has not been committed or tested end to end.
+- **Hosted Plan 2 authentication:** the committed backend, frontend and mocked-provider regression tests exist; real Supabase email delivery, TOTP and recovery still need hosted verification.
 - **Audit-chain anchors**: the daily `anchor-audit-chain.yml` workflow exists, but no `audit-anchors/` files are in the repository yet; it needs the `PRODUCTION_DATABASE_URL` secret to run.
-- **Agent evaluation harness** (scripted financial tasks and adversarial guardrail tests, Plan 7): not built.
+- **External audit evidence:** local and CI PostgreSQL checks pass, but they do not establish production deployment or an independent security certification.
 - **Production deployment** on Cloud Run behind the same-origin proxy: documented in `docs/deployment/cloud-run-and-vercel.md`, not yet performed.
 
 ## Before submission

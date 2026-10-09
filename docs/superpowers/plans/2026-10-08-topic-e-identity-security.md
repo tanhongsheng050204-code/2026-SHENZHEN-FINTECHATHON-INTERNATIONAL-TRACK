@@ -4,7 +4,9 @@ Implementation date: 2026-10-08. Workstream: B1.
 
 ## Status and scope
 
-Backend implementation is present locally. This replaces Plan 1's Team, settings,
+Backend implementation is committed and covered by regression/database checks.
+The current completion ledger is `docs/REMAINING_WORK.md`; hosted authentication
+rehearsal remains pending. This replaces Plan 1's Team, settings,
 Trust, message-template, alert-rule and kill-switch stubs with database services.
 The finance engine, import mappings, persisted agent runs/inbox/workspaces and
 external grants remain with Plans 3–6. Authentication screens are Plan 8.

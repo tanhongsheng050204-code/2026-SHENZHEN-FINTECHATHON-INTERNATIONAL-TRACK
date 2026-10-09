@@ -2,6 +2,87 @@ from sqlalchemy import text
 
 from app.config import get_settings
 from app.db import engine
+from app.models import Base
+from scripts.export_plan3_migration import TABLES as IMPORT_TABLES
+
+TOPIC_E_TABLES = IMPORT_TABLES | {
+    "backend_auth_sessions",
+    "tenant_settings",
+    "tenant_settings_versions",
+    "tenant_setting_changes",
+    "tenant_customizations",
+    "security_guardrail_events",
+    "agent_security_controls",
+    "agent_budget_windows",
+}
+
+
+def validate_topic_e(connection) -> None:
+    """Read-only schema checks. The separate integration test exercises policies."""
+    tables = set(TOPIC_E_TABLES)
+    expected_columns = {name: set(Base.metadata.tables[name].columns.keys()) for name in tables}
+    expected_columns.update(
+        {
+            "user_roles": {"job_functions", "mfa_enrolled", "session_generation"},
+            "structured_ingestion_batches": {"tenant_id"},
+            "token_vault": {"data_class"},
+            "protected_token_registry": {"data_class"},
+        }
+    )
+    for name, expected in expected_columns.items():
+        columns = set(
+            connection.scalars(
+                text("""
+            select column_name from information_schema.columns
+            where table_schema='public' and table_name=:table
+        """),
+                {"table": name},
+            )
+        )
+        if missing := expected - columns:
+            raise SystemExit(f"Topic E migration missing {name}: {', '.join(sorted(missing))}")
+    for name in sorted(tables):
+        enabled, forced = connection.execute(
+            text("""
+            select relrowsecurity, relforcerowsecurity from pg_class
+            where oid=to_regclass(:table)
+        """),
+            {"table": f"public.{name}"},
+        ).one()
+        if not enabled or not forced:
+            raise SystemExit(f"Topic E RLS must be enabled and forced: {name}")
+        for role in ("anon", "authenticated"):
+            if connection.scalar(
+                text("select has_table_privilege(:role,:table,:operations)"),
+                {
+                    "role": role,
+                    "table": f"public.{name}",
+                    "operations": "SELECT,INSERT,UPDATE,DELETE",
+                },
+            ):
+                raise SystemExit(f"Unexpected browser table privilege: {role} on {name}")
+    for role in ("finbrain_app", "finbrain_worker", "anon", "authenticated"):
+        for column in ("credential_ciphertext", "credential_nonce", "csrf_hash"):
+            if connection.scalar(
+                text("select has_column_privilege(:role,:table,:column,'SELECT')"),
+                {
+                    "role": role,
+                    "table": "public.backend_auth_sessions",
+                    "column": column,
+                },
+            ):
+                raise SystemExit(f"Session secrets exposed to database role: {role}")
+    for trigger in ("plan2_last_owner", "plan2_settings_tighten"):
+        if not connection.scalar(
+            text("""
+            select count(*) from pg_trigger t join pg_class c on c.oid=t.tgrelid
+            join pg_namespace n on n.oid=c.relnamespace
+            where n.nspname='public' and t.tgname=:name and t.tgenabled <> 'D'
+        """),
+            {"name": trigger},
+        ):
+            raise SystemExit(f"Topic E safety trigger missing or disabled: {trigger}")
+
 
 REQUIRED_TABLES = (
     "tokenized_content",
@@ -56,44 +137,91 @@ REQUIRED_VAULT_COLUMNS = {
 }
 REQUIRED_CURRENT_COLUMNS = {
     "customers": {
-        "tenant_id", "canonical_name", "normalized_name", "profile_status",
-        "identity_review_status", "profile_origin", "primary_name_token"
+        "tenant_id",
+        "canonical_name",
+        "normalized_name",
+        "profile_status",
+        "identity_review_status",
+        "profile_origin",
+        "primary_name_token",
     },
     "customer_endpoints": {"origin", "delivery_token", "last_interaction_at"},
     "telegram_onboarding_sessions": {
-        "tenant_id", "telegram_endpoint_token", "telegram_delivery_token", "name_token",
-        "email_token", "phone_token", "customer_id", "profile_content_id", "status"
+        "tenant_id",
+        "telegram_endpoint_token",
+        "telegram_delivery_token",
+        "name_token",
+        "email_token",
+        "phone_token",
+        "customer_id",
+        "profile_content_id",
+        "status",
     },
-    "telegram_update_receipts": {
-        "tenant_id", "customer_id", "onboarding_session_id", "status"
-    },
+    "telegram_update_receipts": {"tenant_id", "customer_id", "onboarding_session_id", "status"},
     "tenant_outreach_policies": {
-        "tenant_id", "telegram_reminders_enabled", "grace_days", "repeat_interval_days",
-        "max_reminders", "require_approval", "policy_version"
+        "tenant_id",
+        "telegram_reminders_enabled",
+        "grace_days",
+        "repeat_interval_days",
+        "max_reminders",
+        "require_approval",
+        "policy_version",
     },
     "customer_identity_claims": {
-        "tenant_id", "customer_id", "endpoint_id", "identity_token", "claim_basis",
-        "confidence", "evidence_content_id", "status", "occurrence_count"
+        "tenant_id",
+        "customer_id",
+        "endpoint_id",
+        "identity_token",
+        "claim_basis",
+        "confidence",
+        "evidence_content_id",
+        "status",
+        "occurrence_count",
     },
     "einvoice_records": {
-        "tenant_id", "buyer_customer_id", "buyer_email_token", "buyer_phone_token",
-        "due_date", "paid_at", "source_record_id"
+        "tenant_id",
+        "buyer_customer_id",
+        "buyer_email_token",
+        "buyer_phone_token",
+        "due_date",
+        "paid_at",
+        "source_record_id",
     },
     "einvoice_outreach_drafts": {
-        "tenant_id", "einvoice_record_id", "channel", "draft_text", "status"
+        "tenant_id",
+        "einvoice_record_id",
+        "channel",
+        "draft_text",
+        "status",
     },
     "conversations": {"context_customer_id", "context_updated_at"},
     "customer_record_links": {
-        "tenant_id", "customer_id", "tokenized_content_id", "alias_id", "match_basis"
+        "tenant_id",
+        "customer_id",
+        "tokenized_content_id",
+        "alias_id",
+        "match_basis",
     },
     "outreach_actions": {
-        "tenant_id", "customer_id", "customer_endpoint_id", "protected_subject",
-        "protected_body", "status", "provider_message_ref_hash", "replied_at",
-        "origin_type", "origin_invoice_id", "scheduled_for", "created_by_actor_ref"
+        "tenant_id",
+        "customer_id",
+        "customer_endpoint_id",
+        "protected_subject",
+        "protected_body",
+        "status",
+        "provider_message_ref_hash",
+        "replied_at",
+        "origin_type",
+        "origin_invoice_id",
+        "scheduled_for",
+        "created_by_actor_ref",
     },
     "email_ingestion_receipts": {
-        "customer_id", "outreach_action_id", "in_reply_to_ref_hash",
-        "correlation_status", "correlated_at"
+        "customer_id",
+        "outreach_action_id",
+        "in_reply_to_ref_hash",
+        "correlation_status",
+        "correlated_at",
     },
 }
 
@@ -275,12 +403,14 @@ def main() -> None:
             )
         }
 
+        validate_topic_e(connection)
+
     missing = [name for name, relation in tables.items() if relation is None]
     if vector_version is None:
         raise SystemExit("Connected, but the pgvector extension is not installed.")
     if missing:
         raise SystemExit(f"Connected, but migrations are missing tables: {', '.join(missing)}")
-    if embedding_type != "vector(768)":
+    if embedding_type not in {"vector(768)", "extensions.vector(768)"}:
         raise SystemExit(f"Expected vector(768), found {embedding_type!r}.")
     missing_ingestion_columns = REQUIRED_INGESTION_COLUMNS - ingestion_columns.keys()
     if missing_ingestion_columns:
@@ -299,8 +429,7 @@ def main() -> None:
     missing_vault_columns = REQUIRED_VAULT_COLUMNS - vault_columns
     if missing_vault_columns:
         raise SystemExit(
-            "Versioned vault columns are missing: "
-            + ", ".join(sorted(missing_vault_columns))
+            "Versioned vault columns are missing: " + ", ".join(sorted(missing_vault_columns))
         )
     if vector_index is None:
         raise SystemExit("The HNSW embedding index is missing.")
@@ -342,15 +471,16 @@ def main() -> None:
     expected_origin_values = {
         "customers_profile_origin_check": ("manual", "einvoice", "email", "telegram"),
         "customer_endpoints_origin_check": (
-            "manual", "inbound_email", "telegram_onboarding", "telegram_contact_share"
+            "manual",
+            "inbound_email",
+            "telegram_onboarding",
+            "telegram_contact_share",
         ),
     }
     for constraint, expected_values in expected_origin_values.items():
         definition = customer_origin_checks.get(constraint, "")
         if any(f"'{value}'" not in definition for value in expected_values):
-            raise SystemExit(
-                f"Current product schema has an incompatible {constraint} constraint."
-            )
+            raise SystemExit(f"Current product schema has an incompatible {constraint} constraint.")
 
     print(f"Database: {database}")
     print(f"Database user: {user}")
@@ -372,6 +502,7 @@ def main() -> None:
         "and reply correlation: present"
     )
     print("RLS: enabled and forced")
+    print("Topic E identity, settings, import schema and session-secret permissions: present")
     print("Supabase database check passed.")
 
 
