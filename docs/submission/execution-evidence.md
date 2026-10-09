@@ -1,9 +1,49 @@
 # DuitDuit — Execution Evidence
 
-Updated 2026-10-10 after building the playbooks, voice input and assistant security evaluation. Historical
+Updated 2026-10-10 after the playbooks, voice input, assistant security evaluation and demo-script rewrite. Historical
 figures below describe the earlier contract pass. The assistant evidence is below;
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
+
+## A day with DuitDuit script: Oct 10 local verification
+
+Section 4's deliverable is the rewritten `docs/submission/demo-script.md`.
+It contains seven scenes with actions, narration, roles and shots to hold, using
+a planned 0:00–5:00 timeline and 482 words of primary narration. The timing table
+allocates 300 seconds; spoken duration and a timed browser rehearsal are **not
+measured**. The source was checked for proposal vs grant issuance, L2 Owner
+approval, the rolling cash window, missing month-end records and Compliance-only
+audit access. This is a documentation pass; no production code or test was added.
+
+| Check | Command | Result actually run before the documentation commit |
+| --- | --- | --- |
+| Backend lint | `backend/`: `python -m ruff check .` | All checks passed |
+| Full backend suite | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **565 passed, 2 skipped** |
+| Offline evaluation | `backend/`: `python -m eval.run ../output/demo-script-evaluation` | **36 passed, 0 failed, 0 skipped** |
+| Frontend typecheck | `frontend/`: `npx tsc -b` | Passed |
+| Frontend build | `frontend/`: `npm run build` | Passed |
+| Frontend lint | `frontend/`: `npm run lint` | 0 errors, 14 existing warnings |
+| Web hardening | `frontend/`: `node scripts/check-web-hardening.mjs` | Passed |
+| Microphone policy regressions | `frontend/`: `node --test scripts/permissions-policy.test.mjs` | **8 passed** |
+
+The backend process used an explicit local SQLite URL, disabled briefing pushes
+and mocked/disabled providers. The two skips remain the legacy pre-Plan-3 case
+and optional disposable PostgreSQL integration test. No audio, Telegram message,
+email or lender link was sent by this writing/verification pass. Local PostgreSQL
+checks were not rerun. Evaluation reports use a separate output folder to preserve
+historical reports.
+
+Section 3 commit `86dfe03` was pushed with approval, and all four jobs in
+[CI run 37964538027](https://github.com/tanhongsheng050204-code/2026-SHENZHEN-FINTECHATHON-INTERNATIONAL-TRACK/actions/runs/37964538027)
+passed, including the disposable PostgreSQL job. That CI covers section 3;
+section 4's results above are local.
+
+All four requested handoff sections now have local deliverables. Recording the
+Telegram insert, real browser/provider rehearsal, timed rehearsal, MP4 export,
+mirror reachability and production deployment are **not measured or completed**
+by this script pass. Hosted authentication remains a separate verification item.
+The script includes clearly labelled Telegram illustration and typed-voice
+fallbacks, and distinguishes requests/proposals from explicit review decisions.
 
 ## Assistant security evaluation: Oct 10 local verification
 
@@ -50,7 +90,8 @@ These scripted cases do not prove coverage of every possible injection.
 Section 2 commit `51b5dfa` was pushed with approval, and all four jobs in
 [CI run 37963433980](https://github.com/tanhongsheng050204-code/2026-SHENZHEN-FINTECHATHON-INTERNATIONAL-TRACK/actions/runs/37963433980)
 passed. That CI run covers section 2; the section 3 results above are local.
-Section 4's demo-script rewrite remains open. Evaluation output was written to a
+At the end of this security pass, section 4 was open; the script pass above
+subsequently completed the rewrite. Evaluation output was written to a
 separate folder to preserve historical committed reports.
 
 ## Assistant voice: Oct 10 local verification

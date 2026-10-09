@@ -14,6 +14,7 @@ The "Ask DuitDuit" assistant is a front door. It turns text into **one allowed a
 | Daily briefing in the app, plus opt-in email and Telegram pushes | `ccaa617`, `3435b27` | `backend/app/services/briefing.py`, `backend/app/services/briefing_push.py`, `frontend/src/components/BriefingCard.tsx`, `frontend/src/components/BriefingPushCard.tsx` |
 | Four governed playbooks | `14dc56b` | `backend/app/services/playbooks.py`, `backend/tests/test_playbooks.py` |
 | Voice recording and protected transcript review, without automatic send | `51b5dfa` | `frontend/src/components/VoiceInput.tsx`, `backend/app/services/assistant_voice.py`, `backend/tests/test_assistant_voice.py` |
+| Assistant security tests and six offline evaluation tasks | `86dfe03` | `backend/tests/test_assistant_security.py`, `backend/eval/checks.py`, `backend/eval/tasks.json` |
 
 **How the front door works.** `assistant.interpret()` tries the rules in `_by_rules` first. If they don't match, it tries the model (`_by_model`, Gemini, JSON only, picking from the allowed kinds). If that fails, it treats the text as a question (`_answer`).
 
@@ -135,7 +136,7 @@ The existing browser Web Speech code in `frontend/src/screens/Agents.tsx` (the `
 
 ### 3. Assistant security tests and evaluation tasks (target Oct 14)
 
-**Implementation update (Oct 10):** section 3 is built locally. All six requested
+**Implementation update (Oct 10):** section 3 is built and pushed to `main`. All six requested
 `A-*` tasks are registered in `backend/eval/tasks.json`, with real HTTP checkers
 in `backend/eval/checks.py`. The original 30 task ids are retained; the harness
 requires all six new tasks to pass rather than skip. Fixtures use disposable
@@ -151,7 +152,8 @@ They explicitly distinguish protection of returned voice text from raw audio
 sent to the transcription provider. Hosted authentication, production PostgreSQL
 isolation, browser capture and acoustic quality are **not measured** by these
 offline cases. Verification counts are recorded in
-`docs/submission/execution-evidence.md`. Section 4 remains open.
+`docs/submission/execution-evidence.md`. Section 4 was open at the end of that pass;
+see the subsequent script update below.
 
 Add tasks to `backend/eval/tasks.json` with checkers in `backend/eval/checks.py`. Everything must run offline, with the model mocked or switched off. The original baseline has 30 tasks and all 30 must still pass alongside the six additions.
 
@@ -168,6 +170,28 @@ Add tasks to `backend/eval/tasks.json` with checkers in `backend/eval/checks.py`
 Update `docs/standards/owasp-agentic-mapping.md` and `docs/submission/security-self-assessment.md` to list these tasks. Update `docs/submission/execution-evidence.md` with the new test counts. **Only quote counts you actually ran.**
 
 ### 4. Demo script: "A day with DuitDuit" (target Oct 15)
+
+**Implementation update (Oct 10):** section 4's script is written locally in
+`docs/submission/demo-script.md`. Seven scenes allocate exactly five minutes:
+Telegram/in-app briefing, bank meeting, late payers, voice refusal, cash gap,
+month-end checklist and Compliance audit review. Each scene has actions,
+narration and the result to hold on screen. Synthetic labels remain visible.
+
+The script follows the implemented approval boundaries: the bank-sharing inbox
+item is a proposal, followed by separate Passport/grant issuance; Finance prepares
+L2 reminder drafts and the Owner approves them, with no delivery claim. Cash is a
+rolling next-30-days forecast; day 23's RM29,440.00 gap is to the RM50,000.00 minimum,
+not an overdraft. Bank reconciliation remains not measured. Compliance opens the
+audit chains and distinguishes requests/proposals from explicit review decisions.
+
+A prerecorded Telegram insert, actual authenticated role sessions and a working
+voice/provider rehearsal are recording prerequisites. Labelled illustration and
+typed-voice fallbacks are supplied. The five-minute schedule is planned, not a
+measured rehearsal. Video recording, export, a shareable mirror and hosted
+authentication/provider checks are not completed by this documentation pass.
+All four implementation sections now have local deliverables; recording and the
+separate human deployment workflow below remain. Verification evidence is in
+`docs/submission/execution-evidence.md`.
 
 Rewrite `docs/submission/demo-script.md` as one day, about 5 minutes:
 
