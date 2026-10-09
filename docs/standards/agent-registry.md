@@ -37,4 +37,4 @@ The layout follows the AI-system inventory practice in the NIST AI RMF (Map and 
 
 Promotion to L2 for one action needs a recommendation from the review record. F10 checks that a promotion is refused without one and allowed with one.
 
-Every agent's proposal metrics shown today are sample figures. Plan 5 records real ones.
+For a company on its own records, each agent's metrics are its real review record, counted from people's decisions in the persisted inbox. Grants are audit-chain events. A company on the demo data shows sample figures.

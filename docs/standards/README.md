@@ -19,7 +19,7 @@ Every command runs from `backend/`.
 | Evaluation harness | `uv run python -m eval.run ../output` | `output/eval-report.md` and `output/eval-report.json` |
 | Full test suite | `uv run pytest` | Pass or fail for every test |
 
-The evaluation harness runs 20 functional tasks and 8 adversarial ones. It works offline, with no model provider.
+The evaluation harness runs 22 functional tasks and 8 adversarial ones. It works offline, with no model provider.
 
 CI repeats all of this on every push (`.github/workflows/ci.yml`). It also runs:
 - `pip-audit` and `npm audit` on the dependencies;
@@ -28,10 +28,10 @@ CI repeats all of this on every push (`.github/workflows/ci.yml`). It also runs:
 
 ## Where the evaluation stands (2026-10-09)
 
-**On `main`:** 24 tasks pass and 4 skip.
+**On `main`:** 26 tasks pass and 4 skip.
 
 The 4 skips wait for the teammate's Plan 2 (identity and guardrails) and Plan 3 (data importers) code, which is not committed yet:
 - ADV-01, ADV-02 and ADV-08 need the Plan 2 content guardrail.
 - F20 needs the Plan 3 business tables.
 
-**With that code applied in a scratch copy:** all 28 tasks pass, including all 8 adversarial cases.
+**With that code applied in a scratch copy:** all 30 tasks pass, including all 8 adversarial cases.

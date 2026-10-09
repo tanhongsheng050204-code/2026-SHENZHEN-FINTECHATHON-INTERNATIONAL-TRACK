@@ -14,6 +14,7 @@ from app.observability import configure_logging, init_sentry
 from app.routes import (
     agent_runs,
     agents,
+    agents_live,
     audit_log,
     auth,
     cashflow,
@@ -131,6 +132,7 @@ app.include_router(privacy.router)
 app.include_router(health.router)
 app.include_router(cashflow.router)
 app.include_router(agent_runs.router)  # before agents: serves the run endpoints
+app.include_router(agents_live.router)  # before agents, inbox, positions: live tenants
 app.include_router(agents.router)
 app.include_router(inbox.router)
 app.include_router(positions.router)

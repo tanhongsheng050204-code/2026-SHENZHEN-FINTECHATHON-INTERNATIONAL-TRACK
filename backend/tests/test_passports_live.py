@@ -1,3 +1,4 @@
+import dataclasses
 import datetime as dt
 import json
 from uuid import UUID
@@ -32,12 +33,20 @@ def db():
     return session
 
 
+def _signed_in(role, tenant):
+    person = principal(role, tenant_id=tenant)
+    if "mfa_verified_at" in getattr(type(person), "__dataclass_fields__", {}):
+        # Plan 2: sharing needs a recent authenticator step-up, as in the real flow.
+        person = dataclasses.replace(person, aal="aal2", mfa_verified_at=dt.datetime.now(dt.UTC))
+    return person
+
+
 def _client(db, role=UserRole.OWNER_DIRECTOR, tenant: UUID = TENANT_A) -> TestClient:
     app = FastAPI()
     app.include_router(router)
     app.dependency_overrides[get_db] = lambda: db
     if role is not None:
-        app.dependency_overrides[get_current_user] = lambda: principal(role, tenant_id=tenant)
+        app.dependency_overrides[get_current_user] = lambda: _signed_in(role, tenant)
     return TestClient(app)
 
 

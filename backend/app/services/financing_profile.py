@@ -23,6 +23,7 @@ from sqlalchemy import func, select
 from app import models
 from app.contracts.cashflow import ForecastResponse
 from app.contracts.common import DataMode
+from app.services import cash_basis
 from app.stubs.financing import DEMO_PROFILE, Profile
 
 _ZERO = Decimal("0")
@@ -45,19 +46,9 @@ def _einvoice_share(db, tenant_id: str) -> Decimal | None:
     return _share(Decimal(validated), Decimal(total))
 
 
-def compute(db, tenant_id: str, forecast: ForecastResponse) -> Profile:
-    if forecast.data_mode != DataMode.LIVE:
-        return DEMO_PROFILE
+def _business_facts(db, tenant_id: str, as_of: dt.date, values: dict) -> None:
+    """Facts from the Plan 3 business tables."""
     m = models
-    as_of = forecast.as_of
-    values: dict[str, Decimal] = {
-        "projected_shortfall_gap": forecast.shortfall.gap if forecast.shortfall else _ZERO,
-    }
-
-    einvoice = _einvoice_share(db, tenant_id)
-    if einvoice is not None:
-        values["validated_einvoice_share"] = einvoice
-
     pipeline = list(
         db.scalars(
             select(m.SalesPipeline).where(
@@ -96,6 +87,23 @@ def compute(db, tenant_id: str, forecast: ForecastResponse) -> Profile:
     share = _share(foreign, sum((Decimal(r.amount_myr) for r in owed), _ZERO))
     if share is not None:
         values["import_payables_share"] = share
+
+
+def compute(db, tenant_id: str, forecast: ForecastResponse) -> Profile:
+    if forecast.data_mode != DataMode.LIVE:
+        return DEMO_PROFILE
+    m = models
+    as_of = forecast.as_of
+    values: dict[str, Decimal] = {
+        "projected_shortfall_gap": forecast.shortfall.gap if forecast.shortfall else _ZERO,
+    }
+
+    einvoice = _einvoice_share(db, tenant_id)
+    if einvoice is not None:
+        values["validated_einvoice_share"] = einvoice
+
+    if cash_basis._plan3_deployed():
+        _business_facts(db, tenant_id, as_of, values)
 
     seed_type = getattr(m, "SyntheticTenantSeed", None)
     seed = db.get(seed_type, tenant_id) if seed_type is not None else None

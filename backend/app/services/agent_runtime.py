@@ -6,9 +6,9 @@ explainable). Each agent then calls a real tool on the tenant's cash basis (its
 imported records, or the synthetic demo company): the cash-flow engine's forecast,
 a what-if scenario over receivables, and the financing rules over the tenant's
 profile. Every message in the stream is built from those results. For the demo
-company, proposals point at the review inbox items that hold the same work; for a
-live tenant they are shown in the run only, since persisting a new inbox item per
-run is Plan 5 work.
+company, proposals point at the sample review inbox items that hold the same work;
+for a tenant on its own records each proposal is saved to the persisted review
+inbox (app.services.review_inbox), once: a repeated run reuses the open item.
 
 A run is stateless: its id carries the goal and an HMAC binding it to the tenant
 and the person who started it, so any instance can stream it and nobody else can.
@@ -30,9 +30,8 @@ from app.auth.principal import AuthPrincipal
 from app.config import get_settings
 from app.contracts.agents import AgentRunCreated, AgentRunEvent
 from app.contracts.cashflow import CashSignal, EventShift, ForecastResponse
-from app.contracts.common import DataMode
-from app.services import cashflow_engine, financing_profile
-from app.services.cashflow import basis_for
+from app.contracts.common import DataMode, EvidenceRef
+from app.services import cashflow, cashflow_engine, financing_profile, review_inbox
 from app.stubs import agents as manifests
 from app.stubs.financing import matches
 
@@ -269,8 +268,25 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
 
     authorize(db, principal, "cashflow", "forecast")
     today = dt.date.today()
-    basis = basis_for(db, principal, today)
+    basis = cashflow.basis_for(db, principal, today)
     demo = basis.data_mode == DataMode.STUB
+
+    def inbox_item(agent: str, title: str, summary: str, amount, source: str) -> str:
+        if demo:
+            return _INBOX[agent]
+        reviewer = manifests.find_agent(agent).reviewer_job_function
+        return review_inbox.propose(
+            db,
+            str(principal.tenant_id),
+            agent_id=agent,
+            reviewer=reviewer,
+            title=title,
+            summary=summary,
+            amount=amount,
+            evidence=[EvidenceRef(label=title, source=source)],
+            draft=summary if agent == "receivables" else None,
+        )
+
     forecast = cashflow_engine.build_forecast(basis, horizon_days=HORIZON_DAYS, as_of=today)
     shortfall = forecast.shortfall
     emit(
@@ -286,7 +302,14 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
             f"Shortfall on day {shortfall.day} ({shortfall.date:%d %b}): likely balance "
             f"{_ringgit(shortfall.likely_balance)} against a {_ringgit(shortfall.minimum_balance)} "
             f"minimum, a gap of {_ringgit(shortfall.gap)}.",
-            _INBOX["cashflow"] if demo else None,
+            inbox_item(
+                "cashflow",
+                f"Shortfall in {shortfall.day} days",
+                f"Likely balance {_ringgit(shortfall.likely_balance)} against a "
+                f"{_ringgit(shortfall.minimum_balance)} minimum on day {shortfall.day}.",
+                shortfall.gap,
+                "cashflow:forecast",
+            ),
         )
 
     if "receivables" in chosen:
@@ -321,12 +344,21 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
                 effect = "closes the gap"
             else:
                 effect = f"narrows the gap to {_ringgit(scenario.shortfall.gap)}"
+            message = (
+                f"Reminder draft{'' if one else 's'} for {invoices} ({_ringgit(total)}): "
+                f"{ask} {effect}."
+            )
             emit(
                 "proposal_created",
                 "receivables",
-                f"Reminder draft{'' if one else 's'} for {invoices} ({_ringgit(total)}): "
-                f"{ask} {effect}.",
-                _INBOX["receivables"] if demo else None,
+                message,
+                inbox_item(
+                    "receivables",
+                    f"Review {len(picked)} reminder draft{'' if one else 's'}",
+                    message,
+                    total,
+                    "receivables:ranking",
+                ),
             )
 
     if "financing" in chosen:
@@ -346,8 +378,16 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
                 "financing",
                 f"{best.product.name} fits best ({best.fit_score}/100). {best.explanation} "
                 "Application pack drafted.",
-                # Only the demo company's invoice-financing pack waits in the inbox today.
-                _INBOX["financing"] if demo and best.product.id == "my_invoice_financing" else None,
+                # The demo company's sample inbox holds only the invoice-financing pack.
+                None
+                if demo and best.product.id != "my_invoice_financing"
+                else inbox_item(
+                    "financing",
+                    f"Application pack: {best.product.name}",
+                    f"{best.explanation} Covers the {_ringgit(gap)} gap.",
+                    gap,
+                    "financing:matches",
+                ),
             )
         elif found.matches:
             # Nothing qualifies: say what stands between the company and the closest product.

@@ -375,6 +375,65 @@ def header_matching() -> Result:
     return _expect(same and different, "order, case and BOM ignored", f"{same=} {different=}")
 
 
+def _live_tenant():
+    """A tenant on its own records: the demo signals, marked live."""
+    from app.services import cashflow
+    from app.services.cashflow_engine import CashBasis
+
+    live = CashBasis("live", demo.OPENING_BALANCE, demo.MINIMUM_BALANCE, demo.BASIS.signals)
+    return cashflow, lambda *args: live
+
+
+@check("proposals_persisted")
+def proposals_persisted(runs: int, items: int) -> Result:
+    from app.services import review_inbox
+
+    cashflow, live = _live_tenant()
+    original = cashflow.basis_for
+    cashflow.basis_for = live
+    agent_runtime_guard = agent_runtime._external_guard
+    agent_runtime._external_guard = lambda *args, **kwargs: None
+    try:
+        db = _database()
+        owner = _principal()
+        for _ in range(runs):
+            run = agent_runtime.start_run(db, owner, "Can I cover payroll this month?")
+            agent_runtime.run_events(db, owner, run.run_id)
+        _, actions = review_inbox.inbox(db, owner, None)
+    finally:
+        cashflow.basis_for = original
+        agent_runtime._external_guard = agent_runtime_guard
+    return _expect(
+        len(actions) == items,
+        f"{runs} runs left {len(actions)} open items: " + ", ".join(a.title for a in actions),
+        f"expected {items} items, got {len(actions)}",
+    )
+
+
+@check("earned_from_record")
+def earned_from_record(agent: str, sample: int) -> Result:
+    from app.contracts.agents import ReviewDecisionRequest
+    from app.contracts.common import JobFunction
+    from app.services import review_inbox
+
+    db = _database()
+    finance = _principal(UserRole.FINANCE_OPS)
+    tenant = str(TENANT_A)
+    states = []
+    for n in range(sample):
+        action_id = review_inbox.propose(
+            db, tenant, agent_id=agent, reviewer=JobFunction.FINANCE, title=f"R{n}", summary="."
+        )
+        review_inbox.decide(db, finance, action_id, ReviewDecisionRequest(decision="approve"))
+        states.append(review_inbox.metrics(db, tenant)[agent].promotion_recommended)
+    ok = not any(states[: sample - 1]) and states[-1]
+    return _expect(
+        ok,
+        f"recommended only after {sample} unedited approvals",
+        f"recommendation by decision count: {states}",
+    )
+
+
 @check("live_basis_day_23")
 def live_basis_day_23(day: int, likely_balance: str) -> Result:
     if not cash_basis._plan3_deployed():

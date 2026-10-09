@@ -17,4 +17,4 @@ def test_tasks_are_data_with_unique_ids():
 
     tasks = json.loads(TASKS.read_text(encoding="utf-8"))["tasks"]
     ids = [task["id"] for task in tasks]
-    assert len(ids) == len(set(ids)) >= 28
+    assert len(ids) == len(set(ids)) >= 30

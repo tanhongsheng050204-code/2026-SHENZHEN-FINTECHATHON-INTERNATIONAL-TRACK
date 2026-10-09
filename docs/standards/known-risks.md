@@ -11,4 +11,4 @@ Risks we have found and not yet removed, each with its current treatment. Dated 
 | 5 | The public Passport verify and share endpoints have not been run against hosted PostgreSQL RLS. | Validate on Supabase before the demo. |
 | 6 | The public endpoints have no rate limit. | Add one at the proxy or API. |
 | 7 | Passport anchors are reported only where `audit-anchors/` is deployed with the API. | Set `AUDIT_ANCHOR_DIR` in production, or show anchors from the repository. |
-| 8 | Proposal metrics and earned-autonomy figures are sample data. | Plan 5 records real ones. |
+| 8 | Promotion thresholds are fixed at 30 decisions and a 90% unedited-approval rate. | Read the tenant's settings values instead. A company on demo data still shows sample metrics. |

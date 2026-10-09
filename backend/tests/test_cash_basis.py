@@ -261,7 +261,7 @@ def test_live_profile_is_computed_from_the_tenants_records():
 
 
 @needs_plan3
-def test_live_agent_run_asks_for_early_payment_and_keeps_proposals_in_the_run(monkeypatch):
+def test_live_agent_run_asks_for_early_payment_and_saves_proposals_once(monkeypatch):
     db = _synthetic_tenant()
     monkeypatch.setattr(agent_runtime, "_external_guard", lambda *a, **k: None)
     monkeypatch.setattr(
@@ -279,6 +279,14 @@ def test_live_agent_run_asks_for_early_payment_and_keeps_proposals_in_the_run(mo
         in (proposals["receivables"].message)
     )
     assert proposals["financing"].message.startswith("Nothing qualifies yet. Closest: ")
-    assert all(e.action_id is None for e in events)
-    assert "waiting_for_review" not in [e.type for e in events]
-    assert "Nothing has been sent or paid" in events[-1].message
+    # Decidable proposals are saved to the review inbox; "nothing qualifies" is advice.
+    assert proposals["cashflow"].action_id.startswith("act_")
+    assert proposals["receivables"].action_id.startswith("act_")
+    assert proposals["financing"].action_id is None
+    assert "2 items await your review" in events[-2].message
+
+    again = agent_runtime.run_events(db, owner, run.run_id)
+    assert {e.action_id for e in again if e.action_id} == {
+        proposals["cashflow"].action_id,
+        proposals["receivables"].action_id,
+    }
