@@ -20,7 +20,7 @@ import secrets
 from dataclasses import dataclass
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.auth.principal import AuthPrincipal
 from app.contracts.agents import (
@@ -63,6 +63,18 @@ def _events(db, tenant_id: str):
     ).all()
 
 
+def _replayable(action: ReviewAction, decision: str, approver_id: str) -> bool:
+    """The ladder's invariants, enforced again on the recorded order of decisions."""
+    if action.status in ("approved", "rejected"):
+        return False
+    if action.autonomy_level == AutonomyLevel.L3:
+        if decision == "edit":
+            return False
+        if decision == "approve" and any(a.approver_id == approver_id for a in action.approvals):
+            return False
+    return True
+
+
 def _replay(db, tenant_id: str) -> dict[str, _Item]:
     items: dict[str, _Item] = {}
     for row in _events(db, tenant_id):
@@ -75,6 +87,10 @@ def _replay(db, tenant_id: str) -> dict[str, _Item]:
             continue
         action = item.action
         decision = payload["decision"]
+        if not _replayable(action, decision, payload["approver_id"]):
+            # A decision that lost a race (or was written around the checks) never
+            # changes the item: the chain keeps it, the state ignores it.
+            continue
         if decision == "edit":
             item.edited = True
             item.action = action.model_copy(
@@ -191,10 +207,21 @@ def inbox(
     return job_scope.scope(principal), actions
 
 
+def _lock(db, tenant_id: str) -> None:
+    """Serialise check-then-write with the chain's own lock (PostgreSQL), so two
+    decisions on one item cannot both pass the checks before either is written."""
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
+        db.execute(
+            text("select pg_advisory_xact_lock(hashtext(:key))"),
+            {"key": f"finbrain:workflow-audit:{tenant_id}"},
+        )
+
+
 def decide(
     db, principal: AuthPrincipal, action_id: str, request: ReviewDecisionRequest
 ) -> ReviewAction:
     tenant_id = str(principal.tenant_id)
+    _lock(db, tenant_id)
     item = _replay(db, tenant_id).get(action_id)
     if item is None:
         raise InboxError("action_not_found", 404)

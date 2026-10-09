@@ -212,3 +212,62 @@ def test_position_workspace_is_computed_from_the_records(db):
     assert (payroll["value"], payroll["status"]) == ("RM62,000.00", "risk")
     staff = _client(db, UserRole.GENERAL_EMPLOYEE).get("/positions/finance/workspace")
     assert staff.status_code == 403
+
+
+def test_a_racing_second_approval_by_the_maker_cannot_complete_l3(db):
+    from app.services.workflow_audit import write_workflow_event
+
+    action_id = review_inbox.propose(
+        db,
+        str(TENANT_A),
+        agent_id="payables",
+        reviewer=JobFunction.FINANCE,
+        title="Pay supplier bill",
+        summary="RM14,800.00 rent",
+        level=AutonomyLevel.L3,
+    )
+    maker = str(USER_IDS[UserRole.FINANCE_OPS])
+    # Two approvals by the maker that both passed the check before either was written.
+    for _ in range(2):
+        write_workflow_event(
+            db,
+            event_type="review_decision",
+            actor_role="finance_ops",
+            actor_ref=maker,
+            resource_type="agent_action",
+            resource_id=action_id,
+            event_payload={
+                "decision": "approve",
+                "approver_id": maker,
+                "at": dt.datetime.now(dt.UTC).isoformat(),
+                "edited_draft": None,
+                "reason": None,
+            },
+            tenant_id=str(TENANT_A),
+        )
+    db.commit()
+
+    _, actions = review_inbox.inbox(db, _principal(UserRole.OWNER_DIRECTOR), None)
+    item = next(a for a in actions if a.id == action_id)
+    assert item.status == "awaiting_second_approval"
+    assert len(item.approvals) == 1
+
+
+def test_people_outside_finance_see_bands_not_exact_figures(db):
+    owner = _client(db)
+    clerk = _client(db, UserRole.FINANCE_OPS)
+
+    exact = {r["skill_id"]: r for r in owner.get("/positions/hr/workspace").json()["skill_results"]}
+    banded = {
+        r["skill_id"]: r for r in clerk.get("/positions/hr/workspace").json()["skill_results"]
+    }
+
+    assert exact["payroll_cash_plan"]["value"] == "RM62,000.00"
+    # Payroll totals are exact only for the owner (or after a recent step-up with Plan 2).
+    if "mfa_verified_at" not in AuthPrincipal.__dataclass_fields__:
+        assert banded["payroll_cash_plan"]["value"] == "RM50k–100k"
+    sales = _client(db, UserRole.GENERAL_EMPLOYEE).get("/positions/sales/workspace").json()
+    pipeline = {r["skill_id"]: r for r in sales["skill_results"]}["pipeline_inflows"]
+    assert pipeline["value"] == "RM10k–50k"
+    # RM26,000 of pipeline shows to staff as about RM30,000.
+    assert Decimal(sales["cash_contribution"]["inflow_total"]) == Decimal("30000")

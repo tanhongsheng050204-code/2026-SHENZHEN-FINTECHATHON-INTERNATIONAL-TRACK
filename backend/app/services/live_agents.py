@@ -24,6 +24,7 @@ from app.contracts.cashflow import CashSignal, ForecastResponse
 from app.contracts.common import AutonomyLevel, DataMode, EvidenceRef, JobFunction, autonomy_rank
 from app.contracts.positions import CashContribution, PositionWorkspace, SkillResult
 from app.models import WorkflowAuditEntry
+from app.schemas import UserRole
 from app.services import cashflow, cashflow_engine, financing_profile, review_inbox
 from app.services.workflow_audit import write_workflow_event
 from app.stubs import agents as manifests
@@ -128,17 +129,60 @@ def _by(forecast: ForecastResponse, agent: str, kind: str) -> list[CashSignal]:
     return [s for s in forecast.drivers if s.source_agent == agent and s.kind == kind]
 
 
+_EXACT_ROLES = (UserRole.OWNER_DIRECTOR, UserRole.FINANCE_OPS, UserRole.COMPLIANCE)
+_BANDS = (
+    (Decimal("10000"), "under RM10k"),
+    (Decimal("50000"), "RM10k–50k"),
+    (Decimal("100000"), "RM50k–100k"),
+    (Decimal("250000"), "RM100k–250k"),
+    (Decimal("500000"), "RM250k–500k"),
+    (Decimal("1000000"), "RM500k–1M"),
+)
+
+
+def _sees_exact(principal: AuthPrincipal) -> bool:
+    """Exact amounts for the roles that read the cash pages; bands for everyone else."""
+    return principal.role in _EXACT_ROLES
+
+
+def _sees_exact_payroll(principal: AuthPrincipal) -> bool:
+    """Payroll totals: the owner, or someone who just passed a step-up (Plan 2)."""
+    if principal.role == UserRole.OWNER_DIRECTOR:
+        return True
+    try:
+        from app.auth.dependencies import has_recent_mfa
+    except ImportError:
+        return False
+    return principal.role in _EXACT_ROLES and has_recent_mfa(principal)
+
+
+def _band(amount: Decimal) -> str:
+    return next((label for limit, label in _BANDS if amount < limit), "over RM1M")
+
+
+def _formatter(exact: bool):
+    return _ringgit if exact else _band
+
+
+def _coarse(amount: Decimal, exact: bool) -> Decimal:
+    if exact:
+        return amount
+    return (amount / 10000).quantize(Decimal("1")) * 10000
+
+
 def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[str, SkillResult]:
     from app.services import agent_runtime
 
+    money = _formatter(_sees_exact(principal))
+    pay = _formatter(_sees_exact_payroll(principal))
     shortfall = forecast.shortfall
     results: dict[str, SkillResult] = {}
     results["forecast"] = _result(
         "forecast",
         "90-day forecast",
         f"Day {shortfall.day}" if shortfall else "No shortfall",
-        f"Likely balance {_ringgit(shortfall.likely_balance)} against a "
-        f"{_ringgit(shortfall.minimum_balance)} minimum."
+        f"Likely balance {money(shortfall.likely_balance)} against a "
+        f"{money(shortfall.minimum_balance)} minimum."
         if shortfall
         else "The likely balance stays above your minimum for 90 days.",
         "risk" if shortfall else "ok",
@@ -156,7 +200,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
     results["rank_overdue"] = _result(
         "rank_overdue",
         "Collections to chase",
-        _ringgit(sum((s.amount_myr for s in late[:3]), _ZERO)) if late else None,
+        money(sum((s.amount_myr for s in late[:3]), _ZERO)) if late else None,
         ", ".join(s.label for s in late[:3]) or "Nothing late or needed early.",
         "attention" if late else "ok",
         "receivables:ranking",
@@ -177,7 +221,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
     results["bill_calendar"] = _result(
         "bill_calendar",
         "Bills due in 30 days",
-        _ringgit(sum((s.amount_myr for s in bills), _ZERO)),
+        money(sum((s.amount_myr for s in bills), _ZERO)),
         f"{len(bills)} supplier bills due by {soon:%d %b}.",
         "ok",
         "payables:due",
@@ -187,7 +231,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
     results["committed_outflows"] = _result(
         "committed_outflows",
         "Committed purchase orders",
-        _ringgit(sum((s.amount_myr for s in orders), _ZERO)),
+        money(sum((s.amount_myr for s in orders), _ZERO)),
         f"{len(orders)} open purchase orders, {len(foreign)} in foreign currency.",
         "attention" if shortfall and any(s.likely_day == shortfall.day for s in orders) else "ok",
         "purchasing:orders",
@@ -197,7 +241,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
     results["payroll_cash_plan"] = _result(
         "payroll_cash_plan",
         "Next payroll",
-        _ringgit(payroll[0].amount_myr) if payroll else None,
+        pay(payroll[0].amount_myr) if payroll else None,
         (f"Due on day {payroll[0].best_day}" if payroll else "No payroll run on record.")
         + (", the shortfall day." if on_shortfall else "."),
         "risk" if on_shortfall else "ok",
@@ -208,7 +252,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
     results["pipeline_inflows"] = _result(
         "pipeline_inflows",
         "Weighted pipeline",
-        _ringgit(weighted.quantize(Decimal("0.01"))),
+        money(weighted.quantize(Decimal("0.01"))),
         f"{len(pipeline)} open deals weighted by probability.",
         "ok",
         "sales:pipeline",
@@ -217,7 +261,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
     results["payout_timing"] = _result(
         "payout_timing",
         "Next marketplace payout",
-        _ringgit(payouts[0].amount_myr) if payouts else None,
+        money(payouts[0].amount_myr) if payouts else None,
         f"Expected on day {payouts[0].best_day}." if payouts else "No payout expected.",
         "ok",
         "marketplace:payouts",
@@ -254,6 +298,7 @@ def workspace(db, principal: AuthPrincipal, job_function: JobFunction) -> Positi
                 )
             )
     totals = signals.by_agent
+    exact = _sees_exact(principal)
     return PositionWorkspace(
         data_mode=DataMode.LIVE,
         job_function=job_function,
@@ -265,9 +310,9 @@ def workspace(db, principal: AuthPrincipal, job_function: JobFunction) -> Positi
         skill_results=results,
         cash_contribution=CashContribution(
             role="Feeds expected cash into the forecast",
-            inflow_total=sum((t.inflow_total for t in totals), _ZERO),
-            outflow_total=sum((t.outflow_total for t in totals), _ZERO),
-            at_risk_total=sum((t.at_risk_total for t in totals), _ZERO),
+            inflow_total=_coarse(sum((t.inflow_total for t in totals), _ZERO), exact),
+            outflow_total=_coarse(sum((t.outflow_total for t in totals), _ZERO), exact),
+            at_risk_total=_coarse(sum((t.at_risk_total for t in totals), _ZERO), exact),
             signal_ids=[s.id for s in signals.signals],
         ),
         inbox_count=review_inbox.pending_count(db, tenant_id, job_function),
