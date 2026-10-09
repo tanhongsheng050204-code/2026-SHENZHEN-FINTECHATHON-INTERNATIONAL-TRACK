@@ -1,68 +1,25 @@
-"""Stub cash-flow engine over the synthetic demo company's cash signals.
+"""The synthetic demo company's cash signals, for tenants with no imported records.
 
-Workstream B2 replaces it with app/services/cashflow.py, which reads signals written
-by every agent. The arithmetic is the spec's deterministic model, so the frontend
-already sees the demo story: the likely band breaches the RM50,000 minimum on day 23.
-Signals after day 23 come from the other positions and never change that story.
+The arithmetic lives in app.services.cashflow_engine; app.services.cashflow uses
+this basis only when a tenant has no imported bank balance. The likely band
+breaches the RM50,000 minimum on day 23, the demo story. Signals after day 23 come
+from the other positions and never change that story.
 """
 
 import datetime as dt
-from dataclasses import dataclass, replace
+from dataclasses import replace
 from decimal import Decimal
 
-from app.contracts.cashflow import (
-    AgentCashTotal,
-    CashSignal,
-    CashSignalsResponse,
-    EventShift,
-    ForecastAlert,
-    ForecastPoint,
-    ForecastResponse,
-    Shortfall,
-)
+from app.contracts.cashflow import CashSignalsResponse, EventShift, ForecastResponse
 from app.contracts.common import DataMode, JobFunction
+from app.services import cashflow_engine
+from app.services.cashflow_engine import CashBasis, UnknownEventError
+from app.services.cashflow_engine import Signal as _Signal
+
+__all__ = ["BASIS", "UnknownEventError", "build_forecast", "list_signals"]
 
 OPENING_BALANCE = Decimal("116400.00")
 MINIMUM_BALANCE = Decimal("50000.00")
-_ZERO = Decimal("0.00")
-
-
-class UnknownEventError(LookupError):
-    def __init__(self, event_id: str) -> None:
-        super().__init__(event_id)
-        self.event_id = event_id
-
-
-@dataclass(frozen=True)
-class _Signal:
-    id: str
-    agent: str
-    job_function: JobFunction
-    kind: str
-    label: str
-    amount: Decimal
-    best_day: int
-    likely_day: int | None
-    worst_day: int | None
-    probability: float = 1.0
-    source_currency: str = "MYR"
-    source_amount: Decimal | None = None
-    fx_rate: Decimal | None = None
-    affects: str | None = None
-
-    def day_for(self, band: str) -> int | None:
-        return {"best": self.best_day, "likely": self.likely_day, "worst": self.worst_day}[band]
-
-    def shifted(self, days: int) -> "_Signal":
-        def move(day: int | None) -> int | None:
-            return None if day is None else max(0, day + days)
-
-        return replace(
-            self,
-            best_day=move(self.best_day),
-            likely_day=move(self.likely_day),
-            worst_day=move(self.worst_day),
-        )
 
 
 def _receivable(
@@ -175,174 +132,21 @@ _SIGNALS: tuple[_Signal, ...] = (
 )
 
 
-def _shifted(signals: tuple[_Signal, ...], shifts: list[EventShift]) -> tuple[_Signal, ...]:
-    known = {signal.id for signal in signals}
-    total: dict[str, int] = {}
-    for shift in shifts:
-        if shift.event_id not in known:
-            raise UnknownEventError(shift.event_id)
-        total[shift.event_id] = total.get(shift.event_id, 0) + shift.shift_days
-    return tuple(
-        signal.shifted(total[signal.id]) if signal.id in total else signal for signal in signals
-    )
-
-
-def _balances(signals: tuple[_Signal, ...], horizon_days: int, band: str) -> list[Decimal]:
-    deltas = [_ZERO] * (horizon_days + 1)
-    for signal in signals:
-        day = signal.day_for(band)
-        if signal.kind == "risk" or day is None or day > horizon_days:
-            continue
-        deltas[day] += signal.amount if signal.kind == "inflow" else -signal.amount
-    balances: list[Decimal] = []
-    running = OPENING_BALANCE
-    for delta in deltas:
-        running += delta
-        balances.append(running)
-    return balances
-
-
-def _first_shortfall(likely: list[Decimal], as_of: dt.date) -> Shortfall | None:
-    for day, balance in enumerate(likely):
-        if balance < MINIMUM_BALANCE:
-            return Shortfall(
-                day=day,
-                date=as_of + dt.timedelta(days=day),
-                likely_balance=balance,
-                minimum_balance=MINIMUM_BALANCE,
-                gap=MINIMUM_BALANCE - balance,
-            )
-    return None
-
-
-def _alerts(
-    signals: tuple[_Signal, ...],
-    shortfall: Shortfall | None,
-    worst: list[Decimal],
-    as_of: dt.date,
-) -> list[ForecastAlert]:
-    alerts: list[ForecastAlert] = []
-    if shortfall is not None:
-        due = [s for s in signals if s.kind == "outflow" and s.likely_day == shortfall.day]
-        causes = " and ".join(f"{s.label} (RM{s.amount:,.2f})" for s in due)
-        alerts.append(
-            ForecastAlert(
-                id=f"shortfall-day-{shortfall.day}",
-                severity="critical",
-                title=f"Projected shortfall in {shortfall.day} days",
-                detail=(
-                    f"Likely balance RM{shortfall.likely_balance:,.2f} is "
-                    f"RM{shortfall.gap:,.2f} below your RM{MINIMUM_BALANCE:,.2f} minimum."
-                    + (f" Due that day: {causes}." if causes else "")
-                ),
-                day=shortfall.day,
-                date=shortfall.date,
-            )
-        )
-    negative_day = next((day for day, balance in enumerate(worst) if balance < 0), None)
-    if negative_day is not None:
-        alerts.append(
-            ForecastAlert(
-                id=f"worst-negative-day-{negative_day}",
-                severity="warning",
-                title=f"Worst case goes negative on day {negative_day}",
-                detail="If customers pay as late as their slowest history, the account overdraws.",
-                day=negative_day,
-                date=as_of + dt.timedelta(days=negative_day),
-            )
-        )
-    return alerts
-
-
-def _contract(signal: _Signal) -> CashSignal:
-    return CashSignal(
-        id=signal.id,
-        source_agent=signal.agent,
-        job_function=signal.job_function,
-        kind=signal.kind,
-        label=signal.label,
-        amount_myr=signal.amount,
-        source_currency=signal.source_currency,
-        source_amount=signal.source_amount,
-        fx_rate=signal.fx_rate,
-        best_day=signal.best_day,
-        likely_day=signal.likely_day,
-        worst_day=signal.worst_day,
-        probability=signal.probability,
-        affects=signal.affects,
-    )
-
-
-def _in_horizon(signals: tuple[_Signal, ...], horizon_days: int) -> list[_Signal]:
-    return sorted(
-        (s for s in signals if s.best_day <= horizon_days), key=lambda s: (s.best_day, s.id)
-    )
+BASIS = CashBasis(
+    data_mode=DataMode.STUB,
+    opening_balance=OPENING_BALANCE,
+    minimum_balance=MINIMUM_BALANCE,
+    signals=_SIGNALS,
+)
 
 
 def build_forecast(
     *, horizon_days: int, as_of: dt.date, shifts: list[EventShift] | None = None
 ) -> ForecastResponse:
-    signals = _shifted(_SIGNALS, shifts or [])
-    best = _balances(signals, horizon_days, "best")
-    likely = _balances(signals, horizon_days, "likely")
-    worst = _balances(signals, horizon_days, "worst")
-    shortfall = _first_shortfall(likely, as_of)
-    return ForecastResponse(
-        data_mode=DataMode.STUB,
-        as_of=as_of,
-        horizon_days=horizon_days,
-        opening_balance=OPENING_BALANCE,
-        minimum_balance=MINIMUM_BALANCE,
-        points=[
-            ForecastPoint(
-                day=day,
-                date=as_of + dt.timedelta(days=day),
-                best=best[day],
-                likely=likely[day],
-                worst=worst[day],
-            )
-            for day in range(horizon_days + 1)
-        ],
-        shortfall=shortfall,
-        alerts=_alerts(signals, shortfall, worst, as_of),
-        drivers=[_contract(signal) for signal in _in_horizon(signals, horizon_days)],
+    return cashflow_engine.build_forecast(
+        BASIS, horizon_days=horizon_days, as_of=as_of, shifts=shifts
     )
-
-
-def _totals(signals: list[_Signal]) -> list[AgentCashTotal]:
-    order = list(JobFunction)
-    groups: dict[tuple[int, str], list[_Signal]] = {}
-    for signal in signals:
-        key = (order.index(signal.job_function), signal.agent)
-        groups.setdefault(key, []).append(signal)
-    totals: list[AgentCashTotal] = []
-    for (_, agent), group in sorted(groups.items()):
-        amounts = {
-            kind: sum((s.amount for s in group if s.kind == kind), _ZERO)
-            for kind in ("inflow", "outflow", "risk")
-        }
-        totals.append(
-            AgentCashTotal(
-                agent_id=agent,
-                job_function=group[0].job_function,
-                inflow_total=amounts["inflow"],
-                outflow_total=amounts["outflow"],
-                at_risk_total=amounts["risk"],
-                signal_count=len(group),
-            )
-        )
-    return totals
 
 
 def list_signals(*, horizon_days: int, job_function: JobFunction | None) -> CashSignalsResponse:
-    selected = [
-        signal
-        for signal in _in_horizon(_SIGNALS, horizon_days)
-        if job_function is None or signal.job_function == job_function
-    ]
-    return CashSignalsResponse(
-        data_mode=DataMode.STUB,
-        horizon_days=horizon_days,
-        signals=[_contract(signal) for signal in selected],
-        by_agent=_totals(selected),
-    )
+    return cashflow_engine.list_signals(BASIS, horizon_days=horizon_days, job_function=job_function)

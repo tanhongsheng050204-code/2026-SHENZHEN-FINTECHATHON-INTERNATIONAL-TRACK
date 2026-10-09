@@ -2,11 +2,13 @@
 
 The Supervisor routes a goal to the agents whose skills fit it, using fixed keyword
 rules in English, Malay and Chinese (no language model, so a run is repeatable and
-explainable). Each agent then calls a real tool: the cash-flow engine's forecast, a
-what-if scenario over late receivables, and the financing rule engine. Every
-message in the stream is built from those results. Proposals point at the review
-inbox items that hold the same work for a person to approve; persisting a new
-inbox item per run is Plan 5 work.
+explainable). Each agent then calls a real tool on the tenant's cash basis (its
+imported records, or the synthetic demo company): the cash-flow engine's forecast,
+a what-if scenario over receivables, and the financing rules over the tenant's
+profile. Every message in the stream is built from those results. For the demo
+company, proposals point at the review inbox items that hold the same work; for a
+live tenant they are shown in the run only, since persisting a new inbox item per
+run is Plan 5 work.
 
 A run is stateless: its id carries the goal and an HMAC binding it to the tenant
 and the person who started it, so any instance can stream it and nobody else can.
@@ -29,8 +31,9 @@ from app.config import get_settings
 from app.contracts.agents import AgentRunCreated, AgentRunEvent
 from app.contracts.cashflow import CashSignal, EventShift, ForecastResponse
 from app.contracts.common import DataMode
+from app.services import cashflow_engine, financing_profile
+from app.services.cashflow import basis_for
 from app.stubs import agents as manifests
-from app.stubs.cashflow import build_forecast
 from app.stubs.financing import matches
 
 HORIZON_DAYS = 90
@@ -194,6 +197,36 @@ def goal_for(principal: AuthPrincipal, run_id: str) -> str:
     return goal
 
 
+def _invoice_name(label: str) -> str:
+    # Demo labels start with the invoice number; live labels carry no name, only a date.
+    name = label.split(" · ")[0]
+    return "the i" + name[1:] if name.startswith("Invoice ") else name
+
+
+def _early_receivables(forecast: ForecastResponse) -> list[CashSignal]:
+    """The fewest receivables landing after the shortfall whose total covers its gap."""
+    shortfall = forecast.shortfall
+    if shortfall is None:
+        return []
+    later = sorted(
+        (
+            s
+            for s in forecast.drivers
+            if s.source_agent == "receivables"
+            and s.kind == "inflow"
+            and s.likely_day is not None
+            and s.likely_day > shortfall.day
+        ),
+        key=lambda s: (s.likely_day, s.id),
+    )
+    chosen: list[CashSignal] = []
+    for signal in later[:3]:
+        chosen.append(signal)
+        if sum((s.amount_myr for s in chosen), Decimal("0")) >= shortfall.gap:
+            break
+    return chosen
+
+
 def _late_receivables(forecast: ForecastResponse) -> list[CashSignal]:
     """Receivables due by the shortfall (or horizon) that are expected to arrive late."""
     cutoff = forecast.shortfall.day if forecast.shortfall else forecast.horizon_days
@@ -235,7 +268,10 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
     emit("run_started", "supervisor", f"Goal received; routing to {', '.join(chosen)}.")
 
     authorize(db, principal, "cashflow", "forecast")
-    forecast = build_forecast(horizon_days=HORIZON_DAYS, as_of=dt.date.today())
+    today = dt.date.today()
+    basis = basis_for(db, principal, today)
+    demo = basis.data_mode == DataMode.STUB
+    forecast = cashflow_engine.build_forecast(basis, horizon_days=HORIZON_DAYS, as_of=today)
     shortfall = forecast.shortfall
     emit(
         "tool_called",
@@ -250,67 +286,99 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
             f"Shortfall on day {shortfall.day} ({shortfall.date:%d %b}): likely balance "
             f"{_ringgit(shortfall.likely_balance)} against a {_ringgit(shortfall.minimum_balance)} "
             f"minimum, a gap of {_ringgit(shortfall.gap)}.",
-            _INBOX["cashflow"],
+            _INBOX["cashflow"] if demo else None,
         )
 
     if "receivables" in chosen:
         authorize(db, principal, "receivables", "rank_overdue")
         late = _late_receivables(forecast)[:3]
-        emit("tool_called", "receivables", f"rank_overdue(limit=3) → {len(late)} found")
+        # Late invoices are paid on their due dates; failing that, the next receipts
+        # are asked for before the shortfall day.
         if late:
-            invoices = ", ".join(s.label.split(" · ")[0] for s in sorted(late, key=lambda s: s.id))
-            total = sum((s.amount_myr for s in late), Decimal("0"))
-            on_time = build_forecast(
-                horizon_days=HORIZON_DAYS,
-                as_of=forecast.as_of,
-                shifts=[
-                    EventShift(event_id=s.id, shift_days=s.best_day - s.likely_day) for s in late
-                ],
+            picked, ask = late, "collecting {it} on {its} due date{s}"
+            shifts = [EventShift(event_id=s.id, shift_days=s.best_day - s.likely_day) for s in late]
+        else:
+            picked = _early_receivables(forecast)
+            ask = f"asking for {{it}} before day {shortfall.day}" if shortfall else ""
+            shifts = [
+                EventShift(event_id=s.id, shift_days=shortfall.day - 1 - s.likely_day)
+                for s in picked
+            ]
+        emit("tool_called", "receivables", f"rank_overdue(limit=3) → {len(picked)} found")
+        if picked:
+            invoices = ", ".join(_invoice_name(s.label) for s in sorted(picked, key=lambda s: s.id))
+            one = len(picked) == 1
+            ask = ask.format(
+                it="it" if one else "them", its="its" if one else "their", s="" if one else "s"
+            )
+            total = sum((s.amount_myr for s in picked), Decimal("0"))
+            scenario = cashflow_engine.build_forecast(
+                basis, horizon_days=HORIZON_DAYS, as_of=forecast.as_of, shifts=shifts
             )
             if shortfall is None:
                 effect = "keeps cash ahead of plan"
-            elif on_time.shortfall is None or on_time.shortfall.day > shortfall.day:
+            elif scenario.shortfall is None or scenario.shortfall.day > shortfall.day:
                 effect = "closes the gap"
             else:
-                effect = f"narrows the gap to {_ringgit(on_time.shortfall.gap)}"
+                effect = f"narrows the gap to {_ringgit(scenario.shortfall.gap)}"
             emit(
                 "proposal_created",
                 "receivables",
-                f"Reminder drafts for {invoices} ({_ringgit(total)}): collecting them on their "
-                f"due dates {effect}.",
-                _INBOX["receivables"],
+                f"Reminder draft{'' if one else 's'} for {invoices} ({_ringgit(total)}): "
+                f"{ask} {effect}.",
+                _INBOX["receivables"] if demo else None,
             )
 
     if "financing" in chosen:
         authorize(db, principal, "financing", "match_products")
         gap = shortfall.gap if shortfall else Decimal("0.00")
-        found = matches("MY")
+        found = matches("MY", financing_profile.compute(db, str(principal.tenant_id), forecast))
         eligible = [m for m in found.matches if m.eligible]
         emit(
             "tool_called",
             "financing",
             f"match_products(gap={gap}) → {len(eligible)} of {len(found.matches)} eligible",
         )
-        # Only invoice financing has an application pack waiting in the inbox today.
-        if eligible and eligible[0].product.id == "my_invoice_financing":
+        if eligible:
             best = eligible[0]
             emit(
                 "proposal_created",
                 "financing",
                 f"{best.product.name} fits best ({best.fit_score}/100). {best.explanation} "
                 "Application pack drafted.",
-                _INBOX["financing"],
+                # Only the demo company's invoice-financing pack waits in the inbox today.
+                _INBOX["financing"] if demo and best.product.id == "my_invoice_financing" else None,
+            )
+        elif found.matches:
+            # Nothing qualifies: say what stands between the company and the closest product.
+            closest = min(
+                found.matches,
+                key=lambda m: (sum(not r.passed for r in m.rules), -m.fit_score),
+            )
+            missing = "; ".join(r.detail for r in closest.rules if not r.passed)
+            emit(
+                "proposal_created",
+                "financing",
+                f"Nothing qualifies yet. Closest: {closest.product.name}. Not met: {missing}.",
             )
 
     proposals = sum(1 for kind, *_ in steps if kind == "proposal_created")
-    if proposals:
+    in_inbox = sum(1 for kind, *_, action in steps if kind == "proposal_created" and action)
+    if in_inbox:
         emit(
             "waiting_for_review",
             "supervisor",
-            f"{proposals} item{'s' if proposals != 1 else ''} await your review. "
+            f"{in_inbox} item{'s' if in_inbox != 1 else ''} await your review. "
             "Nothing is sent or paid until a person approves.",
         )
-    emit("run_completed", "supervisor", "Run complete.")
+    if in_inbox or not proposals:
+        done = "Run complete."
+    else:
+        done = (
+            f"Run complete: {proposals} proposal{'s' if proposals != 1 else ''} above. "
+            "Nothing has been sent or paid."
+        )
+    emit("run_completed", "supervisor", done)
     return _events(run_id, steps)
 
 

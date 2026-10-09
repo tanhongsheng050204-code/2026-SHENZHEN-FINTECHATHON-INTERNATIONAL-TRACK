@@ -1,6 +1,7 @@
 import datetime as dt
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
 from app.auth.principal import AuthPrincipal
@@ -11,8 +12,11 @@ from app.contracts.cashflow import (
     ScenarioRequest,
 )
 from app.contracts.common import JobFunction
+from app.db import get_db
 from app.schemas import UserRole
-from app.stubs.cashflow import UnknownEventError, build_forecast, list_signals
+from app.services import cashflow_engine
+from app.services.cashflow import basis_for
+from app.services.cashflow_engine import UnknownEventError
 
 router = APIRouter(tags=["cashflow"])
 
@@ -30,20 +34,27 @@ def cashflow_forecast(
     horizon_days: int = Query(default=90),
     as_of: dt.date | None = Query(default=None),
     principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+    db: Session = Depends(get_db),
 ) -> ForecastResponse:
     _check_horizon(horizon_days)
-    return build_forecast(horizon_days=horizon_days, as_of=as_of or dt.date.today())
+    day = as_of or dt.date.today()
+    return cashflow_engine.build_forecast(
+        basis_for(db, principal, day), horizon_days=horizon_days, as_of=day
+    )
 
 
 @router.post("/cashflow/scenarios", response_model=ForecastResponse)
 def cashflow_scenario(
     request: ScenarioRequest,
     principal: AuthPrincipal = Depends(require_roles(*_SCENARIO_ROLES)),
+    db: Session = Depends(get_db),
 ) -> ForecastResponse:
+    day = request.as_of or dt.date.today()
     try:
-        return build_forecast(
+        return cashflow_engine.build_forecast(
+            basis_for(db, principal, day),
             horizon_days=request.horizon_days,
-            as_of=request.as_of or dt.date.today(),
+            as_of=day,
             shifts=request.shifts,
         )
     except UnknownEventError as error:
@@ -55,6 +66,8 @@ def cashflow_signals(
     horizon_days: int = Query(default=90),
     job_function: JobFunction | None = Query(default=None),
     principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+    db: Session = Depends(get_db),
 ) -> CashSignalsResponse:
     _check_horizon(horizon_days)
-    return list_signals(horizon_days=horizon_days, job_function=job_function)
+    basis = basis_for(db, principal, dt.date.today())
+    return cashflow_engine.list_signals(basis, horizon_days=horizon_days, job_function=job_function)
