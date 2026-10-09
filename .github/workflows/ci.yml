@@ -6,6 +6,39 @@ on:
   pull_request:
 
 jobs:
+  postgres-rls:
+    name: PostgreSQL (migrations and Plan 2/3 RLS)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: local-review-only-finbrain-pg
+          POSTGRES_DB: finbrain_review
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d finbrain_review"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync --extra dev
+      - name: Apply all real migrations to the disposable database
+        env:
+          FINBRAIN_REVIEW_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: uv run python -m scripts.check_plan23_migrations
+      - name: Exercise import, tenant, payroll and settings database policies
+        env:
+          FINBRAIN_REVIEW_POSTGRES_URL: postgresql+psycopg://postgres:local-review-only-finbrain-pg@127.0.0.1:5432/finbrain_review
+        run: uv run pytest tests/test_plan23_postgres.py -q
+
   backend:
     name: Backend (lint + tests)
     runs-on: ubuntu-latest

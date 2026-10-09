@@ -4,10 +4,11 @@ Only use the explicitly named review container. The minimal auth bootstrap is
 not hosted Supabase Auth; this checks PostgreSQL migration syntax and RLS.
 """
 
+import os
 import subprocess
 from pathlib import Path
 
-CONTAINER = "finbrain-plan23-review-db"
+CONTAINER = os.environ.get("FINBRAIN_REVIEW_POSTGRES_CONTAINER", "finbrain-plan23-review-db")
 
 
 def sql(document: str):

@@ -1,7 +1,8 @@
-"""Write the Topic E API contract (OpenAPI) to docs/api/topic-e-contract.json.
+"""Write the current API contract to docs/api/topic-e-current-contract.json.
 
 Run from backend/: uv run python -m scripts.export_contract
-The frontend builds against this file; tests/test_contract_openapi.py fails when it drifts.
+The Plan 1 topic-e-contract.json stays frozen. Tests check current contract drift
+and preservation of the baseline operations.
 """
 
 import json

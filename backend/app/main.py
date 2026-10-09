@@ -62,6 +62,16 @@ async def lifespan(_: FastAPI):
     ):
         raise RuntimeError("Backend authentication requires independent production secrets")
     initialize_local_schema()
+    # Provision once on the trusted connection before requests enter finbrain_app,
+    # which deliberately cannot create or rotate global encryption keys.
+    from app.db import SessionLocal
+    from app.security.keyring import ensure_active_key
+
+    with SessionLocal() as db:
+        if db.bind.dialect.name == "postgresql":
+            db.execute(text("select pg_advisory_xact_lock(hashtext('finbrain:vault-bootstrap'))"))
+        ensure_active_key(db)
+        db.commit()
     if settings.prewarm_gliner_on_startup and settings.enable_gliner:
         detector = warm_detector()
         logger.info(
