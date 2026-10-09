@@ -1,0 +1,35 @@
+{
+  "anchored_at": "2026-10-09T15:37:02+00:00",
+  "anchors": [
+    {
+      "chain": "disclosure",
+      "tail_hash": "genesis",
+      "tenant_id": null
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "6922caa6b2ad4ff8dd7ff5149e98a0fb8d0593415b9fa81713b7a6e99ff5b722",
+      "tenant_id": null
+    },
+    {
+      "chain": "disclosure",
+      "tail_hash": "d5f6737d129f09f7e54b4775265e502d37ca9268cfb81d12df10d992d5842bb7",
+      "tenant_id": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "eaa2df4bf4fa757cc23040d6a95f2aaa4c078d3a8fe1b7091da6ccd083dc58f5",
+      "tenant_id": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "chain": "disclosure",
+      "tail_hash": "genesis",
+      "tenant_id": "858f0c1c-42fa-52a2-91b3-80a19d816356"
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "f1f712775366382c2213f21cbd03a290f5a5541262adedfe507a649a565b8525",
+      "tenant_id": "858f0c1c-42fa-52a2-91b3-80a19d816356"
+    }
+  ]
+}
