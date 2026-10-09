@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AgentRunPanel } from "../components/AgentRunPanel";
 import { AssistantReply } from "../components/AssistantReply";
 import { BriefingCard } from "../components/BriefingCard";
+import { VoiceInput } from "../components/VoiceInput";
 import { interpretCommand } from "../api/topicE";
 import { useAuth } from "../auth/AuthProvider";
 import { useAppState } from "../lib/appState";
@@ -54,28 +55,6 @@ interface ContextChip {
   label: string;
 }
 
-interface SpeechRecognitionResultLike {
-  0: { transcript: string };
-}
-interface SpeechRecognitionEventLike {
-  results: ArrayLike<SpeechRecognitionResultLike>;
-}
-interface SpeechRecognitionErrorEventLike {
-  error: string;
-}
-interface SpeechRecognitionLike {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start: () => void;
-  stop: () => void;
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
-  onend: (() => void) | null;
-}
-
-const VOICE_LANG: Record<string, string> = { en: "en-US", ms: "ms-MY", zh: "zh-CN" };
-
 type UploadState = "idle" | "previewing" | "protected" | "committing" | "complete" | "failed";
 
 // Reuses the same stroke paths as the Approvals/Search/e-Invoicing icons
@@ -115,8 +94,6 @@ export default function Agents() {
   ]);
   const [input, setInput] = useState("");
   const [chips, setChips] = useState<ContextChip[]>([]);
-  const [recording, setRecording] = useState(false);
-  const [voiceError, setVoiceError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [uploadPreview, setUploadPreview] = useState<UploadPreviewResponse | null>(null);
@@ -129,15 +106,10 @@ export default function Agents() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
-  const voiceTranscriptRef = useRef("");
   const consumedHandoffRef = useRef<number | null>(null);
   const scopedCustomerId = currentCustomerKey?.startsWith("id:")
     ? Number(currentCustomerKey.slice(3))
     : null;
-  const voiceSupported = typeof window !== "undefined"
-    && Boolean((window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition
-      || (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition);
   const profileLabel = displayName || identity?.email || "You";
   const userInitial = profileLabel[0]?.toUpperCase() ?? "U";
   const formatTime = (ts: number) => new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -349,41 +321,6 @@ export default function Agents() {
   };
 
   const removeChip = (i: number) => setChips((c) => c.filter((_, idx) => idx !== i));
-
-  const startRecording = () => {
-    if (!voiceSupported || recording) return;
-    const Ctor = ((window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike }).SpeechRecognition
-      ?? (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike }).webkitSpeechRecognition)!;
-    const recognition = new Ctor();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = VOICE_LANG[lang] ?? "en-US";
-    voiceTranscriptRef.current = "";
-    setVoiceError("");
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i++) transcript += event.results[i][0].transcript;
-      voiceTranscriptRef.current = transcript;
-      setInput(transcript);
-    };
-    recognition.onerror = (event) => {
-      setVoiceError(event.error === "not-allowed" ? "Microphone access was blocked." : "Voice input failed — try again.");
-      setRecording(false);
-    };
-    recognition.onend = () => {
-      setRecording(false);
-      const transcript = voiceTranscriptRef.current.trim();
-      if (transcript) send(transcript);
-    };
-    recognitionRef.current = recognition;
-    recognition.start();
-    setRecording(true);
-  };
-
-  const stopRecording = () => {
-    if (!recording) return;
-    recognitionRef.current?.stop();
-  };
 
   const hasConversation = messages.length > 1;
   const canRunAgents = askRole === "finance_ops" || askRole === "owner_director";
@@ -617,7 +554,6 @@ export default function Agents() {
               </span>
             </div>
           )}
-          {voiceError && <div className="fb-fine" role="alert" style={{ padding: "0 1.1rem", color: "var(--chart-attn)" }}>{voiceError}</div>}
 
           <div className="fb-composer2">
             <div className="fb-composer2-input-row">
@@ -636,22 +572,7 @@ export default function Agents() {
                 style={{ display: "none" }}
                 onChange={handleFile}
               />
-              <button
-                className={"fb-icon-btn" + (recording ? " is-recording" : "")}
-                type="button"
-                disabled={!voiceSupported}
-                title={voiceSupported ? "Hold to speak — release to send" : "Voice input isn't supported in this browser"}
-                aria-label={voiceSupported ? "Hold, or press Enter/Space, to speak your question" : "Voice input isn't supported in this browser"}
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onMouseLeave={stopRecording}
-                onTouchStart={startRecording}
-                onTouchEnd={stopRecording}
-                onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && !recording) { e.preventDefault(); startRecording(); } }}
-                onKeyUp={(e) => { if (e.key === "Enter" || e.key === " ") stopRecording(); }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10a7 7 0 0 0 14 0M12 19v3" /></svg>
-              </button>
+              <VoiceInput onTranscript={setInput} />
             </div>
 
             <div className="fb-composer2-toolbar-row">

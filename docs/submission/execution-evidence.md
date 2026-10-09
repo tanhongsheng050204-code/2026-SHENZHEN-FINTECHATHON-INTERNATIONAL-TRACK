@@ -1,8 +1,53 @@
 # DuitDuit — Execution Evidence
 
-Updated 2026-10-10 after building the four assistant playbooks. Historical
-figures below describe the earlier contract pass; current evidence is recorded in
-`docs/REMAINING_WORK.md` and `docs/deployment/plan-2-3-review.md`.
+Updated 2026-10-10 after building the four assistant playbooks and voice input. Historical
+figures below describe the earlier contract pass. The assistant evidence is below;
+Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
+`docs/deployment/plan-2-3-review.md`.
+
+## Assistant voice: Oct 10 local verification
+
+Section 2 of `docs/handoff/2026-10-10-assistant-remaining-work.md` is implemented.
+Recording produces a protected transcript for review in the input box; it does
+not submit a command. Only the person's Send action invokes the existing front door.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Backend lint | `backend/`: `python -m ruff check .` | All checks passed |
+| Full backend suite | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **539 passed, 2 skipped** |
+| Voice regression tests | `backend/`: `python -m pytest tests/test_assistant_voice.py -p no:cacheprovider -W ignore` | **33 passed** |
+| Existing offline evaluation | `backend/`: `python -m eval.run ../output/voice-evaluation` | **30 passed, 0 failed, 0 skipped**; separate output folder preserves the earlier committed report |
+| Frontend typecheck | `frontend/`: `npx tsc -b` | Passed |
+| Frontend build | `frontend/`: `npm run build` | Passed |
+| Frontend lint | `frontend/`: `npm run lint` | 0 errors, 14 existing warnings |
+| Web hardening | `frontend/`: `node scripts/check-web-hardening.mjs` | Passed |
+| Microphone policy regressions | `frontend/`: `node --test scripts/permissions-policy.test.mjs` | **8 passed** |
+
+The voice tests use synthetic WebM-signature bytes and a mocked provider; these
+are HTTP and SDK contract checks, not audible clips. They cover size and duration
+limits, content types, unavailable/malformed provider responses, authentication,
+user-based quotas, real existing PII protection, no disk spooling or persistent
+storage, private audit payloads on a valid hash chain, and spoken requests using
+the same refusal and confirmation path as typed requests. No real audio was sent
+to a provider during verification. Voice audio, transcripts and generated tokens
+are not persisted. Audio goes inline through the existing Gemini client.
+
+The browser caps capture at 30 seconds and 2,000,000 bytes; the server bounds the
+upload and validates the declared duration without decoding actual WebM timing.
+The ten-per-minute quota is per authenticated tenant/user **per server process**.
+The microphone is hidden when the provider is unconfigured or the browser cannot
+record WebM/Opus. Permission policy allows this origin only.
+
+The test runtime used an explicit local SQLite URL. The two skips remain the
+legacy pre-Plan-3 test and the optional disposable PostgreSQL integration test.
+Local PostgreSQL checks were not rerun for this voice pass. A temporary SDK test
+environment was repaired outside the repository, retaining the locked Pydantic
+2.13.4 version; no dependency lock or contract snapshot was changed.
+
+Microphone capture, acoustic transcription quality, hosted authentication and
+production deployment are **not measured**. These results cover local code only.
+Sections 3–4 remain open; their additional evaluation tasks and demo script are
+not included in this pass.
 
 ## Assistant playbooks: Oct 10 local verification
 
@@ -38,7 +83,8 @@ existing Passport controls to select a recipient and expiry and issue the link.
 Reminder delivery is likewise not implemented by the playbook. No external action
 is performed by interpreting or building either playbook.
 
-Sections 2–4 of the handoff remain open. Interactive browser, hosted authentication,
+At the end of this playbook pass, sections 2–4 remained open; the voice pass above
+subsequently completed section 2. Interactive browser, hosted authentication,
 production deployment and real external delivery are **not measured** here.
 
 ## Automated checks

@@ -1796,3 +1796,5 @@ html{scroll-behavior:smooth;}
 .fb-playbook-steps p { margin: .3rem 0; }
 .fb-playbook-status { font-size: .75rem; color: var(--ink-soft); }
 .fb-playbook-steps .is-attention .fb-playbook-status { color: var(--accent); }
+.fb-voice-input { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; max-width: 280px; }
+.fb-voice-input [role="alert"] { color: var(--chart-attn); }

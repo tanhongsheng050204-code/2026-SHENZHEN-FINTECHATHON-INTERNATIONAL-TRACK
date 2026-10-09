@@ -5,6 +5,10 @@ are the endpoints someone could hammer to guess links or probe Passport ids. Eac
 client address gets `per_minute` requests per bucket per minute; more get 429 with
 Retry-After.
 
+Authenticated voice input uses the verified tenant/user identity rather than an
+address, so changing forwarded headers cannot reset its quota. Other callers keep
+the existing address-based behaviour.
+
 The count lives in this process. With several Cloud Run instances the effective
 limit is per instance, which still bounds guessing; a shared store (Redis or the
 database) would make it exact.
@@ -14,7 +18,7 @@ import threading
 import time
 from collections.abc import Callable
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 
 _lock = threading.Lock()
 _windows: dict[tuple[str, str], tuple[int, int]] = {}
@@ -27,10 +31,10 @@ def client_address(request: Request) -> str:
     return first or (request.client.host if request.client else "unknown")
 
 
-def limit(bucket: str, per_minute: int) -> Callable[[Request], None]:
-    def dependency(request: Request) -> None:
+def limit(bucket: str, per_minute: int, *, per_user: bool = False) -> Callable:
+    def check(identity: str) -> None:
         minute = int(time.time() // 60)
-        key = (bucket, client_address(request))
+        key = (bucket, identity)
         with _lock:
             window, count = _windows.get(key, (minute, 0))
             if window != minute:
@@ -46,6 +50,18 @@ def limit(bucket: str, per_minute: int) -> Callable[[Request], None]:
                 detail="rate_limited",
                 headers={"Retry-After": str(60 - int(time.time()) % 60)},
             )
+
+    if per_user:
+        from app.auth.dependencies import get_current_user
+        from app.auth.principal import AuthPrincipal
+
+        def user_dependency(principal: AuthPrincipal = Depends(get_current_user)) -> None:
+            check(f"user:{principal.tenant_id}:{principal.user_id}")
+
+        return user_dependency
+
+    def dependency(request: Request) -> None:
+        check(client_address(request))
 
     return dependency
 

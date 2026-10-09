@@ -31,6 +31,14 @@ class AssistantCommand(BaseModel):
     text: str = Field(min_length=1, max_length=500)
 
 
+class VoiceAvailability(BaseModel):
+    available: bool
+
+
+class VoiceTranscript(BaseModel):
+    text: str = Field(min_length=1, max_length=500)
+
+
 class AssistantItem(BaseModel):
     """A review-inbox item the person asked DuitDuit to decide."""
 

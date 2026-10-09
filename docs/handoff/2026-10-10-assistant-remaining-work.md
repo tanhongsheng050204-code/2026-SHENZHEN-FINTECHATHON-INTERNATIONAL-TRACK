@@ -51,8 +51,8 @@ books. Missing imports/invoices and bank reconciliation remain `not_measured`.
 Relevant implementation: `backend/app/services/playbooks.py`,
 `backend/tests/test_playbooks.py`, `frontend/src/components/AssistantReply.tsx`.
 Verification evidence is in `docs/submission/execution-evidence.md`. Interactive
-browser and hosted authentication testing are not measured in this pass. Sections
-2–4 remain open; deployment remains the separate human workflow below.
+browser and hosted authentication testing are not measured in this pass.
+Deployment remains the separate human workflow below.
 
 A playbook is a new `AssistantPlan.kind = "playbook"` with a `playbook` id. It runs several steps and shows the result in one card. Anything that goes outside the company is a review-inbox proposal, never sent directly.
 
@@ -79,6 +79,31 @@ A playbook is a new `AssistantPlan.kind = "playbook"` with a `playbook` id. It r
 Use the synthetic demo data: the shortfall is on day 23, with a likely balance of RM20,560.00 and a gap of RM29,440.00 (see eval task F01).
 
 ### 2. Voice (target Oct 13)
+
+**Implementation update (Oct 10):** section 2 is built locally. The old browser
+Web Speech path, including its automatic send on stop, has been removed. The
+microphone now records WebM/Opus in memory, stops within 30 seconds and refuses
+clips above 2,000,000 bytes. A protected transcript appears in the input box for
+the person to review; only pressing Send invokes the existing front door.
+Leaving the page stops microphone tracks, clears audio chunks and cancels an upload.
+
+`GET /assistant/voice` lets the UI hide the microphone when Gemini is unconfigured.
+`POST /assistant/transcribe` uses bounded in-memory multipart parsing, avoiding
+temporary-file spooling, and sends bytes inline through the existing Gemini client.
+The existing PII protection runs before returning text, without persisting voice
+tokens, transcript or audio. Audit payloads hold duration/outcome only. The rate
+limit is ten per minute per verified tenant/user, per server process. Forwarded
+IP headers cannot reset it. The browser enforces capture duration; the server
+validates the declared duration (it does not independently decode WebM timing).
+
+Permissions allow `microphone=(self)` only. The hardening checker rejects wildcards,
+other origins and duplicate microphone directives, including route overrides;
+eight permission-policy regression cases run in CI. Local backend tests exercise
+the real SDK request shape with a mocked provider and verify upload limits,
+protection, no disk spooling, audit privacy and the existing refusal/confirmation
+path. No real audio was sent to a provider during verification. Microphone capture,
+acoustic transcription quality and hosted authentication are **not measured**.
+Sections 3–4 remain open. See `docs/submission/execution-evidence.md` for actual counts.
 
 The existing browser Web Speech code in `frontend/src/screens/Agents.tsx` (the `SpeechRecognition*` interfaces near line 57) is replaced by:
 

@@ -3,6 +3,7 @@
 // Usage, from frontend/: node scripts/check-web-hardening.mjs  (after npm run build)
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { microphoneIsSelfOnly } from "./permissions-policy.mjs";
 
 const failures = [];
 const config = JSON.parse(readFileSync("vercel.json", "utf8"));
@@ -14,11 +15,18 @@ const required = {
   "strict-transport-security": ["max-age="],
   "x-content-type-options": ["nosniff"],
   "referrer-policy": ["strict-origin"],
-  "permissions-policy": ["camera=()"],
+  "permissions-policy": ["camera=()", "microphone=(self)"],
 };
 for (const [name, parts] of Object.entries(required)) {
   for (const part of parts) {
     if (!headers[name]?.includes(part)) failures.push(`vercel.json: ${name} must include ${part}`);
+  }
+}
+for (const rule of config.headers ?? []) {
+  for (const header of rule.headers ?? []) {
+    if (header.key.toLowerCase() === "permissions-policy" && !microphoneIsSelfOnly(header.value)) {
+      failures.push("vercel.json: microphone must allow self only, with no wildcard or other origin");
+    }
   }
 }
 if (/script-src[^;]*'unsafe-(inline|eval)'/.test(headers["content-security-policy"] ?? "")) {

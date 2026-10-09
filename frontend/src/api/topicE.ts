@@ -955,6 +955,21 @@ export async function interpretCommand(text: string): Promise<AssistantPlan> {
   return parse<AssistantPlan>(await authenticatedFetch("/assistant/interpret", json({ text })));
 }
 
+export async function voiceAvailable(): Promise<boolean> {
+  const result = await parse<{ available: boolean }>(await authenticatedFetch("/assistant/voice"));
+  return result.available;
+}
+
+export async function transcribeVoice(audio: Blob, duration: number, signal: AbortSignal): Promise<string> {
+  const body = new FormData();
+  body.append("audio", audio, "voice.webm");
+  body.append("duration_seconds", String(duration));
+  const result = await parse<{ text: string }>(await authenticatedFetch("/assistant/transcribe", {
+    method: "POST", body, signal,
+  }));
+  return result.text;
+}
+
 export interface BriefingLine {
   kind: "inbox" | "cash" | "sharing" | "guardrails" | "data";
   text: string;

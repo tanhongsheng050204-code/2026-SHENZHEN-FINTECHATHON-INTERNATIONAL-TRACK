@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
@@ -11,13 +11,39 @@ from app.contracts.assistant import (
     BriefingPreferenceRequest,
     BriefingSendResult,
     PlaybookResult,
+    VoiceAvailability,
+    VoiceTranscript,
 )
 from app.db import get_db
 from app.schemas import UserRole
 from app.security import rate_limit
-from app.services import assistant, briefing, briefing_push, playbooks
+from app.services import assistant, assistant_voice, briefing, briefing_push, playbooks
 
 router = APIRouter(tags=["assistant"])
+
+
+@router.get("/assistant/voice", response_model=VoiceAvailability)
+def voice_availability(
+    response: Response,
+    principal: AuthPrincipal = Depends(require_roles(*tuple(UserRole))),
+) -> VoiceAvailability:
+    response.headers["Cache-Control"] = "no-store"
+    return VoiceAvailability(available=assistant_voice.available())
+
+
+@router.post(
+    "/assistant/transcribe",
+    response_model=VoiceTranscript,
+    dependencies=[Depends(rate_limit.limit("assistant-voice", 10, per_user=True))],
+)
+async def transcribe_voice(
+    request: Request,
+    response: Response,
+    principal: AuthPrincipal = Depends(require_roles(*tuple(UserRole))),
+    db: Session = Depends(get_db),
+) -> VoiceTranscript:
+    response.headers["Cache-Control"] = "no-store"
+    return await assistant_voice.transcribe(request, db, principal)
 
 
 @router.post("/assistant/playbooks/{playbook_id}", response_model=PlaybookResult)

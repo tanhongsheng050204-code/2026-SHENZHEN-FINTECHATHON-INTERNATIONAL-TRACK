@@ -153,3 +153,5 @@ jobs:
 
       - name: Web hardening (security headers, no third-party loads)
         run: node scripts/check-web-hardening.mjs
+      - name: Microphone permission policy regressions
+        run: node --test scripts/permissions-policy.test.mjs
