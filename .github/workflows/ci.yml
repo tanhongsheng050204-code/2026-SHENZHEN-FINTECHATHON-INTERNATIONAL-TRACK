@@ -38,7 +38,7 @@ jobs:
       - name: Exercise import, tenant, payroll and settings database policies
         env:
           FINBRAIN_REVIEW_POSTGRES_URL: postgresql+psycopg://postgres:local-review-only-finbrain-pg@127.0.0.1:5432/finbrain_review
-        run: uv run pytest tests/test_plan23_postgres.py -q
+        run: uv run pytest tests/test_plan23_postgres.py tests/test_passports_postgres.py tests/test_rate_limit_shared.py -q
       - name: Validate the deployment schema and database privileges
         env:
           DATABASE_URL: postgresql+psycopg://postgres:local-review-only-finbrain-pg@127.0.0.1:5432/finbrain_review

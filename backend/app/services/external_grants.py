@@ -24,6 +24,7 @@ from sqlalchemy import select
 from app.auth.principal import AuthPrincipal
 from app.config import get_settings
 from app.contracts.passports import ExternalGrant, GrantRequest
+from app.db import set_worker_context
 from app.models import WorkflowAuditEntry
 from app.services.workflow_audit import write_workflow_event
 
@@ -170,6 +171,9 @@ def open_link(db, kind: GrantKind, token: str) -> OpenGrant:
         raise GrantClosed("grant_revoked")
     if grant.expires_at <= _now():
         raise GrantClosed("grant_expired")
+    # From here on the public request runs as the restricted worker role, scoped by
+    # row-level security to the one tenant this link belongs to.
+    set_worker_context(db, actor_ref="public-share-link", tenant_id=tenant_id)
     write_workflow_event(
         db,
         event_type="external_grant_viewed",
