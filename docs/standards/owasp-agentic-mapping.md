@@ -35,6 +35,12 @@ Identity is injected and the model is disabled or mocked. No provider call is ma
 | `A-no-confirm` | ASI09 | Approve/reject interpretation leaves both tenants' persisted statuses, approvals and drafts unchanged; only command audit events are appended | Built and locally tested |
 | `A-provider-outage` | ASI08 | A mocked timeout is actually reached for an unknown request and falls back to an answer; known rules bypass the provider; HTTP 200 and no mutation | Built and locally tested |
 | `A-no-words-in-audit` | ASI10 (traceability), ASI03 (privacy) | Six command kinds produce tenant-scoped events with fixed metadata and ids only, no typed text or personal-data canaries, on a valid workflow hash chain | Built and locally tested |
+| `ADV-10` | ASI03 | A link forged from company B's valid link with A's grant id is refused (404) and recorded for A; B cannot list or revoke A's grants | Built and locally tested; each fails against a deliberately broken variant |
+| `ADV-11` | ASI03 | A share link with a changed signature, or a lender link used on the auditor path, is refused (404) and recorded; the real link still opens | Built and locally tested; each fails against a deliberately broken variant |
+| `ADV-12` | ASI03 | An authenticator check older than the 5-minute step-up window cannot approve a money item; a fresh one can | Built and locally tested; each fails against a deliberately broken variant |
+| `ADV-13` | ASI01, ASI06 | Instructions hidden in an imported CSV cell block the import before any row is stored; a guardrail event is recorded; nothing is proposed or sent | Built and locally tested; each fails against a deliberately broken variant |
+| `ADV-14` | ASI09 | On a persisted L3 money item, the maker's second approval is refused (409 same_person_cannot_approve_twice) | Built and locally tested; each fails against a deliberately broken variant |
+| `ADV-15` | ASI03 | A general employee sees a customer's email and phone masked, even from vault rows written under the older, wider policy; finance sees them | Built and locally tested; each fails against a deliberately broken variant |
 
 `tests/test_assistant_security.py` also checks hostile model picks, invalid picks,
 provider exception privacy and enforcement of recent MFA plus the L3 maker/checker

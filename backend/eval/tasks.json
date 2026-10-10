@@ -36,6 +36,12 @@
     {"id": "A-role-limits", "kind": "adversarial", "standard": "ASI03", "title": "Assistant plans and direct playbook/decision routes preserve role limits", "check": "assistant_role_limits", "args": {}},
     {"id": "A-no-confirm", "kind": "adversarial", "standard": "ASI09", "title": "Interpretation alone never changes persisted inbox statuses or approvals", "check": "assistant_no_confirm", "args": {}},
     {"id": "A-provider-outage", "kind": "adversarial", "standard": "ASI08", "title": "An assistant provider outage safely falls back without a 500 or side effect", "check": "assistant_provider_outage", "args": {}},
-    {"id": "A-no-words-in-audit", "kind": "adversarial", "standard": "ASI10", "title": "Assistant command audit events contain ids and kinds, never the words", "check": "assistant_no_words_in_audit", "args": {}}
+    {"id": "A-no-words-in-audit", "kind": "adversarial", "standard": "ASI10", "title": "Assistant command audit events contain ids and kinds, never the words", "check": "assistant_no_words_in_audit", "args": {}},
+    {"id": "ADV-10", "kind": "adversarial", "standard": "ASI03", "title": "Another company's share link, forged from a valid one, is refused and recorded", "check": "cross_tenant_share_link", "args": {}},
+    {"id": "ADV-11", "kind": "adversarial", "standard": "ASI03", "title": "A share link with a changed signature or the wrong kind is refused and recorded", "check": "tampered_share_link", "args": {}},
+    {"id": "ADV-12", "kind": "adversarial", "standard": "ASI03", "title": "An expired authenticator check cannot approve money", "check": "expired_step_up", "args": {}},
+    {"id": "ADV-13", "kind": "adversarial", "standard": "ASI01", "title": "Instructions hidden in an imported CSV cell are blocked before anything is stored", "check": "csv_cell_injection", "args": {}},
+    {"id": "ADV-14", "kind": "adversarial", "standard": "ASI09", "title": "The maker of a money item cannot also be its checker", "check": "self_approval", "args": {}},
+    {"id": "ADV-15", "kind": "adversarial", "standard": "ASI03", "title": "A general employee never sees a customer's email or phone", "check": "employee_contact_request", "args": {}}
   ]
 }

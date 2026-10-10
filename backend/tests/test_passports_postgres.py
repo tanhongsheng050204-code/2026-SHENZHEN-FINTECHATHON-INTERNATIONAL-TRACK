@@ -98,6 +98,16 @@ def test_passport_sharing_is_tenant_scoped_under_rls():
         tampered = token[:-1] + ("0" if token[-1] != "0" else "1")
         with pytest.raises(LookupError):
             external_grants.open_link(public, "lender", tampered)
+    with engine.connect() as owner_view:
+        refused = owner_view.execute(
+            text(
+                "select count(*) from security_guardrail_events "
+                "where tenant_id = :tid and title = 'Share link refused'"
+            ),
+            {"tid": str(owner_a.tenant_id)},
+        ).scalar()
+    # The tampering is recorded for A, by the worker role scoped to A.
+    assert refused == 1
 
     with Session(engine, expire_on_commit=False) as db:
         _as(db, owner_a)

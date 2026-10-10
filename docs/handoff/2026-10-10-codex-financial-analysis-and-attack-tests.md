@@ -106,7 +106,12 @@ In `assistant.py`, add one `SCREENS` entry, `"analysis": ("Financial analysis", 
 - a paid sale does not change the forecast;
 - the finance summary reads the sales ledger.
 
-## Task 2: Attack tests (`codex/attack-tests`)
+## Task 2: Attack tests — done by Claude on Oct 10 (skip this task)
+
+ADV-10 to ADV-15 are on `main` (evaluation 42/42). Codex: do Task 1 only; do not edit
+`backend/eval/` except to add financial-analysis tasks if you want them.
+
+### Original brief (kept for reference)
 
 Add evaluation tasks to `backend/eval/tasks.json` with checkers in `backend/eval/checks.py`. Each task must fail first against a deliberately broken variant of the code (describe that variant in the checker's docstring), then pass on the real code. Everything runs offline.
 

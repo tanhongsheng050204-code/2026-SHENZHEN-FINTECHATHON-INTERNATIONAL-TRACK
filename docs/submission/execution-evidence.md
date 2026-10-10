@@ -5,6 +5,21 @@ figures below describe the earlier contract pass. The assistant evidence is belo
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
 
+## Attack tests ADV-10 to ADV-15: Oct 10 local verification
+
+Six adversarial tasks were added to the offline evaluation. Each was confirmed to fail
+against a deliberately broken variant (step-up accepting any past MFA, CSV risk
+detection removed, the same-person rule removed, contact policy widened, refused links
+not recorded) before passing on the real code. ADV-10 and ADV-11 also added a product
+change: a link naming a real grant with a wrong signature or path is now recorded as a
+guardrail event for that company, by the worker role scoped to it.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Offline evaluation | `backend/`: `python -m eval.run <output dir>` | **42 passed, 0 failed, 0 skipped** |
+| Full backend suite (SQLite) | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **596 passed, 5 skipped** |
+| PostgreSQL RLS tests | the three PostgreSQL test files against a disposable pgvector/pg17 container | **4 passed**, including the refused-link record under RLS |
+
 ## Alerts, eligibility steps and security checks: Oct 10 local verification
 
 Alert rules now fire from imported records (`tests/test_alerts.py`); financing

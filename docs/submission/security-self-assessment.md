@@ -97,6 +97,12 @@ providers and disposable SQLite databases containing persisted synthetic proposa
 | `A-no-confirm` | Interpretation alone leaves persisted statuses, approvals and drafts unchanged in both tenants and appends only command audit events |
 | `A-provider-outage` | An exercised model timeout falls back to an answer; recognized rules bypass the provider; no 500 or proposal change |
 | `A-no-words-in-audit` | All six command kinds emit fixed audit metadata and ids only; typed words and private canaries are absent; tenant workflow chain verifies |
+| `ADV-10` | A link forged from company B's valid link with A's grant id is refused (404) and recorded for A; B cannot list or revoke A's grants |
+| `ADV-11` | A share link with a changed signature, or a lender link used on the auditor path, is refused (404) and recorded; the real link still opens |
+| `ADV-12` | An authenticator check older than the 5-minute step-up window cannot approve a money item; a fresh one can |
+| `ADV-13` | Instructions hidden in an imported CSV cell block the import before any row is stored; a guardrail event is recorded; nothing is proposed or sent |
+| `ADV-14` | On a persisted L3 money item, the maker's second approval is refused (409 same_person_cannot_approve_twice) |
+| `ADV-15` | A general employee sees a customer's email and phone masked, even from vault rows written under the older, wider policy; finance sees them |
 
 Additional tests check hostile/invalid model picks, private provider exceptions,
 recent-MFA enforcement and distinct L3 maker/checker approvals. Injected faults

@@ -26,6 +26,7 @@ from app.config import get_settings
 from app.contracts.passports import ExternalGrant, GrantRequest
 from app.db import set_worker_context
 from app.models import WorkflowAuditEntry
+from app.security.guardrails import record_event
 from app.services.workflow_audit import write_workflow_event
 
 GrantKind = Literal["lender", "auditor"]
@@ -166,6 +167,18 @@ def open_link(db, kind: GrantKind, token: str) -> OpenGrant:
         raise LookupError(token)
     grant, tenant_id = found
     if not hmac.compare_digest(mac, _mac(grant_id, tenant_id)) or grant.kind != kind:
+        # A real grant id with a wrong signature or path is tampering or guessing:
+        # record it for that company, scoped to it, then refuse like any unknown link.
+        set_worker_context(db, actor_ref="public-share-link", tenant_id=tenant_id)
+        record_event(
+            db,
+            tenant_id,
+            "ASI03",
+            "Share link refused",
+            "A link naming one of this company's grants had a wrong signature or path.",
+            "blocked",
+        )
+        db.commit()
         raise LookupError(token)
     if grant.status == "revoked":
         raise GrantClosed("grant_revoked")
