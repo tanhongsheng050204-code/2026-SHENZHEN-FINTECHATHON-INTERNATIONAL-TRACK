@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { AgentRunPanel } from "../components/AgentRunPanel";
 import { AssistantReply } from "../components/AssistantReply";
 import { BriefingCard } from "../components/BriefingCard";
 import { VoiceInput } from "../components/VoiceInput";
@@ -64,11 +63,18 @@ const ICON_APPROVALS = <path d="M9 12l2 2 4-4M12 3l8 4v5c0 4.5-3.2 8.5-8 10-4.8-
 const ICON_SEARCH = <><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></>;
 const ICON_INVOICE = <path d="M6 2h9l3 3v17H6z M9 8h6M9 12h6M9 16h4" />;
 
-const SUGGESTIONS = [
-  { text: "Why are payment approvals being delayed, and what should we do next?", icon: ICON_APPROVALS },
-  { text: "Summarize all approval-delay records and cite every source.", icon: ICON_APPROVALS },
-  { text: "Which records have no assigned owner?", icon: ICON_SEARCH },
-  { text: "How many high-priority approval delays came from email this week?", icon: ICON_APPROVALS },
+const ICON_CASH = <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />;
+const ICON_SUN = <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>;
+
+// One sentence each: the briefing, the four playbooks, an agent goal and an
+// e-invoicing question. Playbooks and goals only for the roles that may run them.
+const SUGGESTIONS: { text: string; icon: React.ReactNode; work?: boolean }[] = [
+  { text: "What needs me today?", icon: ICON_SUN },
+  { text: "Prepare me for the bank meeting", icon: ICON_CASH, work: true },
+  { text: "Chase the late payers", icon: ICON_APPROVALS, work: true },
+  { text: "Can I pay everyone this month?", icon: ICON_CASH, work: true },
+  { text: "Close the month", icon: ICON_APPROVALS, work: true },
+  { text: "Which loans can we apply for?", icon: ICON_SEARCH, work: true },
   { text: "Which invoices need fixes before MyInvois submission?", icon: ICON_INVOICE },
 ];
 
@@ -345,7 +351,6 @@ export default function Agents() {
               <p>{t("agents.desc")}</p>
             </header>
             <section className="fb-cash-card fb-run-panel is-compact" aria-label="Your briefing"><BriefingCard /></section>
-            {canRunAgents && <AgentRunPanel compact />}
           </div>
         )}
 
@@ -444,7 +449,7 @@ export default function Agents() {
           {!hasConversation && (
             <div className="fb-suggest-row">
               <span className="fb-eyebrow fb-suggest-label">Try asking</span>
-              {SUGGESTIONS.map((s) => (
+              {SUGGESTIONS.filter((s) => !s.work || canRunAgents).map((s) => (
                 <button key={s.text} className="fb-suggest-chip" type="button" title={s.text} onClick={() => handleSuggestion(s.text)}>
                   <span className="fb-suggest-chip-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>

@@ -53,7 +53,18 @@ export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNa
   );
 }
 
-const STEP_STATUS = { done: "Done", attention: "Needs attention", not_measured: "Not measured" };
+const STEP_STATUS = { done: "Done", attention: "Needs you", not_measured: "Not measured" };
+// The step whose answer is the point of the playbook, shown first as its headline.
+const HEADLINE_STEP: Partial<Record<PlaybookId, string>> = {
+  bank_meeting: "Cash forecast",
+  chase_late_payers: "Receivables",
+  pay_everyone: "Can we pay?",
+};
+const SCREEN_LABEL: Record<string, string> = {
+  cashflow: "Open Cash & finance",
+  financing: "Open Financing & Passport",
+  inbox: "Open review inbox",
+};
 
 /** A playbook may prepare inbox proposals; it never decides or sends them. */
 export function PlaybookCard({ id, onNavigate }: { id: PlaybookId; onNavigate?: () => void }) {
@@ -80,21 +91,31 @@ export function PlaybookCard({ id, onNavigate }: { id: PlaybookId; onNavigate?: 
   if (error) return <div className="fb-inbox-error" role="alert">{error} Open the review inbox to check whether any drafts were prepared before the error.</div>;
   if (!result) return <p className="fb-inbox-muted" role="status">Preparing your playbook…</p>;
 
+  const headline = result.steps.find((step) => step.label === HEADLINE_STEP[result.playbook]);
+  const count = (status: string) => result.steps.filter((step) => step.status === status).length;
+  const drafts = result.inbox_item_ids.length;
+  const showNext = result.next_screen && !(result.next_screen === "inbox" && drafts > 0);
+
   return (
     <div className="fb-assistant fb-playbook" role="region" aria-label={result.title}>
-      <p><strong>{result.title}</strong></p>
+      <p className="fb-playbook-title"><strong>{result.title}</strong></p>
+      <p className={"fb-playbook-headline is-" + (headline?.status ?? (count("attention") ? "attention" : "done"))}>
+        {headline
+          ? headline.text
+          : `${count("done")} of ${result.steps.length} checks done · ${count("attention")} need you · ${count("not_measured")} not measured`}
+      </p>
       <p className="fb-inbox-muted">{result.synthetic && <strong>Synthetic demo data · </strong>}{result.data_note}</p>
       <ol className="fb-playbook-steps">
-        {result.steps.map((step) => (
+        {result.steps.filter((step) => step !== headline).map((step) => (
           <li key={step.label} className={`is-${step.status}`}>
-            <div><strong>{step.label}</strong><span className="fb-playbook-status">{STEP_STATUS[step.status]}</span></div>
+            <div><strong>{step.label}</strong><span className={`fb-playbook-status is-${step.status}`}>{STEP_STATUS[step.status]}</span></div>
             <p>{step.text}</p>
           </li>
         ))}
       </ol>
       <div className="fb-assistant-actions">
-        {result.inbox_item_ids.length > 0 && <button type="button" className="fb-cash-more" onClick={() => open("inbox")}>Open review inbox →</button>}
-        {result.next_screen && !(result.next_screen === "inbox" && result.inbox_item_ids.length > 0) && <button type="button" className="fb-cash-more" onClick={() => open(result.next_screen!)}>Open →</button>}
+        {drafts > 0 && <button type="button" className="fb-btn fb-btn-solid" onClick={() => open("inbox")}>Review {drafts} draft{drafts === 1 ? "" : "s"} in the inbox →</button>}
+        {showNext && <button type="button" className="fb-btn fb-btn-outline" onClick={() => open(result.next_screen!)}>{SCREEN_LABEL[result.next_screen!] ?? "Open"} →</button>}
       </div>
     </div>
   );

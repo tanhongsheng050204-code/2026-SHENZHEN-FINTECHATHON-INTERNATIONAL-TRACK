@@ -367,7 +367,7 @@ def test_month_end_uses_tenant_import_age_invoice_state_and_open_items(db, age, 
     assert steps["Recent import"]["status"] == status
     assert "1 records; 1 pending" in steps["e-Invoices"]["text"]
     assert steps["e-Invoices"]["status"] == "attention"
-    assert "1 persisted items" in steps["Open inbox items"]["text"]
+    assert "1 item still open" in steps["Open inbox items"]["text"]
 
 
 def test_kill_switch_blocks_playbook_tools_and_creates_no_proposals(db):

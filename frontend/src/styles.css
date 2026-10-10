@@ -1794,7 +1794,11 @@ html{scroll-behavior:smooth;}
 .fb-playbook-steps li { margin: .8rem 0; padding-left: .25rem; }
 .fb-playbook-steps li > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
 .fb-playbook-steps p { margin: .3rem 0; }
-.fb-playbook-status { font-size: .75rem; color: var(--ink-soft); }
-.fb-playbook-steps .is-attention .fb-playbook-status { color: var(--accent); }
+.fb-playbook-title { margin-bottom: .2rem; }
+.fb-playbook-headline { margin: .35rem 0 .5rem; padding: .7rem .9rem; border-radius: 10px; border-left: 4px solid var(--chart-attn, #d4a017); background: color-mix(in srgb, var(--chart-attn, #d4a017) 10%, transparent); font-weight: 600; line-height: 1.45; }
+.fb-playbook-headline.is-done { border-left-color: var(--chart-good); background: color-mix(in srgb, var(--chart-good) 10%, transparent); }
+.fb-playbook-status { display: inline-flex; padding: .08rem .55rem; border-radius: 99px; font-size: .7rem; font-weight: 700; background: color-mix(in srgb, var(--ink-soft) 14%, transparent); color: var(--ink-soft); }
+.fb-playbook-status.is-done { background: color-mix(in srgb, var(--chart-good) 14%, transparent); color: var(--chart-good); }
+.fb-playbook-status.is-attention { background: color-mix(in srgb, var(--chart-attn, #d4a017) 18%, transparent); color: color-mix(in srgb, var(--chart-attn, #d4a017) 70%, var(--ink, #111)); }
 .fb-voice-input { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; max-width: 280px; }
 .fb-voice-input [role="alert"] { color: var(--chart-attn); }

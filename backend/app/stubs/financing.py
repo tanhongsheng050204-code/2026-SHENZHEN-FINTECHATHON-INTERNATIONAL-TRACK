@@ -517,7 +517,10 @@ def _band_factor(key: str, values: dict[str, Decimal] | None = None) -> ScoreFac
         )
     points = factor_points(key, value)
     bound = next(b for b, p in bands if p == points)
-    if direction == "higher":
+    if points == 0 and direction == "higher":
+        floor = min(b for b, p in bands if p > 0)
+        reason = f"Below {_format(floor, unit)} earns no points."
+    elif direction == "higher":
         reason = f"At least {_format(bound, unit)} earns {points} of {max_points} points."
     else:
         reason = f"At most {_format(bound, unit)} earns {points} of {max_points} points."

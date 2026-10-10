@@ -341,7 +341,8 @@ def _pay_everyone(db, principal):
                 _step(
                     "Collect earlier",
                     "attention",
-                    f"Illustrative scenario: collect {len(early)} later receivables "
+                    f"Illustrative scenario: collect {len(early)} later "
+                    f"receivable{'s' if len(early) != 1 else ''} "
                     f"before day {shortfall.day}. Gap on that day becomes "
                     f"{_money(remaining)}. No receipt date was changed.",
                 )
@@ -437,7 +438,7 @@ def _month_end(db, principal):
         _step(
             "Open inbox items",
             "attention" if opened else "done",
-            f"{opened} persisted items still open within your role's view.",
+            f"{opened} item{'s' if opened != 1 else ''} still open in your review inbox.",
         ),
         _step("Bank reconciliation", "not_measured", "Bank reconciliation: not measured"),
     ]
@@ -481,7 +482,7 @@ def run(db, principal: AuthPrincipal, playbook_id: str) -> PlaybookResult:
         "Cash forecast and financing profile use synthetic demo data. "
         "Record checks use only this tenant's records."
         if mode == DataMode.STUB
-        else "Synthetic demo tenant records."
+        else "Computed from this company's records."
         if synthetic
         else "Computed from this tenant's records."
     )
