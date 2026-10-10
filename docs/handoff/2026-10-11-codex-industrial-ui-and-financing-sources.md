@@ -14,8 +14,8 @@ Claude finished M1–M3 overnight and is now working through C1–C5 **in order*
 
 | Task | Status |
 |---|---|
-| C1 Mobile | Claude: in progress (Oct 11, 02:30) |
-| C2 Accessibility | open |
+| C1 Mobile | Claude: done (no sideways scroll on 18 signed-in screens at 375px; 44px targets) |
+| C2 Accessibility | Claude: in progress |
 | C3 Screen states | open |
 | C4 Sourced financing | open |
 | C5 中文 strings | open |

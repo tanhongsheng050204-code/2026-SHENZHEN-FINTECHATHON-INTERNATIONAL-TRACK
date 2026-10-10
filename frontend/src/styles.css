@@ -2106,3 +2106,32 @@ html{scroll-behavior:smooth;}
   .fb-section-tabs{flex-wrap:nowrap;overflow-x:auto;border-radius:14px;width:100%;scrollbar-width:none}
   .fb-section-tabs > *{flex:none;white-space:nowrap}
 }
+
+/* ── Phone layout for the signed-in app (375px wide and up) ─────────────────── */
+@media (max-width:640px){
+  .fb-topbar{gap:.4rem;padding:.55rem .75rem .55rem 68px;min-height:60px;}
+  .fb-sidebar-toggle{top:8px;left:12px;width:44px;height:44px;}
+  .fb-topbar-crumb{flex:1 1 auto;min-width:0;overflow:hidden;}
+  .fb-topbar-home-link,.fb-topbar-sep{display:none;}
+  .fb-topbar-current{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;}
+  .fb-topbar-search{flex:0 0 auto;width:44px;height:44px;padding:0;margin:0;justify-content:center;}
+  .fb-topbar-actions{gap:.35rem;}
+  .fb-topbar-icon-btn{width:44px;height:44px;}
+  .fb-topbar-ask{width:44px;height:44px;padding:0;justify-content:center;}
+  .fb-topbar-profile-trigger{padding:6px;gap:0;}
+  .fb-topbar-profile-text,.fb-topbar-chevron{display:none;}
+  .fb-topbar-avatar{width:30px;height:30px;}
+  /* Wide tables scroll inside themselves instead of pushing the page sideways. */
+  .fb-cash-table,.fb-team-table{display:block;position:relative;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .fb-cash-field{min-width:0;flex-basis:100%;}
+  .fb-cash-field select,.fb-cash-field input{width:100%;max-width:100%;min-width:0;}
+  .fb-audit-filters,.fb-section-tabs{overflow-x:auto;scrollbar-width:none;}
+  /* Thumb-sized targets: 44px tall. */
+  .fb-audit-filters button,.fb-home-ask-chip,.fb-count-chip,.fb-role-btn,.fb-suggest-chip,
+  .fb-settings-lang-pill,.fb-pos-tool,.fb-btn,.fb-send-btn2,.fb-icon-btn{min-height:44px;}
+  .fb-icon-btn,.fb-send-btn2{min-width:44px;}
+  .fb-link-toggle,.fb-info-tip-trigger{min-height:44px;display:inline-flex;align-items:center;}
+  .fb-root input[type="text"],.fb-root input[type="search"],.fb-root input[type="email"],.fb-root select{min-height:44px;font-size:16px;}
+  .fb-root input[type="checkbox"],.fb-root input[type="radio"]{width:22px;height:22px;}
+  .fb-sidebar-close{width:44px;height:44px;}
+}
