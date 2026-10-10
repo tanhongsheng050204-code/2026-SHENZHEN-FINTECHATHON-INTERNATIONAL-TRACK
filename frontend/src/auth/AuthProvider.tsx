@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { User } from "@supabase/supabase-js";
 import type { Role } from "../api/client";
 import { authConfigured, supabase } from "./supabase";
+import { DemoAuthenticator } from "../components/DemoAuthenticator";
 import {
   authMode,
   fetchMe,
@@ -239,7 +240,12 @@ function BackendAuthProvider({ children }: { children: ReactNode }) {
     () => ({ loading, user: null, identity, authError, signIn, signOut, session, applySession }),
     [applySession, authError, identity, loading, session, signIn, signOut],
   );
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {identity && <DemoAuthenticator key={identity.user_id} />}
+    </AuthContext.Provider>
+  );
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

@@ -99,6 +99,12 @@ def dispatch_one(db: Session) -> OutreachAction | None:
         return None
     row, message_id = claimed
     settings = get_settings()
+    if getattr(settings, "demo_sign_in_enabled", False) and row.tenant_id == getattr(
+        settings, "demo_tenant_id", None
+    ):
+        # The shared demo company approves real proposals, but no email leaves the system.
+        _set_result(db, row, "cancelled", "demo_delivery_simulated")
+        return row
     endpoint = db.get(CustomerEndpoint, row.customer_endpoint_id)
     customer = db.get(Customer, row.customer_id)
     entry = db.get(TokenVaultEntry, endpoint.endpoint_token) if endpoint else None

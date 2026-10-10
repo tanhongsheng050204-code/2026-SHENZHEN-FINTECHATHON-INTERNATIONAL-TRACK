@@ -109,6 +109,12 @@ class Settings(BaseSettings):
     auth_session_hours: int = 24
     auth_step_up_seconds: int = 300
     auth_allow_bearer: bool = False
+    # One-click "Try the demo company" (app.auth.demo). Off unless all three secrets are set.
+    demo_sign_in_enabled: bool = False
+    demo_email: str = ""
+    demo_password: str = ""
+    demo_totp_secret: str = ""
+    demo_tenant_id: str = "858f0c1c-42fa-52a2-91b3-80a19d816356"
     agent_daily_tool_limit: int = 100
     agent_daily_cost_limit: float = Field(default=10.0, gt=0, allow_inf_nan=False)
     einvoice_document_bucket: str = "einvoice-documents"

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.auth import demo
 from app.auth.dependencies import require_roles, require_step_up
 from app.auth.principal import AuthPrincipal
 from app.contracts.common import DataMode
@@ -34,6 +35,7 @@ def invite_member(
     principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
     db: Session = Depends(get_db),
 ) -> MemberResponse:
+    demo.forbid_in_demo(principal)
     return MemberResponse(data_mode=DataMode.LIVE, member=identity.invite(db, principal, request))
 
 
@@ -44,6 +46,7 @@ def update_member(
     principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
     db: Session = Depends(get_db),
 ) -> MemberResponse:
+    demo.forbid_in_demo(principal)
     return MemberResponse(
         data_mode=DataMode.LIVE, member=identity.update_member(db, principal, user_id, request)
     )
@@ -55,5 +58,6 @@ def sign_out_member(
     principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
     db: Session = Depends(get_db),
 ) -> SignOutResponse:
+    demo.forbid_in_demo(principal)
     revoked = identity.sign_out_member(db, principal, user_id)
     return SignOutResponse(data_mode=DataMode.LIVE, user_id=user_id, sessions_revoked=revoked)

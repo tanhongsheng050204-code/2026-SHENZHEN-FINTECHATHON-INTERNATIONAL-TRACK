@@ -1,13 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
-import { authMode } from "../api/session";
+import { authMode, demoAvailable, demoSignIn, sessionMessage } from "../api/session";
 import { AuthFlow, type AuthFlowMode } from "../components/AuthFlow";
 import { AuthStory } from "../components/AuthStory";
 import { useAppState } from "../lib/appState";
 
 export default function Login() {
   const { show } = useAppState();
-  const { authError, signIn } = useAuth();
+  const { authError, signIn, applySession } = useAuth();
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoBusy, setDemoBusy] = useState(false);
+  const [demoError, setDemoError] = useState("");
+
+  useEffect(() => {
+    if (authMode !== "backend") return;
+    let active = true;
+    void demoAvailable().then((open) => active && setDemoOpen(open));
+    return () => { active = false; };
+  }, []);
+
+  const openDemo = async () => {
+    setDemoError("");
+    setDemoBusy(true);
+    try {
+      await applySession(await demoSignIn());
+      show("home");
+    } catch (cause) {
+      const code = cause instanceof Error ? cause.message : "";
+      setDemoError(sessionMessage(code, "The demo company didn't open. Wait a few seconds and try again."));
+    } finally {
+      setDemoBusy(false);
+    }
+  };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -43,7 +67,35 @@ export default function Login() {
         />
         <div className="fb-mkt-auth-form-wrap">
           {authMode === "backend" ? (
-            <AuthFlow mode={flowMode} onModeChange={setFlowMode} />
+            <div style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+              {demoOpen && flowMode === "signin" && (
+                <section
+                  aria-labelledby="dd-demo-title"
+                  style={{
+                    display: "flex", flexDirection: "column", gap: ".75rem", padding: "1.25rem 1.25rem 1rem",
+                    border: "1px solid var(--a-line)", borderRadius: 16, background: "var(--a-surface)",
+                  }}
+                >
+                  <h2 id="dd-demo-title" style={{ fontSize: "1.2rem", margin: 0 }}>Judging DuitDuit? Open the demo company</h2>
+                  <p style={{ margin: 0, color: "var(--a-ink-soft)", fontSize: ".92rem" }}>
+                    A synthetic Malaysian importer, signed in as its owner. No sign-up. Approvals work,
+                    and anything that would leave the company is recorded, never sent.
+                  </p>
+                  <button
+                    className="fb-mkt-btn is-accent is-lg"
+                    style={{ width: "100%", justifyContent: "center" }}
+                    type="button"
+                    onClick={openDemo}
+                    disabled={demoBusy}
+                  >
+                    {demoBusy && <span className="fb-mkt-btn-spinner" aria-hidden="true" />}
+                    {demoBusy ? "Opening the demo company…" : "Open the demo company"}
+                  </button>
+                  {demoError && <div className="fb-mkt-callout" role="alert">{demoError}</div>}
+                </section>
+              )}
+              <AuthFlow mode={flowMode} onModeChange={setFlowMode} />
+            </div>
           ) : (
           <form className="fb-mkt-auth-form" onSubmit={submit}>
             <h2>Sign in</h2>

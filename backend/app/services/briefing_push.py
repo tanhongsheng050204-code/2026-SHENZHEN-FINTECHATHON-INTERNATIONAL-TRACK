@@ -18,6 +18,7 @@ from uuid import UUID
 import httpx
 from sqlalchemy import select
 
+from app.auth import demo
 from app.auth.principal import AuthPrincipal
 from app.config import get_settings
 from app.models import AuthUserRole, WorkflowAuditEntry
@@ -156,13 +157,20 @@ def _deliver(db, principal: AuthPrincipal, contacts: dict, day: dt.date, *, forc
         key = f"{principal.user_id}:{day.isoformat()}:{channel}"
         if not force and _already(db, tenant_id, key):
             continue
+        # The shared demo company records the delivery but never sends it.
+        simulated = demo.is_demo_tenant(tenant_id)
         try:
-            if channel == "email":
+            if simulated:
+                pass
+            elif channel == "email":
                 _send_email(address, "Your DuitDuit morning briefing", body)
             else:
                 _send_telegram(address, body)
         except Exception:
             continue
+        payload = {"channel": channel, "day": day.isoformat(), "manual": force}
+        if simulated:
+            payload["simulated"] = True
         write_workflow_event(
             db,
             event_type=_PUSHED,
@@ -170,7 +178,7 @@ def _deliver(db, principal: AuthPrincipal, contacts: dict, day: dt.date, *, forc
             actor_ref="briefing-push",
             resource_type="briefing_push",
             resource_id=key + (":manual" if force else ""),
-            event_payload={"channel": channel, "day": day.isoformat(), "manual": force},
+            event_payload=payload,
             tenant_id=tenant_id,
         )
         db.commit()

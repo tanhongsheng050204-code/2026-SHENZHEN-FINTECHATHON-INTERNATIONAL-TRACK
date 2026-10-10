@@ -201,9 +201,11 @@ def _already(db, tenant_id: str, key: str) -> bool:
 
 def _deliver(db, tenant_id: str, fired: Fired) -> int:
     """Email or Telegram, ranges only, to opted-in people in the named positions."""
+    from app.auth import demo
     from app.services import briefing_push
 
-    if fired.channel == "in_app":
+    # The shared demo company keeps its alerts in the app; nothing leaves the system.
+    if fired.channel == "in_app" or demo.is_demo_tenant(tenant_id):
         return 0
     sent = 0
     preferences = briefing_push._preferences(db, tenant_id)

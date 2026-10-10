@@ -57,6 +57,10 @@ const MESSAGES: Record<string, string> = {
   session_expired: "Your session has ended. Please sign in again.",
   session_idle_timeout: "You were signed out after a period of inactivity.",
   session_revoked: "You were signed out. Please sign in again.",
+  demo_not_available: "The demo company is not open on this server.",
+  demo_not_provisioned: "The demo company is not set up on this server yet.",
+  demo_account_locked: "The shared demo account can't change this. Every judge uses the same account.",
+  demo_company_read_only: "Team changes are closed in the shared demo company.",
 };
 
 /** A sign-in or session error code in words a person can act on. */
@@ -119,6 +123,24 @@ export const challengeTotp = async (factorId: string) =>
   (await call<{ challenge_id: string }>(`/auth/mfa/${encodeURIComponent(factorId)}/challenge`, "POST")).challenge_id;
 export const verifyTotp = (factorId: string, challengeId: string, code: string) =>
   call<SessionResponse>("/auth/mfa/verify", "POST", { factor_id: factorId, challenge_id: challengeId, code });
+// The shared demo company (backend/app/auth/demo.py): the server runs the real
+// password and authenticator steps with secrets only it holds.
+export async function demoAvailable(): Promise<boolean> {
+  try {
+    return (await call<{ available: boolean }>("/auth/demo/status", "GET")).available;
+  } catch {
+    return false;
+  }
+}
+export const demoSignIn = () => call<SessionResponse>("/auth/demo", "POST");
+/** The demo account's current authenticator code; null for every other account. */
+export async function fetchDemoCode(): Promise<{ code: string; seconds_left: number } | null> {
+  try {
+    return await call<{ code: string; seconds_left: number }>("/auth/demo/code", "GET");
+  } catch {
+    return null;
+  }
+}
 export const fetchMe = () => call<{ user_id: string; email: string | null; role: SessionResponse["role"] }>("/auth/me", "GET");
 
 export async function signOutSession(): Promise<void> {

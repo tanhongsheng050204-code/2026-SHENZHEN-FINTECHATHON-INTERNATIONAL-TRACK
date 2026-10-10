@@ -6,6 +6,7 @@ from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.auth import demo
 from app.auth.dependencies import CurrentUser
 from app.auth.provider import provider
 from app.auth.sessions import (
@@ -36,6 +37,8 @@ from app.contracts.auth import (
 from app.db import get_db
 from app.models import AuthUserRole, BackendAuthSession, Tenant, utcnow
 from app.schemas import AuthMeResponse
+from app.security import rate_limit
+from app.services.workflow_audit import write_workflow_event
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -96,6 +99,11 @@ def _bootstrap(request: Request, db: Session) -> BackendAuthSession:
     return row
 
 
+def _not_demo(row: BackendAuthSession) -> None:
+    if demo.is_demo_email(credentials(row).get("email")):
+        raise HTTPException(403, "demo_account_locked")
+
+
 def _recent_mfa(row: BackendAuthSession) -> bool:
     if row.aal != "aal2" or row.mfa_verified_at is None:
         return False
@@ -124,6 +132,93 @@ def sign_in(
     provider.call("POST", "/otp", payload={"email": body.email, "create_user": False})
     db.commit()
     return _view(db, row, csrf)
+
+
+@router.get("/demo/status")
+def demo_status() -> dict:
+    return {"available": demo.enabled()}
+
+
+@router.post(
+    "/demo",
+    response_model=SessionResponse,
+    dependencies=[Depends(rate_limit.limit("demo-sign-in", 20))],
+)
+def demo_sign_in(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Sign in to the synthetic company with the usual password and authenticator steps,
+    run by the server with secrets only it holds."""
+    validate_origin(request)
+    if not demo.enabled():
+        raise HTTPException(404, "demo_not_available")
+    settings = get_settings()
+    email = settings.demo_email
+    result = provider.call(
+        "POST",
+        "/token?grant_type=password",
+        payload={"email": email, "password": settings.demo_password},
+    )
+    row, csrf = create_session(db, response, {"email": email}, "signin")
+    accept_tokens(row, result, email=email)
+    # The server provisioned this mailbox, so there is no inbox for an email code to reach.
+    row.email_verified = True
+    row.password_verified = True
+    assignment = bind_membership(db, row)
+    if assignment is None or assignment.tenant_id != settings.demo_tenant_id:
+        row.revoked_at = utcnow()
+        db.commit()
+        raise HTTPException(503, "demo_not_provisioned")
+    token = credentials(row)["access_token"]
+    user = provider.call("GET", "/user", token=token)
+    factor = next(
+        (
+            f["id"]
+            for f in user.get("factors", [])
+            if f.get("factor_type") == "totp" and f.get("status") == "verified"
+        ),
+        None,
+    )
+    if factor is None:
+        row.revoked_at = utcnow()
+        db.commit()
+        raise HTTPException(503, "demo_not_provisioned")
+    challenge = provider.call("POST", f"/factors/{factor}/challenge", payload={}, token=token)
+    challenge_id = challenge["id"]
+    verified = provider.call(
+        "POST",
+        f"/factors/{factor}/verify",
+        token=token,
+        payload={"challenge_id": str(challenge_id), "code": demo.totp(settings.demo_totp_secret)},
+    )
+    accept_tokens(row, verified, email=email)
+    if row.aal != "aal2":
+        row.revoked_at = utcnow()
+        db.commit()
+        raise HTTPException(503, "mfa_verification_failed")
+    row.mfa_verified_at = utcnow()
+    assignment.mfa_enrolled = True
+    write_workflow_event(
+        db,
+        event_type="demo_sign_in",
+        actor_role=assignment.user_role,
+        actor_ref="demo-sign-in",
+        resource_type="auth_user",
+        resource_id=row.user_id,
+        event_payload={"aal": row.aal},
+        tenant_id=assignment.tenant_id,
+    )
+    db.commit()
+    return _view(db, row, csrf)
+
+
+@router.get("/demo/code")
+def demo_code(request: Request, response: Response, db: Session = Depends(get_db)) -> dict:
+    """The demo account's current authenticator code, for its own session only."""
+    row = _bootstrap(request, db)
+    db.commit()
+    if not demo.is_demo_email(credentials(row).get("email")):
+        raise HTTPException(404, "not_found")
+    response.headers["Cache-Control"] = "no-store"
+    return {"code": demo.totp(get_settings().demo_totp_secret), "seconds_left": demo.seconds_left()}
 
 
 @router.post("/sign-up", response_model=SessionResponse)
@@ -238,6 +333,7 @@ def factors(request: Request, db: Session = Depends(get_db)):
 @router.post("/mfa/enroll", response_model=TotpEnrollment)
 def enroll(request: Request, response: Response, db: Session = Depends(get_db)):
     row = _bootstrap(request, db)
+    _not_demo(row)
     if not row.password_verified:
         raise HTTPException(403, "password_required")
     user = provider.call("GET", "/user", token=credentials(row)["access_token"])
@@ -350,6 +446,7 @@ def sign_out(request: Request, response: Response, db: Session = Depends(get_db)
 @router.post("/sign-out-everywhere", status_code=204)
 def sign_out_everywhere(request: Request, response: Response, db: Session = Depends(get_db)):
     row = _bootstrap(request, db)
+    _not_demo(row)
     data = credentials(row)
     db.execute(
         update(BackendAuthSession)
