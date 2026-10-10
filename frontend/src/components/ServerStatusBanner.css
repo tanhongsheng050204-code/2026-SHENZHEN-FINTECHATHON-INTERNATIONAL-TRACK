@@ -1,0 +1,6 @@
+.dd-offline{position:fixed;top:0;left:0;right:0;z-index:70;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;padding:10px 16px;background:#10241F;color:#EAF2EF;font:500 14px/1.4 'Inter Variable','Inter',system-ui,sans-serif;text-align:center}
+.dd-offline button{min-height:36px;padding:0 16px;border:1px solid #E0B23A;border-radius:10px;background:transparent;color:#E0B23A;font:600 14px 'Inter Variable','Inter',system-ui,sans-serif;cursor:pointer}
+.dd-offline button:hover{background:rgba(224,178,58,.12)}
+.dd-offline button:focus-visible{outline:2px solid #E0B23A;outline-offset:2px}
+.dd-offline button:disabled{opacity:.7;cursor:progress}
+@media (max-width:640px){.dd-offline{font-size:13px;gap:8px}.dd-offline button{min-height:44px}}

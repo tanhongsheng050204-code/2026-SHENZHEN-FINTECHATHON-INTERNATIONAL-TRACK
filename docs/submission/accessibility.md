@@ -19,7 +19,7 @@ These are automated checks plus a keyboard pass. They are not a test with screen
 | axe, WCAG 2.1 AA | First run, 12 screens × 2 themes: violations on all 24 (colour contrast, a tab list without tabs, a bell button whose name hid its count). The wider 20-page run then found an unlabelled file input and two more contrast issues | **0 violations on all 40 page-theme pairs (20 pages × 2 themes)** |
 | Lighthouse accessibility: Today, Cash & finance, Financing, Review inbox, Analysis, Trust, e-Invoicing, Ask | 93–94 on the first Lighthouse run (made after the contrast fixes; top-bar buttons had lost their names at phone width) | **100 on all eight** |
 | Lighthouse accessibility: landing page | 97 | 97. The remaining flag is a caption on the hero film, measured while it fades in. |
-| Escape closes the Ask drawer, the search palette, the notification panel and the account menu | The notification panel and account menu stayed open | **All four close, and focus returns to the button that opened them** |
+| Escape closes the Ask drawer, the search palette, the notification panel and the account menu | The notification panel and account menu stayed open | **All four close**; the notification panel and account menu return focus to their button (checked) |
 | Every element reached with Tab shows a visible focus style (first eight on Today) | — | **All eight show a focus ring** |
 
 ## What changed

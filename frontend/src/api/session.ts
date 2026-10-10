@@ -3,6 +3,8 @@
 // CSRF token it hands back. Set VITE_AUTH_MODE=backend to use this flow; the
 // default keeps the older direct Supabase sign-in until the backend is deployed.
 
+import { trackedFetch } from "../lib/connectivity";
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export const authMode: "backend" | "supabase" =
@@ -79,7 +81,7 @@ export async function sessionFetch(path: string, init: RequestInit = {}): Promis
   const headers = new Headers(init.headers);
   const method = (init.method ?? "GET").toUpperCase();
   if (method !== "GET" && method !== "HEAD" && csrfToken) headers.set("X-CSRF-Token", csrfToken);
-  return fetch(`${BASE_URL}${path}`, { ...init, headers, credentials: "include" });
+  return trackedFetch(`${BASE_URL}${path}`, { ...init, headers, credentials: "include" });
 }
 
 async function call<T>(path: string, method: "GET" | "POST", body?: unknown): Promise<T> {

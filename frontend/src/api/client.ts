@@ -1,4 +1,5 @@
 import { accessToken, supabase } from "../auth/supabase";
+import { isNetworkError, trackedFetch } from "../lib/connectivity";
 import { authMode, isStepUpRequired, requestStepUp, sessionFetch } from "./session";
 
 export type Role =
@@ -338,12 +339,13 @@ export function friendlyLoadError(message: string): string {
   if (message === "step_up_required") return "This needs a fresh code from your authenticator app. Try again and enter the code.";
   if (message === "csrf_token_invalid" || message === "csrf_origin_denied") return "Your session needs refreshing. Reload the page and try again.";
   if (message === "session_expired" || message === "session_idle_timeout" || message === "session_revoked") return "Your session has ended — please sign in again.";
-  return "Couldn't load this page right now — try refreshing.";
+  if (isNetworkError(message)) return "DuitDuit can't reach its server right now. Your data is safe. Try again in a moment.";
+  return "Couldn't load this page right now. Try again, or reload the page.";
 }
 
 /** For the few public endpoints (shared Passport and audit-pack links): no session needed. */
 export async function publicFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(`${BASE_URL}${path}`, init);
+  return trackedFetch(`${BASE_URL}${path}`, init);
 }
 
 export async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
@@ -356,7 +358,7 @@ export async function authenticatedFetch(path: string, init: RequestInit = {}): 
   const token = await accessToken();
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(`${BASE_URL}${path}`, { ...init, headers });
+  const response = await trackedFetch(`${BASE_URL}${path}`, { ...init, headers });
   if (response.status === 401) {
     const body = await response.clone().json().catch(() => ({}));
     const terminalCodes = new Set([

@@ -16,8 +16,8 @@ Claude finished M1–M3 overnight and is now working through C1–C5 **in order*
 |---|---|
 | C1 Mobile | Claude: done (no sideways scroll on 18 signed-in screens at 375px; 44px targets) |
 | C2 Accessibility | Claude: done (axe 0 violations on 20 pages x 2 themes; Lighthouse 100 on 8 screens; see docs/submission/accessibility.md) |
-| C3 Screen states | Claude: in progress |
-| C4 Sourced financing | open |
+| C3 Screen states | Claude: done (app-wide "can't reach its server" banner with Try again; network failures get that sentence on every screen; checked on 18 screens with the API stopped) |
+| C4 Sourced financing | Claude: in progress |
 | C5 中文 strings | open |
 
 ## Setup

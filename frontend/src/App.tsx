@@ -7,6 +7,7 @@ import { UiChromeProvider } from "./lib/uiChrome";
 import { AskDrawer } from "./components/AskDrawer";
 import { QuickActionsPalette } from "./components/QuickActionsPalette";
 import { StepUpPrompt } from "./components/StepUpPrompt";
+import { ServerStatusBanner } from "./components/ServerStatusBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LogoMark } from "./components/Logo";
 import { sharedRouteFor } from "./lib/sharedRoutes";
@@ -113,6 +114,7 @@ export default function App() {
           <AppStateProvider>
             <AuthProvider>
               <UiChromeProvider>
+                <ServerStatusBanner />
                 <Suspense fallback={RouteFallback}>
                   <Screens />
                 </Suspense>
