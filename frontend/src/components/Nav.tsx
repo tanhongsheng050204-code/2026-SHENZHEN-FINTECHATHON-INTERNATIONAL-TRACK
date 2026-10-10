@@ -297,6 +297,12 @@ export function AppTopBar({ current }: { current: Screen }) {
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget as Node)) setProfileOpen(false);
           }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && profileOpen) {
+              setProfileOpen(false);
+              event.currentTarget.querySelector<HTMLButtonElement>(".fb-topbar-profile-trigger")?.focus();
+            }
+          }}
         >
           <button className="fb-topbar-profile-trigger" type="button" onClick={() => setProfileOpen((v) => !v)} aria-haspopup="true" aria-expanded={profileOpen}>
             <span className="fb-topbar-avatar" aria-hidden="true">{profileLabel[0]?.toUpperCase() ?? "?"}</span>

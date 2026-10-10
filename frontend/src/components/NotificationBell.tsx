@@ -151,6 +151,12 @@ export function NotificationBell() {
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false);
       }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && open) {
+          setOpen(false);
+          event.currentTarget.querySelector<HTMLButtonElement>(".fb-topbar-icon-btn")?.focus();
+        }
+      }}
     >
       <button
         className="fb-topbar-icon-btn"
@@ -159,7 +165,7 @@ export function NotificationBell() {
         aria-haspopup="true"
         aria-expanded={open}
         title="Notifications"
-        aria-label="Notifications"
+        aria-label={unreadCount > 0 ? `${unreadCount > 9 ? "9+" : unreadCount} notifications` : "Notifications"}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
         {unreadCount > 0 && <span className="fb-nav-badge fb-topbar-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}

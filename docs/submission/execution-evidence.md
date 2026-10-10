@@ -34,6 +34,13 @@ Reports are in `evidence/zap-2026-10-11/`. CI job `dast` repeats both scans.
 | Frontend | `npx tsc -b`, `npm run build`, `npm run lint`, hardening check | Passed; 0 errors, 14 existing warnings |
 | Hosted demo sign-in against real Supabase | — | **Not measured**: needs the production steps in `docs/deployment/production-checklist.md` |
 
+## Phone layout and accessibility: Oct 11 local verification
+
+All 18 signed-in screens were measured at 375 × 812 in Chromium:
+- **Sideways scrolling:** before, 13 of them scrolled sideways. After, none do.
+- **Touch targets:** tabs, chips, buttons and text toggles are at least 44 px tall.
+- **Accessibility:** axe-core (WCAG 2.1 AA) finds 0 violations on 20 pages in both themes. Lighthouse accessibility scores 100 on eight app screens. Details are in [accessibility.md](accessibility.md).
+
 ## Financial analysis: Oct 10 local verification
 
 `GET /analysis` and the Financial analysis tab give a cash-basis monthly profit and

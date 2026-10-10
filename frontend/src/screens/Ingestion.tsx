@@ -133,6 +133,7 @@ function ProtectedFilePanel() {
           className="fb-field-mock"
           style={{ width: "auto" }}
           type="file"
+          aria-label="Choose a file to preview"
           accept=".txt,.md,.csv,.eml,.pdf,.docx,.png,.jpg,.jpeg,.webp,.bmp,.tiff"
           onChange={(event) => select(event.target.files?.[0])}
         />

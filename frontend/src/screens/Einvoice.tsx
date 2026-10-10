@@ -720,7 +720,7 @@ function AllInvoicesPanel() {
               <th>Tax Status</th>
               <th>Payment Status</th>
               <th>UIN</th>
-              <th aria-hidden="true"></th>
+              <th><span className="fb-sr-only">Details</span></th>
             </tr>
           </thead>
           <tbody>
@@ -760,7 +760,7 @@ function AllInvoicesPanel() {
                     <td>{record.issue_date ?? "—"}</td>
                     <td>
                       <div><strong>{record.supplier_name}</strong></div>
-                      {record.buyer_name && <div className="fb-fine" style={{ opacity: 0.85 }}>Buyer: {record.buyer_name}</div>}
+                      {record.buyer_name && <div className="fb-fine">Buyer: {record.buyer_name}</div>}
                       {record.status === "review" && (
                         <ul className="fb-readiness-issue-list" style={{ maxWidth: "34ch", marginTop: ".25rem" }}>
                           {splitReadinessIssues(record.readiness_reason).map((issue, i) => (
@@ -820,8 +820,8 @@ export default function Einvoice() {
           <p>{t("einvoice.desc")}</p>
         </div>
         <div className="fb-role-switch" role="tablist" style={{ marginTop: "1rem" }}>
-          <button className={"fb-role-btn" + (activeTab === "all" ? " is-current" : "")} type="button" onClick={() => setActiveTab("all")}>All invoices</button>
-          <button className={"fb-role-btn" + (activeTab === "readiness" ? " is-current" : "")} type="button" onClick={() => setActiveTab("readiness")}>Readiness Check</button>
+          <button className={"fb-role-btn" + (activeTab === "all" ? " is-current" : "")} type="button" role="tab" aria-selected={activeTab === "all"} onClick={() => setActiveTab("all")}>All invoices</button>
+          <button className={"fb-role-btn" + (activeTab === "readiness" ? " is-current" : "")} type="button" role="tab" aria-selected={activeTab === "readiness"} onClick={() => setActiveTab("readiness")}>Readiness Check</button>
         </div>
       </header>
 
