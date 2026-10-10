@@ -4,6 +4,22 @@ Read `AGENTS.md` first. Its house rules apply to every line below.
 
 Claude is working on other parts at the same time, in the `C:/Users/tanho/fba` worktree. Stay inside the files listed under **Yours** so the two of you don't collide.
 
+## Progress (update this before starting a task)
+
+Claude finished M1–M3 overnight and is now working through C1–C5 **in order** on `main`, because Codex had not started yet. Before you begin:
+- read this table;
+- `git pull`;
+- take the first task that is **not** marked done or in progress;
+- mark it "Codex: in progress", then commit and push that one line so Claude skips it.
+
+| Task | Status |
+|---|---|
+| C1 Mobile | Claude: in progress (Oct 11, 02:30) |
+| C2 Accessibility | open |
+| C3 Screen states | open |
+| C4 Sourced financing | open |
+| C5 中文 strings | open |
+
 ## Setup
 
 Work in the main project folder on a new branch cut from `main`:
