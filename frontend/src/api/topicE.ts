@@ -226,6 +226,10 @@ export interface FinancingMatch {
   fit_score: number;
   rules: RuleResult[];
   explanation: string;
+  /** Requirements not yet met, and the first one as something to do. */
+  steps_away: number;
+  next_step: string | null;
+  next_screen: string | null;
 }
 
 export interface FinancingMatchesResponse {

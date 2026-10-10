@@ -5,6 +5,7 @@ profile from real records. Categories are real; every term is illustrative.
 """
 
 import datetime as dt
+import math
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -305,9 +306,49 @@ _CATALOGUE: tuple[_Product, ...] = (
 )
 
 
+_STEP_SCREENS = {
+    "validated_einvoice_share": "einvoice",
+    "months_trading": "company",
+    "receivables_over_90_share": "customers",
+    "top_customer_share": "customers",
+    "anchor_buyer_programme": "financing",
+    "import_payables_share": "cashflow",
+    "annual_revenue": "finance",
+    "projected_shortfall_gap": "cashflow",
+}
+
+
+def _next_step(rule: _Rule, profile: Profile) -> str:
+    """The unmet requirement as something to do, from the tenant's own figures."""
+    label, unit, _ = _METRICS[rule.metric]
+    value = profile.values.get(rule.metric)
+    need = _format(rule.threshold, unit)
+    if rule.metric == "validated_einvoice_share":
+        done = profile.values.get("einvoice_validated_count")
+        total = profile.values.get("einvoice_total_count")
+        if done is not None and total:
+            more = max(1, math.ceil(rule.threshold * total - done))
+            return (
+                f"Validate {more} more e-invoice{'s' if more != 1 else ''} "
+                f"({done:.0f} of {total:.0f} validated; {need} needed)."
+            )
+    if rule.metric == "months_trading":
+        if value is None:
+            return "Declare your company registration date in Company settings."
+        left = int(rule.threshold - value)
+        return f"Eligible after {left} more month{'s' if left != 1 else ''} of trading."
+    if rule.metric == "anchor_buyer_programme":
+        return "Join a large buyer's supply-chain programme; none is on record."
+    if value is None:
+        return f"Not on record: {label}. Import the records that show it."
+    bound = "at least" if rule.op == ">=" else "at most"
+    return f"Needs {label.lower()} of {bound} {need} (now {_format(value, unit)})."
+
+
 def _match(entry: _Product, profile: Profile = DEMO_PROFILE) -> FinancingMatch:
     results = [_evaluate(rule, profile) for rule in entry.rules]
     failed = [result.detail for result in results if not result.passed]
+    unmet = [rule for rule, result in zip(entry.rules, results, strict=True) if not result.passed]
     explanation = (
         f"Eligible: meets all {len(results)} requirements."
         if not failed
@@ -319,6 +360,9 @@ def _match(entry: _Product, profile: Profile = DEMO_PROFILE) -> FinancingMatch:
         fit_score=entry.fit_score,
         rules=results,
         explanation=explanation,
+        steps_away=len(unmet),
+        next_step=_next_step(unmet[0], profile) if unmet else None,
+        next_screen=_STEP_SCREENS.get(unmet[0].metric) if unmet else None,
     )
 
 
@@ -328,7 +372,7 @@ def matches(
     found = [
         _match(entry, profile) for entry in _CATALOGUE if entry.product.jurisdiction == jurisdiction
     ]
-    found.sort(key=lambda match: (not match.eligible, -match.fit_score))
+    found.sort(key=lambda match: (match.steps_away, -match.fit_score))
     return FinancingMatchesResponse(
         data_mode=profile.data_mode,
         jurisdiction=jurisdiction,

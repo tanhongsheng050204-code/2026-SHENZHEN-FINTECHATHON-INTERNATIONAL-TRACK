@@ -1333,6 +1333,30 @@
             "title": "Fit Score",
             "type": "integer"
           },
+          "next_screen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where to take that step",
+            "title": "Next Screen"
+          },
+          "next_step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The first unmet requirement, as something to do",
+            "title": "Next Step"
+          },
           "product": {
             "$ref": "#/components/schemas/FinancingProduct"
           },
@@ -1342,6 +1366,12 @@
             },
             "title": "Rules",
             "type": "array"
+          },
+          "steps_away": {
+            "default": 0,
+            "description": "Requirements not yet met",
+            "title": "Steps Away",
+            "type": "integer"
           }
         },
         "required": [

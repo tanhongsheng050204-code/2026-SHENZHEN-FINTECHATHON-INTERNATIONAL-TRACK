@@ -3,6 +3,7 @@ import { Sidebar, AppTopBar } from "../components/Nav";
 import { ScorecardCard } from "../components/ScorecardCard";
 import { useAuth } from "../auth/AuthProvider";
 import { useAppState } from "../lib/appState";
+import { SCREENS, type Screen } from "../lib/screens";
 import { useI18n } from "../lib/i18n";
 import { ApiError, friendlyLoadError } from "../api/client";
 import {
@@ -93,7 +94,7 @@ function Matches({ canPrepare }: { canPrepare: boolean }) {
               <article key={m.product.id} className={"fb-fin-match" + (i === 0 && m.eligible ? " is-best" : "")}>
                 <div className="fb-fin-match-head">
                   {i === 0 && m.eligible && <span className="fb-inbox-pill is-can">Best fit</span>}
-                  <span className={"fb-inbox-pill " + (m.eligible ? "is-approved" : "is-rejected")}>{m.eligible ? "Eligible" : "Not eligible"}</span>
+                  <span className={"fb-inbox-pill " + (m.eligible ? "is-approved" : m.steps_away === 1 ? "is-can" : "is-rejected")}>{m.eligible ? "Eligible" : m.steps_away === 1 ? "One step away" : `${m.steps_away} steps away`}</span>
                   <span className="fb-fin-score" aria-label={`Fit score ${m.fit_score} out of 100`}>{m.fit_score}<small>/100</small></span>
                 </div>
                 <h3>{m.product.name}</h3>
@@ -107,6 +108,14 @@ function Matches({ canPrepare }: { canPrepare: boolean }) {
                   ))}
                 </ul>
                 <p className="fb-fin-explain">{m.explanation}</p>
+                {m.next_step && (
+                  <p className="fb-fin-next">
+                    <strong>Next step:</strong> {m.next_step}{" "}
+                    {m.next_screen && (SCREENS as readonly string[]).includes(m.next_screen) && (
+                      <button type="button" className="fb-cash-more" onClick={() => show(m.next_screen as Screen)}>Go →</button>
+                    )}
+                  </p>
+                )}
                 {prepared[m.product.id] ? (
                   <div className="fb-fin-done">
                     Application pack drafted and waiting for the owner.{" "}

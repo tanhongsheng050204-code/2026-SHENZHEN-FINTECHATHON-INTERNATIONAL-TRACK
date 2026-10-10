@@ -1802,3 +1802,4 @@ html{scroll-behavior:smooth;}
 .fb-playbook-status.is-attention { background: color-mix(in srgb, var(--chart-attn, #d4a017) 18%, transparent); color: color-mix(in srgb, var(--chart-attn, #d4a017) 70%, var(--ink, #111)); }
 .fb-voice-input { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; max-width: 280px; }
 .fb-voice-input [role="alert"] { color: var(--chart-attn); }
+.fb-fin-next{margin:.4rem 0 .6rem;padding:.55rem .75rem;border-radius:8px;background:var(--accent-soft);font-size:.85rem;line-height:1.45}

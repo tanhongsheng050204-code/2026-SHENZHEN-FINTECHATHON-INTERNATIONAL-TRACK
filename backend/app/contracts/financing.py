@@ -33,6 +33,11 @@ class FinancingMatch(BaseModel):
     fit_score: int = Field(ge=0, le=100)
     rules: list[RuleResult]
     explanation: str
+    steps_away: int = Field(default=0, description="Requirements not yet met")
+    next_step: str | None = Field(
+        default=None, description="The first unmet requirement, as something to do"
+    )
+    next_screen: str | None = Field(default=None, description="Where to take that step")
 
 
 class FinancingMatchesResponse(BaseModel):

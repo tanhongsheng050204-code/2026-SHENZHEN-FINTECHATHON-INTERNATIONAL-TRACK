@@ -105,6 +105,18 @@ def compute(db, tenant_id: str, forecast: ForecastResponse) -> Profile:
     einvoice = _einvoice_share(db, tenant_id)
     if einvoice is not None:
         values["validated_einvoice_share"] = einvoice
+        record = m.EInvoiceRecord
+        values["einvoice_total_count"] = Decimal(
+            db.scalar(select(func.count()).where(record.tenant_id == tenant_id)) or 0
+        )
+        values["einvoice_validated_count"] = Decimal(
+            db.scalar(
+                select(func.count()).where(
+                    record.tenant_id == tenant_id, record.status == "validated"
+                )
+            )
+            or 0
+        )
 
     if cash_basis._plan3_deployed():
         _business_facts(db, tenant_id, as_of, values)
