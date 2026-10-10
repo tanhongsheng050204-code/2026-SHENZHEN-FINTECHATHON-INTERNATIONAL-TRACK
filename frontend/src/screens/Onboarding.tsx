@@ -26,8 +26,8 @@ export default function Onboarding() {
       </nav>
       <div className="fb-page-body" style={{ maxWidth: "560px", paddingTop: "3rem", textAlign: "center" }}>
         <div className="fb-eyebrow">Welcome</div>
-        <h1 style={{ fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.6rem", fontWeight: 500, margin: ".6rem 0 1rem" }}>{greeting}</h1>
-        <p style={{ color: "var(--ink-soft)", fontSize: ".85rem", fontFamily: "Arial,Helvetica,sans-serif" }}>{sub}</p>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-.03em", margin: ".6rem 0 1rem" }}>{greeting}</h1>
+        <p style={{ color: "var(--ink-soft)", fontSize: ".85rem", fontFamily: "'Inter Variable','Inter',system-ui,sans-serif" }}>{sub}</p>
 
         <div className="fb-onboarding-checklist">
           {ITEMS.map((item, i) => (

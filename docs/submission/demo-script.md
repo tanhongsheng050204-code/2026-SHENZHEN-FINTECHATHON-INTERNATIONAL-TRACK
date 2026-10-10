@@ -71,17 +71,21 @@ before it.
 ## 1. 08:00 — The morning briefing (0:00–0:25)
 
 **Action:**
-1. Play the Telegram clip for three seconds.
-2. Cut to the Owner's **Today** page and hold the three cards (cash outlook, waiting
-   for you, positions).
-3. Open **Ask DuitDuit**, where the briefing sits above the chat.
+1. Open on the landing page and let the hero film play once (about six seconds):
+   the cash line dips below the minimum on day 23, "RM29,440 short" counts up, and
+   the early-payment fix clears it. Use **Play again** if you miss it.
+2. Cut to the Telegram clip for three seconds.
+3. Cut to the Owner's **Today** page: hold the sentence "Cash falls RM29,440.00 below
+   your minimum in … days" with its runway chart, then the three tiles (waiting for
+   you, last month's net result, alerts today).
 
 **Narration:**
 
-> Eight o'clock at a fictional Malaysian importer. The owner's briefing arrives
-> on Telegram with ranges and counts only. The details are in DuitDuit: cash
-> falls below the company's minimum in about three weeks, and the briefing
-> lists what is waiting for the owner.
+> This is DuitDuit, a finance copilot for Malaysian SMEs, shown on a fictional
+> importer. It sees the cash gap weeks before it hits and drafts the fix, and
+> nothing moves until a person approves it. At eight, the owner's briefing arrives
+> on Telegram with ranges and counts only. In the app, Today leads with the one
+> thing that matters: cash falls below the minimum in about three weeks.
 
 If the insert is an illustration, say "this labelled illustration shows the
 briefing format" instead of "arrives".

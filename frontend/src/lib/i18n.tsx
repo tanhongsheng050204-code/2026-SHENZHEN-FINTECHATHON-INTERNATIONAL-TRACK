@@ -136,9 +136,9 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
   },
   "einvoice.title": { en: "e-Invoicing", ms: "e-Invois", zh: "电子发票" },
   "einvoice.desc": {
-    en: "Receipts and invoices, mapped to MyInvois and submitted to LHDN — PDPA-aligned end to end.",
-    ms: "Resit dan invois, dipetakan ke MyInvois dan dihantar ke LHDN — mematuhi PDPA sepenuhnya.",
-    zh: "收据与发票，对接 MyInvois 并提交至 LHDN——全程符合 PDPA 规范。",
+    en: "Receipts and invoices mapped to MyInvois and checked for missing fields before submission, with personal data masked.",
+    ms: "Resit dan invois dipetakan ke MyInvois dan disemak untuk medan yang tiada sebelum dihantar, dengan data peribadi disembunyikan.",
+    zh: "收据与发票对接 MyInvois，提交前检查缺失字段，个人数据已遮蔽。",
   },
   "einvoice.filterAll": { en: "All invoices", ms: "Semua invois", zh: "全部发票" },
   "einvoice.filterMine": { en: "My submissions", ms: "Penyerahan saya", zh: "我的提交" },

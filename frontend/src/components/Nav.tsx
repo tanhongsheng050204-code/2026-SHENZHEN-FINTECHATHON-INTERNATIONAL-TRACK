@@ -97,7 +97,7 @@ export function MarketingNav() {
 export function ContextNav() {
   const { contextBack, returnTo, show } = useAppState();
   const backLabel = returnTo === "login" ? "← Back to login" : returnTo === "signup" ? "← Back to sign up" : "← Back to site";
-  const ctaLabel = returnTo === "signup" ? "Continue signing up" : "Start free trial";
+  const ctaLabel = returnTo === "signup" ? "Continue signing up" : "Get started";
   return (
     <nav className="fb-nav">
       <Wordmark onClick={() => show("landing")} />

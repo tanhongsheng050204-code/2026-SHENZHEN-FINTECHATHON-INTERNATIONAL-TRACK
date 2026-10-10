@@ -4,25 +4,32 @@ import { Wordmark } from "../components/Logo";
 
 const ITEMS = [
   {
-    title: "Tokenized secrets vault",
-    desc: "Sensitive values — approval thresholds, account details — are stored as AES-GCM encrypted tokens and only resolved after a permission check, never sent to the AI model in the clear.",
+    title: "Personal data is masked before it is stored",
+    desc: "Names, contacts, account numbers and amounts are replaced by tokens encrypted with AES-GCM. A value is restored only for a role the policy allows, and staff never see customer contacts.",
     path: <><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></>,
   },
   {
-    title: "Source-native permissions",
-    desc: "Every record inherits the department and access level of where it came from. A role can only retrieve what it was already allowed to see — enforced on every query, not just at login.",
+    title: "Each company is walled off in the database",
+    desc: "Requests run as restricted database roles under row-level security, so one company's rows are invisible to another, even by id. A lender's shared link only reaches that one company.",
     path: <><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" /><path d="M9.5 12l2 2 3.5-3.5" /></>,
   },
   {
-    title: "Tamper-evident audit trail",
-    desc: "Every access and agent action is hash-chained and append-only — edits and deletions are rejected at the database level, not just hidden by the interface.",
-    path: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
-  },
-  {
-    title: "Human sign-off on agent actions",
-    desc: "Anything an agent drafts that touches money or a customer — an invoice, a collections email — waits in your Approvals queue until you say yes.",
+    title: "Agents draft, people decide",
+    desc: "Every proposal waits in the review inbox. Money needs a maker, a different checker and an authenticator code from the last five minutes. One switch stops every agent.",
     path: <><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /><path d="M15 14.5l2 2 3.5-3.5" /></>,
   },
+  {
+    title: "Every decision is on a hash chain",
+    desc: "Proposals, approvals, shared links and disclosures are recorded by kind and id, never by the words people typed, and the chain can be re-verified at any time.",
+    path: <><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
+  },
+];
+
+const STATUS = [
+  ["PDPA-aligned data handling", "Built into the prototype"],
+  ["Attack tests (42 offline tasks, mapped to OWASP agentic risks)", "Run on every build"],
+  ["Independent penetration test", "Not started"],
+  ["SOC 2 or ISO/IEC 27001 certification", "Not started"],
 ];
 
 export default function Security() {
@@ -33,9 +40,8 @@ export default function Security() {
       <ContextNav />
 
       <div className="fb-page-body" style={{ maxWidth: "760px", paddingTop: "2.8rem" }}>
-        <div className="fb-eyebrow">Security &amp; Compliance</div>
-        <h1 style={{ fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.7rem", fontWeight: 500, margin: ".6rem 0 1rem", textWrap: "balance" }}>How we protect your financial data</h1>
-        <p style={{ color: "var(--ink-soft)", fontSize: ".85rem", margin: "0 0 2rem", fontFamily: "Arial,Helvetica,sans-serif" }}>DuitDuit is under active development. This page describes our current security architecture and our compliance roadmap as it actually stands — we'd rather be precise about where we are than overclaim.</p>
+        <h1 className="fb-security-title">How DuitDuit protects your company's data</h1>
+        <p className="fb-security-lede">This is a prototype. The controls below are built and tested; the certifications at the bottom are not done, and we say so.</p>
 
         <div className="fb-security-grid">
           {ITEMS.map((item) => (
@@ -47,14 +53,14 @@ export default function Security() {
           ))}
         </div>
 
-        <h2 style={{ fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.1rem", fontWeight: 500, margin: "2rem 0 1rem" }}>Compliance roadmap</h2>
+        <h2 className="fb-security-subtitle">Where things stand</h2>
         <div className="fb-settings-list">
-          <div className="fb-settings-row"><span>PDPA-aligned data handling</span><span>Implemented</span></div>
-          <div className="fb-settings-row"><span>SOC 2 Type II</span><span>In progress</span></div>
-          <div className="fb-settings-row"><span>ISO/IEC 27001</span><span>Planned</span></div>
+          {STATUS.map(([what, state]) => (
+            <div className="fb-settings-row" key={what}><span>{what}</span><span>{state}</span></div>
+          ))}
         </div>
 
-        <p style={{ fontSize: ".72rem", color: "var(--ink-soft)", marginTop: "2rem", fontFamily: "Arial,Helvetica,sans-serif" }}>Questions about our security posture? <a href="mailto:security@duitduit.example" style={{ color: "var(--ink)" }}>security@duitduit.example</a></p>
+        <p className="fb-security-contact">Found a problem or have a question? <a href="mailto:security@duitduit.example" style={{ color: "var(--ink)" }}>security@duitduit.example</a></p>
       </div>
 
       <footer className="fb-footer">

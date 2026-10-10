@@ -2,8 +2,8 @@ import { useAppState } from "../lib/appState";
 import { ContextNav } from "../components/Nav";
 import { Wordmark } from "../components/Logo";
 
-const pStyle: React.CSSProperties = { fontSize: ".82rem", lineHeight: 1.7, color: "var(--ink-soft)", fontFamily: "Arial,Helvetica,sans-serif", margin: "0 0 1rem" };
-const h1Style: React.CSSProperties = { fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.5rem", fontWeight: 500, margin: "0 0 .4rem" };
+const pStyle: React.CSSProperties = { fontSize: ".82rem", lineHeight: 1.7, color: "var(--ink-soft)", fontFamily: "'Inter Variable','Inter',system-ui,sans-serif", margin: "0 0 1rem" };
+const h1Style: React.CSSProperties = { fontFamily: "var(--font-display)", fontSize: "1.9rem", fontWeight: 800, letterSpacing: "-.03em", margin: "0 0 .4rem" };
 
 export default function Legal() {
   const { goToSecurity, goToLegal } = useAppState();

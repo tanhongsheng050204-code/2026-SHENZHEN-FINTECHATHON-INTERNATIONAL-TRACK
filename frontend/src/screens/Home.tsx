@@ -273,8 +273,8 @@ function ApprovalsCard() {
   return (
     <CardShell
       tone="approvals"
-      label="Approvals"
-      desc="Recommendations and drafts waiting on you"
+      label="Recommendations & outreach"
+      desc="Customer suggestions and e-invoice outreach drafts. Agent proposals are in the review inbox."
       onClick={() => show("approvals")}
       icon={<path d="M9 12l2 2 4-4M12 3l8 4v5c0 4.5-3.2 8.5-8 10-4.8-1.5-8-5.5-8-10V7z" />}
     >
@@ -283,8 +283,8 @@ function ApprovalsCard() {
       {visible && state === "error" && <ErrorWithRetry message="Couldn't load approvals data." onRetry={retry} />}
       {visible && state === "loaded" && (
         <>
-          <div className="fb-home-card-headline"><span className="num">{total}</span><span className="unit">awaiting your review</span></div>
-          <div className="fb-home-card-sub">{total === 0 ? "You're all caught up" : parts.join(" · ")}</div>
+          <div className="fb-home-card-headline"><span className="num">{total}</span><span className="unit">to review</span></div>
+          <div className="fb-home-card-sub">{total === 0 ? "None waiting" : parts.join(" · ")}</div>
         </>
       )}
     </CardShell>
