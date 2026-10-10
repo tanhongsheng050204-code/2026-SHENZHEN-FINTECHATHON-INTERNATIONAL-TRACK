@@ -1019,3 +1019,48 @@ export async function sendBriefingNow(): Promise<{ sent: ("email" | "telegram")[
 export async function checkAlerts(): Promise<string[]> {
   return (await parse<{ fired: string[] }>(await authenticatedFetch("/alerts/check", { method: "POST" }))).fired;
 }
+
+// ── Financial analysis ───────────────────────────────────────────────────────
+
+export interface PnlMonth {
+  month: string;
+  label: string;
+  revenue: string;
+  sales: string;
+  marketplace: string;
+  purchases: string;
+  payroll: string;
+  rent_and_bills: string;
+  marketing: string;
+  marketplace_fees: string;
+  total_costs: string;
+  gross_profit: string;
+  gross_margin: string | null;
+  net_result: string;
+  net_margin: string | null;
+}
+
+export interface Ratio {
+  key: string;
+  label: string;
+  value: string | null;
+  unit: "days" | "percent" | "ringgit" | "day";
+  status: "measured" | "not_measured";
+  formula: string;
+  sources: string[];
+}
+
+export interface AnalysisResponse {
+  data_mode: DataMode;
+  synthetic: boolean;
+  as_of: string;
+  basis: string;
+  months: PnlMonth[];
+  expenses: { label: string; amount: string; share: string | null }[];
+  ratios: Ratio[];
+  changes: string[];
+}
+
+export async function fetchAnalysis(months = 3): Promise<AnalysisResponse> {
+  return parse<AnalysisResponse>(await authenticatedFetch(`/analysis?months=${months}`));
+}

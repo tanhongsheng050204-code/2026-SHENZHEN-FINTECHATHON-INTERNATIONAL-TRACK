@@ -431,7 +431,8 @@ export default function Finance() {
   const { t } = useI18n();
   const { show, showCustomerDetail } = useAppState();
   const [period, setPeriod] = useState<FinancePeriod>("month");
-  const [offset, setOffset] = useState(0);
+  // Open on the last completed period; the current one is still filling up.
+  const [offset, setOffset] = useState(-1);
   const [data, setData] = useState<FinanceSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -575,7 +576,7 @@ export default function Finance() {
             <button className="fb-kpi-tile fb-kpi-tile-link" type="button" onClick={() => show("customers")} title="See which customers owe this">
               <div className="fb-kpi-label">Outstanding AR</div>
               <div className="fb-kpi-value">{formatCurrency(data.outstanding_ar)}</div>
-              <div className="fb-kpi-delta">Validated, unpaid invoices</div>
+              <div className="fb-kpi-delta">Invoices not yet paid</div>
               <span className="fb-kpi-tile-cta">View customers →</span>
             </button>
             <div className="fb-kpi-tile">
@@ -586,7 +587,7 @@ export default function Finance() {
             <div className="fb-kpi-tile">
               <div className="fb-kpi-label">Avg days to pay</div>
               <div className="fb-kpi-value">{data.avg_days_to_pay === null ? "—" : data.avg_days_to_pay.toFixed(1)}</div>
-              <div className="fb-kpi-delta">{data.avg_days_to_pay === null ? "No paid invoices yet" : "Issue date to payment date"}</div>
+              <div className="fb-kpi-delta">{data.avg_days_to_pay === null ? "Not measured" : "Issue date to payment date"}</div>
             </div>
           </div>
 
@@ -594,7 +595,7 @@ export default function Finance() {
 
           <div className="fb-chart-section">
             <h2>Revenue trend</h2>
-            <p className="fb-chart-caption">Trailing 12 months of validated invoice revenue. Hover for exact figures.</p>
+            <p className="fb-chart-caption">Trailing 12 months of revenue received. Hover for exact figures.</p>
             <div className="fb-chart-card">
               <div className="fb-chart-legend">
                 <span><span className="fb-legend-dot" style={{ background: "var(--viz-1)" }}></span>Revenue</span>
@@ -613,7 +614,7 @@ export default function Finance() {
 
           <div className="fb-chart-section">
             <h2>Accounts receivable aging</h2>
-            <p className="fb-chart-caption">Validated, unpaid invoices grouped by days past due date.</p>
+            <p className="fb-chart-caption">Unpaid invoices grouped by days past their due date.</p>
             <div className="fb-table-wrap">
               <table className="fb-table">
                 <thead>

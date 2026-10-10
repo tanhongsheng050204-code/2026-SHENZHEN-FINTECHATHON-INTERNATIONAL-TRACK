@@ -5,6 +5,24 @@ figures below describe the earlier contract pass. The assistant evidence is belo
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
 
+## Financial analysis: Oct 10 local verification
+
+`GET /analysis` and the Financial analysis tab give a cash-basis monthly profit and
+loss, an expense breakdown, six ratios with formulas and sources, and the three
+largest month-on-month changes. `tests/test_financial_analysis.py` checks every
+figure by hand against the seed's July–September history. On a local copy of the
+demo tenant (re-seeded with the same scripts) the tab shows September revenue
+RM249,400.00, gross margin 49.5%, net RM39,200.00; bank matching is 9 of 10 lines and
+the scorecard 605 (grade C). Migration `202610100003` widens the PostgreSQL stage
+check for received sales; the disposable PostgreSQL run caught that it was needed.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Full backend suite (SQLite) | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **605 passed, 5 skipped** |
+| Offline evaluation | `backend/`: `python -m eval.run <output dir>` | **42 passed, 0 failed, 0 skipped** |
+| PostgreSQL RLS tests | the three PostgreSQL test files against a disposable pgvector/pg17 container, then `scripts.check_supabase` | **4 passed**; check passed |
+| Frontend | `npx tsc -b`, `npm run build`, `npm run lint`, hardening check | Passed; 0 errors, 14 existing warnings |
+
 ## Attack tests ADV-10 to ADV-15: Oct 10 local verification
 
 Six adversarial tasks were added to the offline evaluation. Each was confirmed to fail

@@ -15,6 +15,7 @@ const SECTIONS: Record<string, { screen: Screen; key: string }[]> = {
   money: [
     { screen: "cashflow", key: "tabs.forecast" },
     { screen: "finance", key: "tabs.intelligence" },
+    { screen: "analysis", key: "tabs.analysis" },
   ],
   trust: [
     { screen: "trust", key: "tabs.posture" },

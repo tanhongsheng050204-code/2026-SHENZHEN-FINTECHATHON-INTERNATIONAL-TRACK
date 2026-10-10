@@ -22,8 +22,9 @@ evidence is in [execution-evidence.md](execution-evidence.md).
   Before recording, run both seeds once more on the provisioning connection:
   `python -m seed.topic_e --allow-postgres` and then
   `python -m seed.topic_e_original_fixtures --tenant-id 858f0c1c-42fa-52a2-91b3-80a19d816356`.
-  Both are idempotent: the first adds only September's settled history (bank
-  lines, rent, payroll, payouts) and rechecks the October cash story; the second
+  Both are idempotent: the first adds only the July–September settled history
+  (received sales, bank lines, purchases, rent, payroll, marketing, payouts) and
+  rechecks the October cash story; the second
   marks the August bills as paid and declares the registration date. Without
   them, bank reconciliation stays "not measured", e-Invoicing shows overdue bills
   and months trading is not on record.
@@ -94,6 +95,9 @@ briefing format" instead of "arrives".
    gap cards.
 3. Hold the shortfall banner, which names payroll and the Shenzhen supplier
    payment, and the best–worst range on the chart.
+4. Click the **Financial analysis** tab: September's revenue RM249,400, gross
+   margin 49.5%, net RM39,200, and the "What changed" sentences. Hover one ratio to
+   show its formula.
 
 **Narration:**
 
@@ -102,6 +106,8 @@ briefing format" instead of "arrives".
 > protected before anything is searchable. The forecast shows the lowest likely
 > balance, RM20,560, on the day payroll and a supplier payment land together.
 > That is RM29,440 under the owner's minimum, and the worst case goes negative.
+> The same records give a monthly profit and loss: September made RM39,200 on
+> RM249,400 of revenue, and every ratio shows its formula.
 
 ## 3. 09:00 — Prepare for the bank meeting (0:55–1:50)
 
@@ -109,7 +115,7 @@ briefing format" instead of "arrives".
 1. Type **"Prepare me for the bank meeting"**.
 2. Hold the pack's headline and its **Missing facts** step.
 3. Click **Open Financing & Passport →** and scroll the **Credit scorecard** slowly.
-   Point to bank-line matching (80%, from last month's records) and to a
+   Point to bank-line matching (90%, from last month's records) and to a
    factor with no source, which earns nothing.
 4. Show one **Financing match** with its rule-by-rule reasons.
 5. Open the **Review inbox**, select **Bank meeting: review lender sharing** (L2)
@@ -123,7 +129,7 @@ briefing format" instead of "arrives".
 
 > "Prepare me for the bank meeting." DuitDuit gathers the forecast, the financing
 > facts and what is missing. The scorecard uses the same facts as the
-> matches: four of last month's five bank lines match a record, and where we
+> matches: nine of last month's ten bank lines match a record, and where we
 > have no source it says so and gives no points. Sharing with a lender is an L2
 > action, so it waits in the inbox for the owner. Approving it creates no link:
 > the owner chooses the lender and the expiry, and confirms with an authenticator
@@ -188,15 +194,15 @@ voice test.
 **Action:**
 1. As Owner, type **"Close the month"**.
 2. Hold the headline count and the **Bank reconciliation** step: "September 2026:
-   4 of 5 bank lines match a record … No record yet for: RM1,250.00 out on 27 Sep".
+   9 of 10 bank lines match a record … No record yet for: RM1,250.00 out on 27 Sep".
 3. Open **e-Invoicing → Readiness Check** and show the critical issues (missing
    supplier TIN, which MyInvois would reject).
 
 **Narration:**
 
 > At five, "close the month". Imports are current. Some e-invoices still need
-> fixes before MyInvois accepts them, and some inbox items are open. Four of
-> September's five bank lines match a record; one RM1,250 transfer has none, so
+> fixes before MyInvois accepts them, and some inbox items are open. Nine of
+> September's ten bank lines match a record; one RM1,250 transfer has none, so
 > it waits for a person to explain it rather than being guessed. This is a
 > checklist for the owner, not a statement that the books are closed.
 

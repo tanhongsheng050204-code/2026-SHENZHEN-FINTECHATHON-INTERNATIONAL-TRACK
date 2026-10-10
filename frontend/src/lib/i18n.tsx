@@ -17,6 +17,7 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
   "tabs.agentProposals": { en: "Agent proposals", ms: "Cadangan ejen", zh: "智能体提案" },
   "tabs.recommendations": { en: "Recommendations & outreach", ms: "Cadangan & jangkauan", zh: "建议与外联" },
   "tabs.forecast": { en: "Cash forecast", ms: "Ramalan tunai", zh: "现金预测" },
+  "tabs.analysis": { en: "Financial analysis", ms: "Analisis kewangan", zh: "财务分析" },
   "tabs.intelligence": { en: "Receivables & intelligence", ms: "Penghutang & risikan", zh: "应收与财务情报" },
   "tabs.posture": { en: "Security posture", ms: "Postur keselamatan", zh: "安全态势" },
   "tabs.audit": { en: "Audit & access", ms: "Audit & akses", zh: "审计与权限" },

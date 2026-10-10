@@ -27,6 +27,7 @@ const Customers = lazy(() => import("./screens/Customers"));
 const Einvoice = lazy(() => import("./screens/Einvoice"));
 const EinvoiceDetail = lazy(() => import("./screens/EinvoiceDetail"));
 const Finance = lazy(() => import("./screens/Finance"));
+const Analysis = lazy(() => import("./screens/Analysis"));
 const Audit = lazy(() => import("./screens/Audit"));
 const Approvals = lazy(() => import("./screens/Approvals"));
 const Ingestion = lazy(() => import("./screens/Ingestion"));
@@ -80,6 +81,7 @@ function Screens() {
     case "einvoice": return <Einvoice />;
     case "einvoice-detail": return <EinvoiceDetail />;
     case "finance": return <Finance />;
+    case "analysis": return <Analysis />;
     case "audit": return <Audit />;
     case "approvals": return <Approvals />;
     case "ingestion": return <Ingestion />;
