@@ -10,7 +10,7 @@ import { useUiChrome } from "../lib/uiChrome";
 import { LogoMark, Wordmark } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
 
-const MARKETING_SECTIONS = ["landing-flow", "landing-agents", "landing-proof", "landing-why", "landing-pricing", "landing-faq"];
+const MARKETING_SECTIONS = ["landing-product", "landing-security", "landing-proof", "landing-faq"];
 
 export function LandingNav() {
   const { show } = useAppState();
@@ -34,11 +34,9 @@ export function LandingNav() {
 }
 
 const MARKETING_NAV_ITEMS = [
-  { id: "landing-flow", label: "Product" },
-  { id: "landing-agents", label: "AI Agents" },
+  { id: "landing-product", label: "Product" },
+  { id: "landing-security", label: "Security" },
   { id: "landing-proof", label: "Proof" },
-  { id: "landing-why", label: "Why Us" },
-  { id: "landing-pricing", label: "Pricing" },
   { id: "landing-faq", label: "FAQ" },
 ];
 
@@ -65,7 +63,7 @@ export function MarketingNav() {
         </div>
         <div className="fb-mkt-nav-actions">
           <span tabIndex={0} role="button" onClick={() => show("login")}>Log in</span>
-          <button className="fb-mkt-btn is-accent" onClick={() => show("signup")}>Get Started</button>
+          <button className="fb-mkt-btn is-accent" onClick={() => show("signup")}>Get started</button>
           <button
             className={"fb-mkt-nav-toggle" + (menuOpen ? " is-open" : "")}
             type="button"

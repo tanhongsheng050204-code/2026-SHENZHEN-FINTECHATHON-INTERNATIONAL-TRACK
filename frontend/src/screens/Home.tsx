@@ -3,8 +3,7 @@ import { useI18n, type Lang } from "../lib/i18n";
 import { useAppState } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
 import { Sidebar, AppTopBar } from "../components/Nav";
-import { TodayStrip } from "../components/TodayStrip";
-import { EmptyState } from "../components/EmptyState";
+import { TodayHero } from "../components/TodayHero";
 import { PERSONAS } from "../lib/personas";
 import { displayCase, formatRm, isPlaceholderName } from "../lib/customerAggregation";
 import {
@@ -441,7 +440,7 @@ function AttentionSection({
 
   return (
     <section style={{ marginBottom: "1.6rem" }}>
-      <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>Attention — verified cross-source signals</div>
+      <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>Customers to watch</div>
       {state === "loading" && (
         <div className="fb-briefing-list" aria-hidden="true">
           {[0, 1, 2].map((i) => (
@@ -459,11 +458,7 @@ function AttentionSection({
         </div>
       )}
       {state === "loaded" && needsAttention.length === 0 && (
-        <EmptyState
-          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>}
-          title="No customers need attention right now"
-          description="Nobody has an active attention signal today."
-        />
+        <p className="th-quiet">No customer has a warning sign today.</p>
       )}
       {state === "loaded" && needsAttention.length > 0 && (
         <div className="fb-briefing-list">
@@ -521,49 +516,11 @@ const GREETING_KEY: Record<GreetingPeriod, "home.greeting.morning" | "home.greet
 
 const GREETING_LOCALE: Record<Lang, string> = { en: "en-US", ms: "ms-MY", zh: "zh-CN" };
 
-function GreetingIcon({ period }: { period: GreetingPeriod }) {
-  if (period === "evening") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2z" />
-        <path d="M17.5 3.8v2.2M16.4 4.9h2.2" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="4.5" />
-      <path d="M12 3v2.5M12 18.5V21M4.5 12H2M22 12h-2.5M6.3 6.3 4.6 4.6M19.4 19.4l-1.7-1.7M6.3 17.7l-1.7 1.7M19.4 4.6l-1.7 1.7" />
-    </svg>
-  );
-}
-
-function GreetingHeader({ firstName, lang }: { firstName: string | null; lang: Lang }) {
-  const { t } = useI18n();
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const period = greetingPeriod(now.getHours());
+function greetingLine(t: (key: "home.greeting.morning" | "home.greeting.afternoon" | "home.greeting.evening") => string, name: string | null, lang: Lang): string {
+  const now = new Date();
   const locale = GREETING_LOCALE[lang] ?? "en-US";
-  const timeStr = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(now);
-  const dateStr = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(now);
-
-  return (
-    <div className={"fb-greeting is-" + period}>
-      <span className="fb-greeting-icon"><GreetingIcon period={period} /></span>
-      <div>
-        <h1 className="fb-greeting-line">
-          {t(GREETING_KEY[period])}
-          {firstName && <>, <span className="fb-greeting-name">{firstName}</span></>}
-        </h1>
-        <div className="fb-greeting-clock">{timeStr} · {dateStr}</div>
-      </div>
-    </div>
-  );
+  const date = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(now);
+  return `${t(GREETING_KEY[greetingPeriod(now.getHours())])}${name ? `, ${name}` : ""}. ${date}.`;
 }
 
 export default function Home() {
@@ -620,14 +577,8 @@ export default function Home() {
         </div>
       )}
 
-      <header className="fb-app-header">
-        <div className="fb-eyebrow" style={{ marginBottom: ".5rem" }}>{t("home.title")}</div>
-        <GreetingHeader firstName={greetingName} lang={lang} />
-        <p className="fb-fine" style={{ marginTop: ".6rem" }}>{t("home.desc")}</p>
-      </header>
-
-      <div className="fb-page-body">
-        <TodayStrip />
+      <div className="fb-page-body th-page">
+        <TodayHero greeting={greetingLine(t, greetingName, lang)} />
 
         <AttentionSection needsAttention={needsAttention} state={customersState} onRetry={retryCustomers} />
 

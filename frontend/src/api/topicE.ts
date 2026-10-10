@@ -977,7 +977,7 @@ export async function transcribeVoice(audio: Blob, duration: number, signal: Abo
 }
 
 export interface BriefingLine {
-  kind: "inbox" | "cash" | "sharing" | "guardrails" | "data";
+  kind: "inbox" | "cash" | "sharing" | "guardrails" | "data" | "alerts";
   text: string;
   screen: string | null;
   tone: "ok" | "attention" | "risk";

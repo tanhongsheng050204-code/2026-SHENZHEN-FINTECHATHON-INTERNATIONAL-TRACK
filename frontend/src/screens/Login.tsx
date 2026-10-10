@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { authMode } from "../api/session";
 import { AuthFlow, type AuthFlowMode } from "../components/AuthFlow";
-import { LogoMark } from "../components/Logo";
+import { AuthStory } from "../components/AuthStory";
 import { useAppState } from "../lib/appState";
-import { useParallax } from "../lib/interactivity";
 
 export default function Login() {
-  const { show, goToSecurity } = useAppState();
+  const { show } = useAppState();
   const { authError, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +15,6 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [shakeToken, setShakeToken] = useState(0);
   const [flowMode, setFlowMode] = useState<AuthFlowMode>("signin");
-  const { ref: storyRef, offset: storyOffset, onMouseMove: onStoryMouseMove, onMouseLeave: onStoryMouseLeave } = useParallax<HTMLDivElement>(16);
 
   const hasError = Boolean(error || authError);
 
@@ -36,51 +34,20 @@ export default function Login() {
   };
 
   return (
-    <div className="fb-root fb-mkt">
+    <div className="fb-root fb-mkt lx lx-auth">
       <div className="fb-mkt-auth-wrap">
-        <div className="fb-mkt-auth-story" ref={storyRef} onMouseMove={onStoryMouseMove} onMouseLeave={onStoryMouseLeave}>
-          <div
-            className="fb-mkt-blob"
-            style={{ width: 340, height: 340, top: -120, left: -100, background: "var(--a-accent)", transform: `translate3d(${storyOffset.x}px, ${storyOffset.y}px, 0)` }}
-            aria-hidden="true"
-          />
-          <div
-            className="fb-mkt-blob"
-            style={{ width: 260, height: 260, bottom: -100, right: -80, background: "var(--a-purple)", transform: `translate3d(${-storyOffset.x * 1.2}px, ${-storyOffset.y * 1.2}px, 0)` }}
-            aria-hidden="true"
-          />
-          <button className="fb-mkt-wordmark" style={{ position: "relative", zIndex: 1 }} onClick={() => show("landing")}>
-            <LogoMark large />DuitDuit
-          </button>
-          <div className="fb-mkt-auth-copy">
-            <div className="fb-mkt-eyebrow" style={{ position: "relative", zIndex: 1 }}>Verified access</div>
-            <h1>Ask your business.<br />Get answers you can prove.</h1>
-            <p>{authMode === "backend" ? "Password, an emailed code and an authenticator app protect every sign-in. DuitDuit applies your assigned role to every request." : "Supabase verifies your identity. DuitDuit applies your assigned role to every protected API call."}</p>
-          </div>
-          <div className="fb-mkt-trust-list">
-            <div className="fb-mkt-trust-row">
-              <div className="fb-mkt-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg></div>
-              <div><strong>Signed requests</strong><span>Every protected API call carries a short-lived access token.</span></div>
-            </div>
-            <div className="fb-mkt-trust-row">
-              <div className="fb-mkt-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 20 6.5v5.3c0 4.7-3.2 8.9-8 10.2-4.8-1.3-8-5.5-8-10.2V6.5z" /></svg></div>
-              <div><strong>Server-owned roles</strong><span>The browser cannot select or elevate its own permissions.</span></div>
-            </div>
-            <div className="fb-mkt-trust-row">
-              <div className="fb-mkt-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h16M4 18h10" /></svg></div>
-              <div><strong>Tamper-evident audit</strong><span>Disclosures and workflow decisions retain a privacy-safe actor reference.</span></div>
-            </div>
-          </div>
-          <span className="fb-mkt-auth-link" tabIndex={0} role="button" onClick={() => goToSecurity("login")}>Learn more about our security and compliance approach →</span>
-        </div>
+        <AuthStory
+          from="login"
+          title="Welcome back to your books."
+          body="Three locks stand between this page and your company's numbers. Your role decides what you see once you are in."
+        />
         <div className="fb-mkt-auth-form-wrap">
           {authMode === "backend" ? (
             <AuthFlow mode={flowMode} onModeChange={setFlowMode} />
           ) : (
           <form className="fb-mkt-auth-form" onSubmit={submit}>
-            <div className="fb-mkt-eyebrow is-plain">Welcome back</div>
-            <h2>Enter the secure workspace</h2>
-            <p>Use a provisioned Supabase account. Your DuitDuit role is assigned by an administrator.</p>
+            <h2>Sign in</h2>
+            <p>Use the account your administrator created for you.</p>
             <div key={shakeToken} className={"fb-mkt-auth-fields" + (hasError ? " is-shake" : "")}>
               <label className="fb-mkt-field" htmlFor="fb-login-username">Email
                 <input
@@ -128,7 +95,7 @@ export default function Login() {
             </div>
             <button className="fb-mkt-btn is-accent is-lg" style={{ width: "100%", justifyContent: "center", marginTop: ".2rem" }} type="submit" disabled={submitting}>
               {submitting && <span className="fb-mkt-btn-spinner" aria-hidden="true" />}
-              {submitting ? "Authenticating…" : "Sign in to DuitDuit"}
+              {submitting ? "Signing in…" : "Sign in"}
             </button>
             <div className="fb-mkt-fine">Accounts and roles are provisioned by the DuitDuit administrator.</div>
           </form>
