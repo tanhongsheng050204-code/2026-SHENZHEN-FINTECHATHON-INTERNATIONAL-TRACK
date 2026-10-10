@@ -5,9 +5,9 @@ Risks we have found and not yet removed, each with its current treatment. Dated 
 | # | Risk | Treatment |
 |---|---|---|
 | 1 | `einvoice_records.supplier_name` and `buyer_name` are stored in clear. They are business names, but a sole proprietor's business name can be a person's name. | **Accepted for the demo.** E-invoices legally carry these names, and every tenant query is scoped. Tokenizing them is a follow-up. |
-| 2 | The disclosure path restores email and phone tokens for `general_employee`. Exact amounts are banded. | **Open decision.** Mask contact details for that role, or document why staff need them. |
+| 2 | The disclosure path restores email and phone tokens for `general_employee`. Exact amounts are banded. | **Resolved 2026-10-10.** Email and phone stay masked for `general_employee`: the policy no longer lists the role, every read checks the current policy (so older vault rows obey it too), and migration `202610100001` removes the role from stored rows for row-level security. Tested in `tests/test_contact_disclosure.py`. |
 | 3 | Guardrail patterns are deterministic, so a paraphrased injection may pass. | Tools are allowlisted independently (ADV-03), and ingested text cannot create actions (ADV-06). |
-| 4 | Plan 2 (identity) and Plan 3 (importers) have no automated tests of their own, and break 82 existing tests in a scratch merge. | Must be fixed before they are committed. The evaluation harness passes 28/28 on that merge. |
+| 4 | Plan 2 (identity) and Plan 3 (importers) have no automated tests of their own, and break 82 existing tests in a scratch merge. | **Resolved.** Plans 2 and 3 are committed with their own tests; on 2026-10-10 the full backend suite passed (576 passed, 2 skipped). |
 | 5 | The public Passport verify and share endpoints have not been run against hosted PostgreSQL RLS. | Validate on Supabase before the demo. |
 | 6 | The public endpoints are rate-limited per client address (30 requests a minute), but the count is kept per server instance. | A shared store would make the limit exact across instances. |
 | 7 | Passport anchors are reported only where `audit-anchors/` is deployed with the API. | Set `AUDIT_ANCHOR_DIR` in production, or show anchors from the repository. |

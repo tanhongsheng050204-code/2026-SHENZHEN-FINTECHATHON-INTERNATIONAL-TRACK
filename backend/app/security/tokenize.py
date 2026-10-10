@@ -25,10 +25,12 @@ ACL_POLICY = {
     "NRIC": ["compliance", "owner_director"],
     "CARD": ["compliance"],
     "BANKACC": ["finance_ops", "owner_director", "compliance"],
-    "PHONE": ["finance_ops", "owner_director", "compliance", "general_employee"],
+    # Customer contact details stay masked for general employees; outreach goes
+    # through finance and the owner, who manage verified endpoints.
+    "PHONE": ["finance_ops", "owner_director", "compliance"],
     "PERSON": ["finance_ops", "owner_director", "compliance", "general_employee"],
     "ADDR": ["compliance", "owner_director"],
-    "EMAIL": ["finance_ops", "owner_director", "compliance", "general_employee"],
+    "EMAIL": ["finance_ops", "owner_director", "compliance"],
     "ORG": ["finance_ops", "owner_director", "compliance", "general_employee"],
     "AMOUNT": ["finance_ops", "owner_director", "compliance"],
     "TGUSER": ["finance_ops", "owner_director", "compliance"],

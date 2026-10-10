@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.models import ProtectedTokenRegistry, TokenizedContent, TokenVaultEntry
 from app.security.disclosure import new_disclosure_session
 from app.security.keyring import decrypt_vault_entry
+from app.security.tokenize import ACL_POLICY
 from app.services.audit import write_audit_entry
 
 TOKEN_PATTERN = re.compile(r"(?:AMOUNT_BAND_\d+_[0-9a-f]{10}|[A-Z]+_[0-9a-f]{10})")
@@ -123,8 +124,11 @@ def detokenize_response_with_trace(
                 employee_access = role == "owner_director" or "hr" in db.info.get(
                     "finbrain_request_jobs", ()
                 )
+                # The current policy also applies to rows written under an older,
+                # wider one: a role must be allowed both then and now.
+                current_policy = role in ACL_POLICY.get(registry.entity_type, (role,))
                 policy_access = entry is not None and (
-                    role in entry.allowed_roles
+                    (role in entry.allowed_roles and current_policy)
                     or (
                         employee_data
                         and employee_access
