@@ -28,3 +28,15 @@ def test_finance_cannot_see_posture():
     response = client_for(router, role=UserRole.FINANCE_OPS).get("/trust/posture")
 
     assert response.status_code == 403
+
+
+def test_posture_includes_live_security_checks():
+    body = client_for(router, role=UserRole.COMPLIANCE).get("/trust/posture").json()
+    metrics = {metric["key"]: metric for metric in body["metrics"]}
+
+    # Row-level security can only be probed on PostgreSQL; SQLite says so.
+    assert metrics["tenant_isolation"]["value"] == "Not measured"
+    assert metrics["contact_masking"]["status"] == "good"
+    assert metrics["rate_limits"]["value"] == "Per instance"
+    assert metrics["share_links"]["status"] in {"good", "attention"}
+    assert metrics["kill_switch"]["value"] in {"Agents running", "All agents stopped"}

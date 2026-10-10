@@ -77,6 +77,11 @@ def test_passport_sharing_is_tenant_scoped_under_rls():
         _as(db, owner_b)
         assert passports.list_for(db, str(owner_a.tenant_id)) == []
         assert external_grants.list_for(db, str(owner_a.tenant_id), "lender", passport.id) == []
+        # The Trust page's live probe sees the same isolation.
+        from app.services import trust
+
+        probe = {m.key: m for m in trust.posture(db, owner_b).metrics}["tenant_isolation"]
+        assert (probe.value, probe.status) == ("Enforced", "good")
         db.commit()
 
     # A lender opens the link with no session; the view runs scoped to A only.
