@@ -12,6 +12,7 @@ from fastapi import FastAPI
 
 from app.routes import (
     agents,
+    analysis,
     cashflow,
     customization,
     financing,
@@ -38,6 +39,7 @@ CONTRACT_ROUTERS = (
     team.router,
     settings_routes.router,
     customization.router,
+    analysis.router,
 )
 
 

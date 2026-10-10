@@ -19,6 +19,8 @@ STAGE_PROBABILITIES = {
     "quote": Decimal("0.30"),
     "order": Decimal("0.70"),
     "invoiced": Decimal("1.00"),
+    # Received: kept for the financial analysis, never a future cash signal.
+    "paid": Decimal("0.00"),
     "lost": Decimal("0.00"),
 }
 _NUMBER = re.compile(r"-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?")
@@ -239,6 +241,8 @@ def validate_row(schema: str, row: dict) -> tuple[dict, str]:
                 row, "probability", str(STAGE_PROBABILITIES[stage]), maximum=Decimal(1)
             ),
         }
+        if stage == "paid":
+            values["probability"] = Decimal("0.00")
         key = _text(row, "reference")
     if len(key) > 1000:
         raise InvalidCell("reference", "reference_too_long")

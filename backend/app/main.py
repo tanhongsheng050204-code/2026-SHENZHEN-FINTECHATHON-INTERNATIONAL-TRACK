@@ -48,6 +48,7 @@ from app.routes import (
     uploads,
 )
 from app.routes import alerts as alerts_routes
+from app.routes import analysis as analysis_routes
 from app.routes import settings as settings_routes
 from app.security.detect import warm_detector
 
@@ -207,6 +208,7 @@ app.include_router(customization.router)
 app.include_router(imports.router)
 app.include_router(assistant.router)
 app.include_router(alerts_routes.router)
+app.include_router(analysis_routes.router)
 
 
 @app.exception_handler(RequestValidationError)

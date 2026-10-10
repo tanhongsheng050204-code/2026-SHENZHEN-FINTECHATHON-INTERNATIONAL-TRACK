@@ -63,6 +63,7 @@ CONTRACT_OPERATIONS = {
     ("post", "/settings/import-mappings/match"),
     ("get", "/settings/alert-rules"),
     ("post", "/settings/alert-rules"),
+    ("get", "/analysis"),
 }
 STREAMING_OPERATIONS = {("get", "/agents/runs/{run_id}/events")}
 

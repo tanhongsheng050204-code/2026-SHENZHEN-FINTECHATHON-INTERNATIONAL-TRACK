@@ -1,5 +1,6 @@
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from types import SimpleNamespace
 from typing import Literal
 from zoneinfo import ZoneInfo
 
@@ -7,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.models import Customer, EInvoiceRecord
+from app.models import Customer, EInvoiceRecord, MarketplacePayout, SalesPipeline
 from app.schemas import (
     ARAgingBucket,
     FinanceSummaryResponse,
@@ -71,7 +72,72 @@ def _period_bounds(
     return start, end
 
 
+def _has_ledger(db: Session, tenant_id: str) -> bool:
+    """A tenant that imports its sales ledger is summarised from it, the same rows the
+    cash forecast and the financial analysis read; others from validated e-invoices."""
+    return (
+        db.scalar(select(SalesPipeline.id).where(SalesPipeline.tenant_id == tenant_id).limit(1))
+        is not None
+    )
+
+
+def _ledger_revenue(db: Session, tenant_id: str, start: date, end: date) -> Decimal:
+    sales = db.scalar(
+        select(func.sum(SalesPipeline.amount)).where(
+            SalesPipeline.tenant_id == tenant_id,
+            SalesPipeline.stage == "paid",
+            SalesPipeline.expected_payment_date >= start,
+            SalesPipeline.expected_payment_date < end,
+        )
+    )
+    payouts = db.scalar(
+        select(func.sum(MarketplacePayout.gross)).where(
+            MarketplacePayout.tenant_id == tenant_id,
+            MarketplacePayout.status == "paid",
+            MarketplacePayout.payout_date >= start,
+            MarketplacePayout.payout_date < end,
+        )
+    )
+    return _to_decimal(sales) + _to_decimal(payouts)
+
+
+def _ledger_open(db: Session, tenant_id: str) -> list:
+    """Open invoiced sales, shaped like e-invoices for the aging buckets."""
+    return [
+        SimpleNamespace(due_date=row.expected_payment_date, total_amount=row.amount)
+        for row in db.scalars(
+            select(SalesPipeline).where(
+                SalesPipeline.tenant_id == tenant_id, SalesPipeline.stage == "invoiced"
+            )
+        )
+    ]
+
+
+def _ledger_top_customers(db: Session, tenant_id: str, *, limit: int) -> list[TopCustomer]:
+    rows = db.execute(
+        select(
+            Customer.id,
+            Customer.canonical_name,
+            func.sum(SalesPipeline.amount),
+            func.count(SalesPipeline.id),
+        )
+        .join(SalesPipeline, SalesPipeline.customer_id == Customer.id)
+        .where(SalesPipeline.tenant_id == tenant_id, SalesPipeline.stage == "paid")
+        .group_by(Customer.id, Customer.canonical_name)
+        .order_by(func.sum(SalesPipeline.amount).desc())
+        .limit(limit)
+    ).all()
+    return [
+        TopCustomer(
+            customer_id=row[0], name=row[1], total_amount=_to_decimal(row[2]), invoice_count=row[3]
+        )
+        for row in rows
+    ]
+
+
 def _revenue_between(db: Session, tenant_id: str, start: date, end: date) -> Decimal:
+    if _has_ledger(db, tenant_id):
+        return _ledger_revenue(db, tenant_id, start, end)
     total = db.scalar(
         select(func.sum(EInvoiceRecord.total_amount)).where(
             EInvoiceRecord.tenant_id == tenant_id,
@@ -212,14 +278,19 @@ def revenue_summary(
         else None
     )
 
-    outstanding_rows = list(
-        db.scalars(
-            select(EInvoiceRecord).where(
-                EInvoiceRecord.tenant_id == tenant_id,
-                EInvoiceRecord.status == "validated",
-                EInvoiceRecord.paid_at.is_(None),
-            )
-        ).all()
+    ledger = _has_ledger(db, tenant_id)
+    outstanding_rows = (
+        _ledger_open(db, tenant_id)
+        if ledger
+        else list(
+            db.scalars(
+                select(EInvoiceRecord).where(
+                    EInvoiceRecord.tenant_id == tenant_id,
+                    EInvoiceRecord.status == "validated",
+                    EInvoiceRecord.paid_at.is_(None),
+                )
+            ).all()
+        )
     )
     outstanding_ar = sum((row.total_amount for row in outstanding_rows), Decimal(0))
 
@@ -232,9 +303,11 @@ def revenue_summary(
             )
         ).all()
     )
+    # The sales ledger records when money arrived, not when the invoice was issued,
+    # so days to pay is not measured for ledger tenants.
     avg_days_to_pay = (
         sum((row.paid_at - row.issue_date).days for row in paid_rows) / len(paid_rows)
-        if paid_rows
+        if paid_rows and not ledger
         else None
     )
 
@@ -259,7 +332,9 @@ def revenue_summary(
         revenue_trend=_revenue_trend(
             db, tenant_id, months=trend_months, timezone_name=timezone_name, now=now
         ),
-        top_customers=_top_customers(db, tenant_id, limit=top_customer_limit),
+        top_customers=(_ledger_top_customers if ledger else _top_customers)(
+            db, tenant_id, limit=top_customer_limit
+        ),
         status_breakdown=_status_breakdown(db, tenant_id),
         validated_invoice_count=validated_invoice_count,
         avg_days_to_pay=avg_days_to_pay,

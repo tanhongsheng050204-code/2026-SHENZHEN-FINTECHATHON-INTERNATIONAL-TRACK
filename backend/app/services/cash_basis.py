@@ -78,7 +78,7 @@ def _foreign(currency: str, amount: Decimal, rate) -> dict:
 
 def _pipeline_signal(row, as_of: dt.date) -> Signal | None:
     probability = float(row.probability)
-    if row.stage == "lost" or probability <= 0:
+    if row.stage in ("lost", "paid") or probability <= 0:
         return None
     day = _day(row.expected_payment_date, as_of)
     when = f"{row.expected_payment_date:%d %b}"

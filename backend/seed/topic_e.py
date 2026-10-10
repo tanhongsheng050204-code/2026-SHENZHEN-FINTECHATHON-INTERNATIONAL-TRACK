@@ -60,6 +60,30 @@ def datasets(as_of: date):
         # all before the seed date, so the October cash story is unchanged.
         return (last_month_start + timedelta(days=day_of_month - 1)).isoformat()
 
+    def months_ago(count, day_of_month):
+        # Settled history for the financial analysis: 1 is last month, 3 is July
+        # for the default seed date. Paid records never enter the forecast.
+        index = as_of.year * 12 + as_of.month - 1 - count
+        return date(index // 12, index % 12 + 1, day_of_month).isoformat()
+
+    # Cash-basis history: sales received and costs paid in each of the last
+    # three months. Revenue is close to annual_revenue_myr / 12.
+    paid_sales = [
+        (3, "A", "60000.00", 5),
+        (3, "B", "48000.00", 12),
+        (3, "C", "52000.00", 18),
+        (3, "E", "45000.00", 26),
+        (2, "A", "66000.00", 6),
+        (2, "B", "50000.00", 13),
+        (2, "D", "57000.00", 20),
+        (2, "F", "45000.00", 27),
+        (1, "A", "64000.00", 5),
+        (1, "B", "52000.00", 11),
+        (1, "C", "58000.00", 16),
+        (1, "D", "52000.00", 25),
+    ]
+    paid_purchases = [(3, "112000.00", 15), (2, "121000.00", 14), (1, "126000.00", 14)]
+
     def payroll_period(index):
         month_index = as_of.year * 12 + as_of.month - 1 + index
         return f"{month_index // 12:04}-{month_index % 12 + 1:02}"
@@ -92,6 +116,16 @@ def datasets(as_of: date):
                  "0.00", "117650.00", "SYNTHETIC-BANK-0923"],
                 [last_month(27), last_month(27), "SYNTHETIC unexplained transfer", "1250.00",
                  "0.00", "116400.00", "SYNTHETIC-BANK-0927"],
+                # Added with the analysis history. These carry no running balance:
+                # the lines above keep theirs so earlier imports replay unchanged.
+                *[
+                    [months_ago(1, d), months_ago(1, d), f"SYNTHETIC receipt Customer {c}",
+                     "0.00", amount, "", f"SYNTHETIC-BANK-RCPT-{c}-{d:02}"]
+                    for months, c, amount, d in paid_sales
+                    if months == 1
+                ],
+                [months_ago(1, 14), months_ago(1, 14), "SYNTHETIC wholesaler payment",
+                 "126000.00", "0.00", "", "SYNTHETIC-BANK-WHOLESALE-09"],
                 [
                     day(0),
                     day(0),
@@ -107,6 +141,18 @@ def datasets(as_of: date):
             ["bill_id", "supplier", "amount", "currency", "fx_rate", "due_date", "status"],
             None,
             [
+                *[
+                    [
+                        f"SYNTHETIC-RENT-M{months}",
+                        "SYNTHETIC local landlord",
+                        "14800.00",
+                        "MYR",
+                        "1",
+                        months_ago(months, 7),
+                        "paid",
+                    ]
+                    for months in (3, 2)
+                ],
                 [
                     "SYNTHETIC-RENT-0",
                     "SYNTHETIC local landlord",
@@ -167,6 +213,19 @@ def datasets(as_of: date):
             ],
             None,
             [
+                *[
+                    [
+                        f"SYNTHETIC-PO-PAID-M{months}",
+                        "SYNTHETIC local wholesaler",
+                        amount,
+                        "MYR",
+                        "1",
+                        months_ago(months, day - 4),
+                        months_ago(months, day),
+                        "paid",
+                    ]
+                    for months, amount, day in paid_purchases
+                ],
                 [
                     "SYNTHETIC-PO-1",
                     "SYNTHETIC Shenzhen Supplier 1",
@@ -239,6 +298,18 @@ def datasets(as_of: date):
             ]
             + [
                 [
+                    payroll_period(-months),
+                    months_ago(months, 23),
+                    f"SYNTHETIC Employee {i:02}",
+                    "5000.00",
+                    "1200.00",
+                    "paid",
+                ]
+                for months in (3, 2)
+                for i in range(1, 11)
+            ]
+            + [
+                [
                     payroll_period(-1),
                     last_month(23),
                     f"SYNTHETIC Employee {i:02}",
@@ -261,6 +332,22 @@ def datasets(as_of: date):
             ],
             None,
             [
+                *[
+                    [
+                        f"SYNTHETIC-CAMP-M{months}",
+                        "SYNTHETIC marketplace ads",
+                        "SYNTHETIC monthly promotion",
+                        spend,
+                        months_ago(months, 1),
+                        months_ago(months, 28),
+                        attributed,
+                    ]
+                    for months, spend, attributed in (
+                        (3, "5000.00", "21000.00"),
+                        (2, "5500.00", "22000.00"),
+                        (1, "6000.00", "26500.00"),
+                    )
+                ],
                 [
                     "SYNTHETIC-CAMP-1",
                     "SYNTHETIC marketplace ads",
@@ -276,6 +363,18 @@ def datasets(as_of: date):
             ["reference", "platform", "payout_date", "gross", "fees", "net", "status"],
             None,
             [
+                *[
+                    [
+                        f"SYNTHETIC-PAYOUT-M{months}",
+                        "SYNTHETIC Shopee settlement",
+                        months_ago(months, 4),
+                        gross,
+                        "600.00",
+                        net,
+                        "paid",
+                    ]
+                    for months, gross, net in ((3, "9400.00", "8800.00"), (2, "9700.00", "9100.00"))
+                ],
                 [
                     "SYNTHETIC-PAYOUT-0903",
                     "SYNTHETIC Shopee settlement",
@@ -333,7 +432,18 @@ def datasets(as_of: date):
                     1,
                 )
             ]
-            + [["SYNTHETIC-SO-311", "SYNTHETIC Customer G", "order", "26000.00", day(60), "0.70"]],
+            + [["SYNTHETIC-SO-311", "SYNTHETIC Customer G", "order", "26000.00", day(60), "0.70"]]
+            + [
+                [
+                    f"SYNTHETIC-PAID-{customer}-M{months}",
+                    f"SYNTHETIC Customer {customer}",
+                    "paid",
+                    amount,
+                    months_ago(months, received),
+                    "0.00",
+                ]
+                for months, customer, amount, received in paid_sales
+            ],
         ),
     }
     return {

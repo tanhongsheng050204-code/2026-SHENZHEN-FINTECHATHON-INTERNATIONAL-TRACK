@@ -21,4 +21,10 @@ def finance_summary(
     principal: AuthPrincipal = Depends(require_roles(*_FINANCE_ROLES)),
     db: Session = Depends(get_db),
 ) -> FinanceSummaryResponse:
-    return revenue_summary(db, str(principal.tenant_id), period=period, offset=offset)
+    from app.routes.customers import display_name
+
+    summary = revenue_summary(db, str(principal.tenant_id), period=period, offset=offset)
+    # Ledger customers are stored as protected tokens; show each one as this person may.
+    for customer in summary.top_customers:
+        customer.name = display_name(db, principal, customer.customer_id)
+    return summary

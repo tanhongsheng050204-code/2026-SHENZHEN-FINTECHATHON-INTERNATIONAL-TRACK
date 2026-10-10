@@ -5,7 +5,7 @@ the cent and the dates are at most three days apart. Each record matches at most
 one line, closest date first. Records count only once they are settled:
 
 - debits: paid payables, paid purchase orders and paid payroll runs;
-- credits: paid marketplace payouts.
+- credits: received sales and paid marketplace payouts.
 
 Lines with no record are listed for a person to explain. No line is ever matched
 on a guess, and a month with no bank lines is reported as not measured.
@@ -80,6 +80,14 @@ def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal]]]:
         )
     ]
     credits = [
+        (row.expected_payment_date, row.amount)
+        for row in db.scalars(
+            select(m.SalesPipeline).where(
+                m.SalesPipeline.tenant_id == tenant_id, m.SalesPipeline.stage == "paid"
+            )
+        )
+    ]
+    credits += [
         (row.payout_date, row.net)
         for row in db.scalars(
             select(m.MarketplacePayout).where(

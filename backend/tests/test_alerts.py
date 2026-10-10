@@ -104,12 +104,12 @@ def test_overdue_per_customer_fires_per_customer_once_invoices_are_late(db):
 
 def test_metrics_without_a_source_never_fire(db):
     _rule(db, "open_disputes", "above", "0")
-    _rule(db, "marketing_return_per_ringgit", "below", "100")
 
     assert alerts.evaluate(db, TENANT, AS_OF) == []
     readings = {r.metric: r for r in alerts.readings(db, TENANT, AS_OF)}
     assert readings["open_disputes"].value is None
-    assert readings["marketing_return_per_ringgit"].value is None
+    # Completed July to September campaigns: RM69,500 attributed on RM16,500 spent.
+    assert readings["marketing_return_per_ringgit"].value == Decimal("4.21")
 
 
 def test_alert_events_hold_ids_and_values_never_names(db):

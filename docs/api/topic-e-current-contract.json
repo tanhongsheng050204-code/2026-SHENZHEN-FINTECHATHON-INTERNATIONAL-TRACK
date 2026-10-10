@@ -566,6 +566,66 @@
         "title": "AlertSettings",
         "type": "object"
       },
+      "AnalysisResponse": {
+        "properties": {
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "changes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "expenses": {
+            "items": {
+              "$ref": "#/components/schemas/ExpenseShare"
+            },
+            "title": "Expenses",
+            "type": "array"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/PnlMonth"
+            },
+            "title": "Months",
+            "type": "array"
+          },
+          "ratios": {
+            "items": {
+              "$ref": "#/components/schemas/Ratio"
+            },
+            "title": "Ratios",
+            "type": "array"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data_mode",
+          "synthetic",
+          "as_of",
+          "basis",
+          "months",
+          "expenses",
+          "ratios",
+          "changes"
+        ],
+        "title": "AnalysisResponse",
+        "type": "object"
+      },
       "AnchorRef": {
         "additionalProperties": false,
         "properties": {
@@ -1221,6 +1281,39 @@
           "source"
         ],
         "title": "EvidenceRef",
+        "type": "object"
+      },
+      "ExpenseShare": {
+        "properties": {
+          "amount": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Percent of all costs in the period",
+            "title": "Share"
+          }
+        },
+        "required": [
+          "label",
+          "amount",
+          "share"
+        ],
+        "title": "ExpenseShare",
         "type": "object"
       },
       "ExternalGrant": {
@@ -2550,6 +2643,122 @@
         "title": "PassportResponse",
         "type": "object"
       },
+      "PnlMonth": {
+        "properties": {
+          "gross_margin": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Percent of revenue, one decimal",
+            "title": "Gross Margin"
+          },
+          "gross_profit": {
+            "description": "Revenue minus purchases",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gross Profit",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "marketing": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Marketing",
+            "type": "string"
+          },
+          "marketplace": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Marketplace",
+            "type": "string"
+          },
+          "marketplace_fees": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Marketplace Fees",
+            "type": "string"
+          },
+          "month": {
+            "description": "YYYY-MM",
+            "title": "Month",
+            "type": "string"
+          },
+          "net_margin": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Margin"
+          },
+          "net_result": {
+            "description": "Revenue minus all costs",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Net Result",
+            "type": "string"
+          },
+          "payroll": {
+            "description": "Gross pay plus employer contributions, totals only",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Payroll",
+            "type": "string"
+          },
+          "purchases": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Purchases",
+            "type": "string"
+          },
+          "rent_and_bills": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Rent And Bills",
+            "type": "string"
+          },
+          "revenue": {
+            "description": "Sales received plus marketplace payouts (gross)",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Revenue",
+            "type": "string"
+          },
+          "sales": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Sales",
+            "type": "string"
+          },
+          "total_costs": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Costs",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "label",
+          "revenue",
+          "sales",
+          "marketplace",
+          "purchases",
+          "payroll",
+          "rent_and_bills",
+          "marketing",
+          "marketplace_fees",
+          "total_costs",
+          "gross_profit",
+          "gross_margin",
+          "net_result",
+          "net_margin"
+        ],
+        "title": "PnlMonth",
+        "type": "object"
+      },
       "PositionSetting": {
         "properties": {
           "display_name": {
@@ -2809,6 +3018,70 @@
           "synthetic"
         ],
         "title": "PublicSignal",
+        "type": "object"
+      },
+      "Ratio": {
+        "properties": {
+          "formula": {
+            "title": "Formula",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "measured",
+              "not_measured"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "days",
+              "percent",
+              "ringgit",
+              "day"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "unit",
+          "status",
+          "formula",
+          "sources"
+        ],
+        "title": "Ratio",
         "type": "object"
       },
       "ReviewAction": {
@@ -4157,6 +4430,57 @@
         "summary": "Change Autonomy",
         "tags": [
           "agents"
+        ]
+      }
+    },
+    "/analysis": {
+      "get": {
+        "description": "Monthly profit and loss, ratios with their formulas, and what changed.",
+        "operationId": "analysis_analysis_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "months",
+            "required": false,
+            "schema": {
+              "default": 3,
+              "maximum": 12,
+              "minimum": 1,
+              "title": "Months",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Analysis",
+        "tags": [
+          "analysis"
         ]
       }
     },

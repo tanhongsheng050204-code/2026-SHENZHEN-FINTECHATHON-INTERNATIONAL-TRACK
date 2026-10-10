@@ -45,6 +45,11 @@ SCREENS: dict[str, tuple[str, tuple[UserRole, ...], tuple[str, ...]]] = {
     "settings": ("My preferences", _EVERYONE, ("preferences", "my settings", "profile")),
     "cashflow": ("Cash & finance", _FINANCE_READ, ("cash", "cash flow", "cashflow", "forecast")),
     "finance": ("Receivables & intelligence", _FINANCE_READ, ("receivables", "revenue")),
+    "analysis": (
+        "Financial analysis",
+        _FINANCE_READ,
+        ("analysis", "profit", "profit and loss", "p&l", "margin", "margins", "expenses"),
+    ),
     "financing": ("Financing & Passport", _FINANCE_READ, ("financing", "loan", "passport")),
     "einvoice": (
         "e-Invoicing",

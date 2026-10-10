@@ -16,7 +16,7 @@ from app.schemas import (
     CustomerTimelineItemResponse,
 )
 from app.security.detokenize import detokenize_response_with_trace, hash_query
-from app.services.customer_intelligence import customer_detail, list_customers
+from app.services.customer_intelligence import customer_detail, customer_summary, list_customers
 
 router = APIRouter(tags=["customers"])
 
@@ -70,6 +70,15 @@ def _authorized_customer_summary(
     if trace.restored_tokens != 1 or trace.withheld_tokens != 0:
         return summary
     return summary.model_copy(update={"name": trace.text})
+
+
+def display_name(db: Session, principal: AuthPrincipal, customer_id: int) -> str:
+    """The name this person may see: restored by role policy, otherwise masked."""
+    customer = db.get(Customer, customer_id)
+    if customer is None or customer.tenant_id != str(principal.tenant_id):
+        return "Customer"
+    summary = customer_summary(db, str(principal.tenant_id), customer)
+    return _authorized_customer_summary(db, principal, summary).name
 
 
 def _authorized_customer_detail(

@@ -104,7 +104,7 @@ def test_no_bank_lines_last_month_is_not_measured(db):
     assert (result.lines, result.share) == (0, None)
 
 
-def test_the_synthetic_company_matches_four_of_five_september_lines(db):
+def test_the_synthetic_company_matches_nine_of_ten_september_lines(db):
     owner = principal(UserRole.OWNER_DIRECTOR, tenant_id=__import__("uuid").UUID(TENANT))
     for schema, (headers, columns, text) in datasets(AS_OF).items():
         mapping = save(
@@ -118,7 +118,7 @@ def test_the_synthetic_company_matches_four_of_five_september_lines(db):
 
     result = bank_matching.match(db, TENANT, AS_OF)
 
-    assert (result.lines, result.matched, result.share) == (5, 4, Decimal("0.80"))
+    assert (result.lines, result.matched, result.share) == (10, 9, Decimal("0.90"))
     assert [(u.direction, u.amount) for u in result.unmatched] == [
         ("debit", Decimal("1250.00"))
     ]
