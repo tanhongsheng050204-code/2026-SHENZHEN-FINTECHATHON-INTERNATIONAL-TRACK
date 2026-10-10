@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppState } from "../lib/appState";
+import { useAuth } from "../auth/AuthProvider";
+import { authMode, demoAvailable, demoSignIn } from "../api/session";
 import { MarketingNav } from "../components/Nav";
 import { Wordmark } from "../components/Logo";
 import { Guilloche } from "../components/Guilloche";
@@ -140,6 +142,30 @@ const SHOTS = [
 
 export default function Landing() {
   const { show, goToSecurity, goToLegal } = useAppState();
+  const { applySession } = useAuth();
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoBusy, setDemoBusy] = useState(false);
+
+  useEffect(() => {
+    if (authMode !== "backend") return;
+    let active = true;
+    void demoAvailable().then((open) => active && setDemoOpen(open));
+    return () => { active = false; };
+  }, []);
+
+  // One click into the synthetic company; on any failure the sign-in page explains it.
+  const openDemo = async () => {
+    setDemoBusy(true);
+    try {
+      await applySession(await demoSignIn());
+      show("home");
+    } catch {
+      show("login");
+    } finally {
+      setDemoBusy(false);
+    }
+  };
+
   const supportTopics = [
     {
       label: "How the demo works",
@@ -166,7 +192,13 @@ export default function Landing() {
             DuitDuit reads your bank, bills, payroll and invoices, warns you before cash runs short, finds financing that fits and drafts the fix. Nothing moves until you approve it.
           </p>
           <div className="lx-ctas">
-            <button className="lx-btn is-primary" type="button" onClick={() => show("signup")}>Get started</button>
+            {demoOpen ? (
+              <button className="lx-btn is-primary" type="button" onClick={() => void openDemo()} disabled={demoBusy}>
+                {demoBusy ? "Opening the demo company…" : "Open the demo company"}
+              </button>
+            ) : (
+              <button className="lx-btn is-primary" type="button" onClick={() => show("signup")}>Get started</button>
+            )}
             <button className="lx-btn is-quiet" type="button" onClick={() => document.getElementById("landing-product")?.scrollIntoView({ behavior: "smooth" })}>See how it works</button>
           </div>
         </div>
