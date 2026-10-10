@@ -3,7 +3,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export type ThemePreference = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
 
-const STORAGE_KEY = "fb-theme-preference";
+// Light is the default whatever the device says; dark or "system" only when the person picks it.
+// The old key was written on every visit, so it would carry "system" over for everyone.
+const STORAGE_KEY = "duitduit-theme";
 
 function systemPrefersDark(): boolean {
   return typeof window !== "undefined" && !!window.matchMedia?.("(prefers-color-scheme: dark)").matches;
@@ -16,7 +18,7 @@ function readStoredPreference(): ThemePreference {
   } catch {
     // Private browsing / storage disabled: fall through to the default.
   }
-  return "system";
+  return "light";
 }
 
 interface ThemeContextValue {
