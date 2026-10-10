@@ -126,6 +126,21 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 
+# Browser security headers on every API response (gaps found by an OWASP ZAP API scan).
+# The API serves JSON and one small status page with inline styles, so nothing else may
+# load, frame or submit; /docs loads Swagger UI from a CDN and keeps all but the CSP.
+# CORP does not affect the app's own CORS fetches; it stops no-cors embedding elsewhere.
+_SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+}
+_API_CSP = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+_STATUS_CSP = _API_CSP + "; style-src 'unsafe-inline'"
+_DOCS_PATHS = ("/docs", "/redoc")
+
 
 @app.middleware("http")
 async def attach_request_id(request: Request, call_next):
@@ -145,6 +160,11 @@ async def attach_request_id(request: Request, call_next):
         )
         raise
     response.headers["X-Request-ID"] = request_id
+    for name, value in _SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    if not request.url.path.startswith(_DOCS_PATHS):
+        policy = _STATUS_CSP if request.url.path.rstrip("/") == "/status" else _API_CSP
+        response.headers.setdefault("Content-Security-Policy", policy)
     if request.url.path.startswith("/auth/"):
         response.headers["Cache-Control"] = "no-store"
     logger.info(

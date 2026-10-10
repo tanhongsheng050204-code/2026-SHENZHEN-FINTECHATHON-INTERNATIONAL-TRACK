@@ -39,6 +39,7 @@ All data shown in the demonstration is synthetic and labelled as such.
 | Step-up: sensitive actions (kill switch, autonomy grants, invitations, security settings) need an authenticator check from the last five minutes; the app asks for a code and retries | Backend built, verification pending · frontend built and exercised against a simulated backend |
 | Idle timeout per company (5–60 minutes, can only be shortened); sign out everywhere; role changes invalidate old sessions | Built, verification pending |
 | The last active owner cannot be removed or demoted | Built and tested (stub) · persistent version verification pending |
+| Shared demo company for judges ("Open the demo company"): the API signs in with a password and an authenticator code held only on the server, so the session is an ordinary AAL2 session and every check still applies. The demo session alone can read its own current code. In that company, email and Telegram deliveries (briefings, alerts, outreach) are recorded as simulated and never sent, and global sign-out, new authenticators and team changes are refused. Off unless the server sets `DEMO_SIGN_IN_ENABLED` and all three demo secrets | Built and tested with a mocked provider (`tests/test_demo_sign_in.py`, `tests/test_telegram_sender.py`); hosted verification pending |
 
 ## 3. Data protection
 
@@ -145,6 +146,8 @@ measured** here. Offline tests send no real audio and make no provider call.
 | Content Security Policy (scripts only from the app itself, no inline script, `frame-ancestors 'none'`, `object-src 'none'`), HSTS, `nosniff`, Referrer-Policy, Permissions-Policy, `X-Frame-Options: DENY` | Built; verified on a Vercel deployment by browsing 9 pages with no violations |
 | `noindex` on app and shared pages; `robots.txt` and a sitemap listing only the landing, security and legal pages; a title per page; `/.well-known/security.txt` (RFC 9116) pointing at `SECURITY.md` | Built |
 | No browser request to a third-party origin: bundled fonts, QR codes drawn locally (invoice UINs no longer go to an online QR service), API through the same-origin proxy | Built; checked in CI by `frontend/scripts/check-web-hardening.mjs` |
+| Cross-origin isolation on the app (`Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `Cross-Origin-Embedder-Policy`); `nosniff`, `X-Frame-Options`, a deny-all CSP, Referrer-Policy, Permissions-Policy and CORP on every API response | Built, after the OWASP ZAP scan below flagged them; guarded by `check-web-hardening.mjs` and `tests/test_api_security_headers.py` |
+| OWASP ZAP dynamic scans, run locally on 2026-10-11 against the production build served with the `vercel.json` headers and the API offline: frontend baseline **0 failures, 3 warnings, 64 passed**; API scan from the OpenAPI description **0 failures, 3 warnings, 117 passed**. The warnings are `style-src 'unsafe-inline'` (React style attributes), cacheable hashed assets, and the HTML `/status` page | Measured; reports in `docs/submission/evidence/zap-2026-10-11/`. CI repeats both scans on every push (`dast` job) |
 | App served from a domain that loads in mainland China | Not done: the app is still on `vercel.app`, which GreatFire reports as mostly blocked. See `docs/deployment/china-reachability.md`. |
 
 ## 7. Company settings and safety floors
@@ -166,6 +169,8 @@ DuitDuit is not certified under any standard, and we do not claim partnerships w
 
 - Plan 2 identity and session controls have mocked-provider regression coverage and disposable PostgreSQL permission/trigger checks. End-to-end tests against hosted Supabase (real email delivery, TOTP, refresh and revocation) remain outstanding.
 - A company on its own records gets a persisted review inbox, real review records and persisted autonomy grants, all on its audit chain. A company on the demo data still sees sample inbox items and sample agent metrics, labelled as such.
+- ZAP scans are automated passive and baseline checks, not a penetration test. No independent penetration test has been done.
+- The shared demo company is not reset automatically; changes judges make (decisions, settings, kill switches) stay until an operator reverts them in the app.
 - Guardrails are deterministic patterns. The offline adversarial evaluation passes its scripted cases; this does not prove coverage of paraphrased or novel injections.
 - Passport anchors appear only where the anchor files are deployed with the backend; the public verification endpoint has not been validated against hosted PostgreSQL row-level security.
 - The backend is currently reached through a temporary tunnel; production needs a fixed HTTPS hostname under the app's parent domain.
@@ -177,3 +182,4 @@ DuitDuit is not certified under any standard, and we do not claim partnerships w
 - API contract: `docs/api/topic-e-contract.json` (54 operations), with a test that fails if it drifts from the code.
 - Frontend: TypeScript build and lint pass on every commit; sign-in, step-up and every Topic E page exercised in a browser against simulated responses.
 - Audit-chain anchors: `audit-anchors/` (daily workflow `anchor-audit-chain.yml`).
+- Dynamic scans: `docs/submission/evidence/zap-2026-10-11/` (OWASP ZAP baseline and API scan reports), repeated by the CI `dast` job.

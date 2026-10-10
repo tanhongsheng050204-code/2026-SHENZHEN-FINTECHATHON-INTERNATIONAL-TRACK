@@ -1,0 +1,5279 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Sat, 10 Oct 2026 18:10:15",
+	"created": "2026-10-10T18:10:15.840853074Z",
+	"insights":[
+		{
+			"level": "Low",
+			"reason": "Warning",
+			"site": "",
+			"key": "insight.log.warn",
+			"description": "ZAP warnings logged - see the zap.log file for details",
+			"statistic": "16"
+		},
+		{
+			"level": "Low",
+			"reason": "Exceeded High",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.code.4xx",
+			"description": "Percentage of responses with status code 4xx",
+			"statistic": "99"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.code.2xx",
+			"description": "Percentage of responses with status code 2xx",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.ctype.application/json",
+			"description": "Percentage of endpoints with content type application/json",
+			"statistic": "99"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.method.DELETE",
+			"description": "Percentage of endpoints with method DELETE",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.method.GET",
+			"description": "Percentage of endpoints with method GET",
+			"statistic": "64"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.method.PATCH",
+			"description": "Percentage of endpoints with method PATCH",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.method.POST",
+			"description": "Percentage of endpoints with method POST",
+			"statistic": "31"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.method.PUT",
+			"description": "Percentage of endpoints with method PUT",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.endpoint.total",
+			"description": "Count of total endpoints",
+			"statistic": "487"
+		},
+		{
+			"level": "Info",
+			"reason": "Exceeded Low",
+			"site": "http://host.docker.internal:8014",
+			"key": "insight.response.slow",
+			"description": "Percentage of slow responses",
+			"statistic": "9"
+		}
+	],
+	"site":[ 
+		{
+			"@name": "http://host.docker.internal:8014",
+			"@host": "host.docker.internal",
+			"@port": "8014",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "10055",
+					"alertRef": "10055-6",
+					"alert": "CSP: style-src unsafe-inline",
+					"name": "CSP: style-src unsafe-inline",
+					"riskcode": "2",
+					"confidence": "3",
+					"riskdesc": "Medium (High)",
+					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks. Including (but not limited to) Cross Site Scripting (XSS), and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
+					"instances":[ 
+						{
+							"id": "151",
+							"uri": "http://host.docker.internal:8014/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/status",
+							"method": "GET",
+							"param": "content-security-policy",
+							"attack": "",
+							"evidence": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; style-src 'unsafe-inline'",
+							"otherinfo": "style-src includes unsafe-inline."
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.</p>",
+					"otherinfo": "<p>style-src includes unsafe-inline.</p>",
+					"reference": "<p>https://www.w3.org/TR/CSP/</p><p>https://caniuse.com/#search=content+security+policy</p><p>https://content-security-policy.com/</p><p>https://github.com/HtmlUnit/htmlunit-csp</p><p>https://web.dev/articles/csp#resource-options</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "117"
+				},
+				{
+					"pluginid": "90004",
+					"alertRef": "90004-2",
+					"alert": "Cross-Origin-Embedder-Policy Header Missing or Invalid",
+					"name": "Cross-Origin-Embedder-Policy Header Missing or Invalid",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Cross-Origin-Embedder-Policy header is a response header that prevents a document from loading any cross-origin resources that don't explicitly grant the document permission (using CORP or CORS).</p>",
+					"instances":[ 
+						{
+							"id": "154",
+							"uri": "http://host.docker.internal:8014/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/status",
+							"method": "GET",
+							"param": "Cross-Origin-Embedder-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that the application/web server sets the Cross-Origin-Embedder-Policy header appropriately, and that it sets the Cross-Origin-Embedder-Policy header to 'require-corp' for documents.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that supports the Cross-Origin-Embedder-Policy header (https://caniuse.com/mdn-http_headers_cross-origin-embedder-policy).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Embedder-Policy</p>",
+					"cweid": "693",
+					"wascid": "14",
+					"sourceid": "117"
+				},
+				{
+					"pluginid": "90004",
+					"alertRef": "90004-3",
+					"alert": "Cross-Origin-Opener-Policy Header Missing or Invalid",
+					"name": "Cross-Origin-Opener-Policy Header Missing or Invalid",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Cross-Origin-Opener-Policy header is a response header that allows a site to control if others included documents share the same browsing context. Sharing the same browsing context with untrusted documents might lead to data leak.</p>",
+					"instances":[ 
+						{
+							"id": "155",
+							"uri": "http://host.docker.internal:8014/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/status",
+							"method": "GET",
+							"param": "Cross-Origin-Opener-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>Ensure that the application/web server sets the Cross-Origin-Opener-Policy header appropriately, and that it sets the Cross-Origin-Opener-Policy header to 'same-origin' for documents.</p><p>'same-origin-allow-popups' is considered as less secured and should be avoided.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that supports the Cross-Origin-Opener-Policy header (https://caniuse.com/mdn-http_headers_cross-origin-opener-policy).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Opener-Policy</p>",
+					"cweid": "693",
+					"wascid": "14",
+					"sourceid": "117"
+				},
+				{
+					"pluginid": "100001",
+					"alertRef": "100001",
+					"alert": "Unexpected Content-Type was returned",
+					"name": "Unexpected Content-Type was returned",
+					"riskcode": "1",
+					"confidence": "3",
+					"riskdesc": "Low (High)",
+					"desc": "<p>A Content-Type of text/html was returned by the server.</p><p>This is not one of the types expected to be returned by an API.</p><p>Raised by the 'Alert on Unexpected Content Types' script</p>",
+					"instances":[ 
+						{
+							"id": "78",
+							"uri": "http://host.docker.internal:8014/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/status",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "text/html",
+							"otherinfo": ""
+						},
+						{
+							"id": "18983",
+							"uri": "http://host.docker.internal:8014/status/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/status\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "text/html",
+							"otherinfo": ""
+						}
+					],
+					"count": "2",
+					"systemic": false,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "117"
+				},
+				{
+					"pluginid": "100000",
+					"alertRef": "100000-1",
+					"alert": "A Client Error response code was returned by the server",
+					"name": "A Client Error response code was returned by the server",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>A response code of 401 was returned by the server.</p><p>This may indicate that the application is failing to handle unexpected input correctly.</p><p>Raised by the 'Alert on HTTP Response Code Error' script</p>",
+					"instances":[ 
+						{
+							"id": "135",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants/grant_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants\/grant_id",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18610",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants/grant_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants\/grant_id\/",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "71",
+							"uri": "http://host.docker.internal:8014/conversations/conversation_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/conversation_id",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18667",
+							"uri": "http://host.docker.internal:8014/conversations/conversation_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/conversation_id\/",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "132",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants/grant_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants\/grant_id",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18659",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants/grant_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants\/grant_id\/",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "299",
+							"uri": "http://host.docker.internal:8014",
+							"nodeName": "http:\/\/host.docker.internal:8014",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18705",
+							"uri": "http://host.docker.internal:8014/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "178",
+							"uri": "http://host.docker.internal:8014/4057184016927981720",
+							"nodeName": "http:\/\/host.docker.internal:8014\/4057184016927981720",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "82",
+							"uri": "http://host.docker.internal:8014/agents",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18751",
+							"uri": "http://host.docker.internal:8014/agents/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "179",
+							"uri": "http://host.docker.internal:8014/agents/3570917248554814144",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/3570917248554814144",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "314",
+							"uri": "http://host.docker.internal:8014/agents/agent_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/agent_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18709",
+							"uri": "http://host.docker.internal:8014/agents/agent_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/agent_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "180",
+							"uri": "http://host.docker.internal:8014/agents/agent_id/888889843665474555",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/agent_id\/888889843665474555",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "21307",
+							"uri": "http://host.docker.internal:8014/agents/agent_id/actuator/health",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/agent_id\/actuator\/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "87",
+							"uri": "http://host.docker.internal:8014/agents/journey",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/journey",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18765",
+							"uri": "http://host.docker.internal:8014/agents/journey/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/journey\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "335",
+							"uri": "http://host.docker.internal:8014/agents/runs",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "18769",
+							"uri": "http://host.docker.internal:8014/agents/runs/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "181",
+							"uri": "http://host.docker.internal:8014/agents/runs/2110836544009631848",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/2110836544009631848",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "349",
+							"uri": "http://host.docker.internal:8014/agents/runs/run_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/run_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18766",
+							"uri": "http://host.docker.internal:8014/agents/runs/run_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/run_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "182",
+							"uri": "http://host.docker.internal:8014/agents/runs/run_id/9095109035857057677",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/run_id\/9095109035857057677",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "84",
+							"uri": "http://host.docker.internal:8014/agents/runs/run_id/events",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/run_id\/events",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18773",
+							"uri": "http://host.docker.internal:8014/agents/runs/run_id/events/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/run_id\/events\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "364",
+							"uri": "http://host.docker.internal:8014/alerts",
+							"nodeName": "http:\/\/host.docker.internal:8014\/alerts",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18770",
+							"uri": "http://host.docker.internal:8014/alerts/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/alerts\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "183",
+							"uri": "http://host.docker.internal:8014/alerts/5706978801523846202",
+							"nodeName": "http:\/\/host.docker.internal:8014\/alerts\/5706978801523846202",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18778",
+							"uri": "http://host.docker.internal:8014/analysis",
+							"nodeName": "http:\/\/host.docker.internal:8014\/analysis",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "177",
+							"uri": "http://host.docker.internal:8014/analysis?months=3",
+							"nodeName": "http:\/\/host.docker.internal:8014\/analysis (months)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18779",
+							"uri": "http://host.docker.internal:8014/analysis/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/analysis\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "384",
+							"uri": "http://host.docker.internal:8014/assistant",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18774",
+							"uri": "http://host.docker.internal:8014/assistant/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "184",
+							"uri": "http://host.docker.internal:8014/assistant/6857863663137917352",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/6857863663137917352",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "172",
+							"uri": "http://host.docker.internal:8014/assistant/briefing",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18783",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "185",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/6175885272172689031",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/6175885272172689031",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "173",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/preferences",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/preferences",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18785",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/preferences/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/preferences\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "399",
+							"uri": "http://host.docker.internal:8014/assistant/playbooks",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/playbooks",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18776",
+							"uri": "http://host.docker.internal:8014/assistant/playbooks/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/playbooks\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "186",
+							"uri": "http://host.docker.internal:8014/assistant/playbooks/3625764893351641722",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/playbooks\/3625764893351641722",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "168",
+							"uri": "http://host.docker.internal:8014/assistant/voice",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/voice",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18793",
+							"uri": "http://host.docker.internal:8014/assistant/voice/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/voice\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "20",
+							"uri": "http://host.docker.internal:8014/audit-log",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-log",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18795",
+							"uri": "http://host.docker.internal:8014/audit-log/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-log\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "101",
+							"uri": "http://host.docker.internal:8014/audit-packs",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18788",
+							"uri": "http://host.docker.internal:8014/audit-packs/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "187",
+							"uri": "http://host.docker.internal:8014/audit-packs/6889694985715725100",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/6889694985715725100",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "134",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18794",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "188",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/5934021411525271815",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/5934021411525271815",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "125",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18791",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "189",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants/7504911119812729523",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants\/7504911119812729523",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "413",
+							"uri": "http://host.docker.internal:8014/auditor",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18780",
+							"uri": "http://host.docker.internal:8014/auditor/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "190",
+							"uri": "http://host.docker.internal:8014/auditor/2741205875250649776",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/2741205875250649776",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "424",
+							"uri": "http://host.docker.internal:8014/auditor/packs",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/packs",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18797",
+							"uri": "http://host.docker.internal:8014/auditor/packs/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/packs\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "191",
+							"uri": "http://host.docker.internal:8014/auditor/packs/9121467122956717140",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/packs\/9121467122956717140",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "136",
+							"uri": "http://host.docker.internal:8014/auditor/packs/grant_token",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/packs\/grant_token",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18800",
+							"uri": "http://host.docker.internal:8014/auditor/packs/grant_token",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/packs\/grant_token",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "429",
+							"otherinfo": ""
+						},
+						{
+							"id": "18801",
+							"uri": "http://host.docker.internal:8014/auditor/packs/grant_token/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auditor\/packs\/grant_token\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "429",
+							"otherinfo": ""
+						},
+						{
+							"id": "453",
+							"uri": "http://host.docker.internal:8014/auth",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18799",
+							"uri": "http://host.docker.internal:8014/auth/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "192",
+							"uri": "http://host.docker.internal:8014/auth/8766182029422347255",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/8766182029422347255",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "469",
+							"uri": "http://host.docker.internal:8014/auth/demo",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "18804",
+							"uri": "http://host.docker.internal:8014/auth/demo/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "193",
+							"uri": "http://host.docker.internal:8014/auth/demo/5126696513797687471",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo\/5126696513797687471",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3",
+							"uri": "http://host.docker.internal:8014/auth/demo/code",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo\/code",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18810",
+							"uri": "http://host.docker.internal:8014/auth/demo/code/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo\/code\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "476",
+							"uri": "http://host.docker.internal:8014/auth/email",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/email",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18806",
+							"uri": "http://host.docker.internal:8014/auth/email/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/email\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "194",
+							"uri": "http://host.docker.internal:8014/auth/email/5748331152607607875",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/email\/5748331152607607875",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "0",
+							"uri": "http://host.docker.internal:8014/auth/me",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/me",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18812",
+							"uri": "http://host.docker.internal:8014/auth/me/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/me\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "503",
+							"uri": "http://host.docker.internal:8014/auth/mfa",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18809",
+							"uri": "http://host.docker.internal:8014/auth/mfa/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "195",
+							"uri": "http://host.docker.internal:8014/auth/mfa/4663869253599064117",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/4663869253599064117",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "514",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factor_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factor_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18813",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factor_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factor_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "196",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factor_id/3011454184920698139",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factor_id\/3011454184920698139",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "10",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factors",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factors",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18823",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factors/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factors\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "8",
+							"uri": "http://host.docker.internal:8014/auth/session",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/session",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18819",
+							"uri": "http://host.docker.internal:8014/auth/session/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/session\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "75",
+							"uri": "http://host.docker.internal:8014/briefing",
+							"nodeName": "http:\/\/host.docker.internal:8014\/briefing",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18820",
+							"uri": "http://host.docker.internal:8014/briefing/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/briefing\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "529",
+							"uri": "http://host.docker.internal:8014/cashflow",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18815",
+							"uri": "http://host.docker.internal:8014/cashflow/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "197",
+							"uri": "http://host.docker.internal:8014/cashflow/2860502231608472412",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/2860502231608472412",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18828",
+							"uri": "http://host.docker.internal:8014/cashflow/forecast",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/forecast",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "79",
+							"uri": "http://host.docker.internal:8014/cashflow/forecast?horizon_days=90&as_of=",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/forecast (as_of,horizon_days)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18830",
+							"uri": "http://host.docker.internal:8014/cashflow/forecast/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/forecast\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18829",
+							"uri": "http://host.docker.internal:8014/cashflow/signals",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/signals",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "81",
+							"uri": "http://host.docker.internal:8014/cashflow/signals?horizon_days=90&job_function=",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/signals (horizon_days,job_function)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18832",
+							"uri": "http://host.docker.internal:8014/cashflow/signals/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/signals\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "541",
+							"uri": "http://host.docker.internal:8014/conversations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "18825",
+							"uri": "http://host.docker.internal:8014/conversations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "198",
+							"uri": "http://host.docker.internal:8014/conversations/129827075008726624",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/129827075008726624",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "70",
+							"uri": "http://host.docker.internal:8014/conversations/conversation_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/conversation_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18833",
+							"uri": "http://host.docker.internal:8014/conversations/conversation_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/conversation_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "566",
+							"uri": "http://host.docker.internal:8014/customer-endpoints",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18826",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "579",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18835",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "200",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10/6049965027926236250",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10\/6049965027926236250",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "199",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/4053236394339879689",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/4053236394339879689",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "591",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18836",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "617",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18838",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "202",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/10/6941955308540738091",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/10\/6941955308540738091",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "201",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/1577482790286721950",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/1577482790286721950",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "72",
+							"uri": "http://host.docker.internal:8014/customers",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18849",
+							"uri": "http://host.docker.internal:8014/customers/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "73",
+							"uri": "http://host.docker.internal:8014/customers/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18854",
+							"uri": "http://host.docker.internal:8014/customers/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "204",
+							"uri": "http://host.docker.internal:8014/customers/10/8767735020438633312",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/8767735020438633312",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "29",
+							"uri": "http://host.docker.internal:8014/customers/10/endpoints",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/endpoints",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18848",
+							"uri": "http://host.docker.internal:8014/customers/10/endpoints/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/endpoints\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "31",
+							"uri": "http://host.docker.internal:8014/customers/10/identity-claims",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/identity-claims",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18847",
+							"uri": "http://host.docker.internal:8014/customers/10/identity-claims/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/identity-claims\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "633",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "18842",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "205",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach/3489032392920853492",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach\/3489032392920853492",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "74",
+							"uri": "http://host.docker.internal:8014/customers/10/timeline",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/timeline",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18856",
+							"uri": "http://host.docker.internal:8014/customers/10/timeline/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/timeline\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "203",
+							"uri": "http://host.docker.internal:8014/customers/2389590782311534686",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/2389590782311534686",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "63",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18855",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "645",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18853",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "207",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10/734729697102662023",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10\/734729697102662023",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "206",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/3957995488622487382",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/3957995488622487382",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "60",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18860",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "670",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18857",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "209",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10/2588468307184486844",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10\/2588468307184486844",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "62",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10/document",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10\/document",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18864",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10/document/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10\/document\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "208",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/4676189351213379044",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/4676189351213379044",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "48",
+							"uri": "http://host.docker.internal:8014/einvoice-records",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18868",
+							"uri": "http://host.docker.internal:8014/einvoice-records/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "52",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18866",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "211",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/5036486420547352605",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/5036486420547352605",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "56",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/pdf",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/pdf",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18870",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/pdf/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/pdf\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "679",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/receipt",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/receipt",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18861",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/receipt/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/receipt\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "212",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/receipt/1200084803972912320",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/receipt\/1200084803972912320",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "57",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/receipt/pdf",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/receipt\/pdf",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18874",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/receipt/pdf/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/receipt\/pdf\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "210",
+							"uri": "http://host.docker.internal:8014/einvoice-records/8931135165105852071",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/8931135165105852071",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "696",
+							"uri": "http://host.docker.internal:8014/finance",
+							"nodeName": "http:\/\/host.docker.internal:8014\/finance",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18872",
+							"uri": "http://host.docker.internal:8014/finance/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/finance\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "213",
+							"uri": "http://host.docker.internal:8014/finance/4379095386790268156",
+							"nodeName": "http:\/\/host.docker.internal:8014\/finance\/4379095386790268156",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18877",
+							"uri": "http://host.docker.internal:8014/finance/summary",
+							"nodeName": "http:\/\/host.docker.internal:8014\/finance\/summary",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "66",
+							"uri": "http://host.docker.internal:8014/finance/summary?period=month&offset=0",
+							"nodeName": "http:\/\/host.docker.internal:8014\/finance\/summary (offset,period)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18878",
+							"uri": "http://host.docker.internal:8014/finance/summary/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/finance\/summary\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "709",
+							"uri": "http://host.docker.internal:8014/financing",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18876",
+							"uri": "http://host.docker.internal:8014/financing/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "214",
+							"uri": "http://host.docker.internal:8014/financing/30850238690421387",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/30850238690421387",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18881",
+							"uri": "http://host.docker.internal:8014/financing/matches",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/matches",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "92",
+							"uri": "http://host.docker.internal:8014/financing/matches?jurisdiction=MY",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/matches (jurisdiction)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18882",
+							"uri": "http://host.docker.internal:8014/financing/matches/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/matches\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "94",
+							"uri": "http://host.docker.internal:8014/financing/scorecard",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/scorecard",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18885",
+							"uri": "http://host.docker.internal:8014/financing/scorecard/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/scorecard\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "733",
+							"uri": "http://host.docker.internal:8014/imports",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18880",
+							"uri": "http://host.docker.internal:8014/imports/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "215",
+							"uri": "http://host.docker.internal:8014/imports/1688226022298460802",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/1688226022298460802",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "748",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18883",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "216",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1/8893991801488378052",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1\/8893991801488378052",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18892",
+							"uri": "http://host.docker.internal:8014/imports/batches",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/batches",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "165",
+							"uri": "http://host.docker.internal:8014/imports/batches?schema_name=&limit=20",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/batches (limit,schema_name)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18895",
+							"uri": "http://host.docker.internal:8014/imports/batches/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/batches\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "164",
+							"uri": "http://host.docker.internal:8014/imports/schemas",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/schemas",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18890",
+							"uri": "http://host.docker.internal:8014/imports/schemas/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/schemas\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18891",
+							"uri": "http://host.docker.internal:8014/ingestion-records",
+							"nodeName": "http:\/\/host.docker.internal:8014\/ingestion-records",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "24",
+							"uri": "http://host.docker.internal:8014/ingestion-records?source_system=telegram&limit=20",
+							"nodeName": "http:\/\/host.docker.internal:8014\/ingestion-records (limit,source_system)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18893",
+							"uri": "http://host.docker.internal:8014/ingestion-records/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/ingestion-records\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "759",
+							"uri": "http://host.docker.internal:8014/integrations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18887",
+							"uri": "http://host.docker.internal:8014/integrations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "217",
+							"uri": "http://host.docker.internal:8014/integrations/836925484677074386",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/836925484677074386",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "781",
+							"uri": "http://host.docker.internal:8014/integrations/email",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18894",
+							"uri": "http://host.docker.internal:8014/integrations/email/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "218",
+							"uri": "http://host.docker.internal:8014/integrations/email/7265931056431263412",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email\/7265931056431263412",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "25",
+							"uri": "http://host.docker.internal:8014/integrations/email/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email\/status",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18900",
+							"uri": "http://host.docker.internal:8014/integrations/email/status/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email\/status\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "794",
+							"uri": "http://host.docker.internal:8014/integrations/telegram",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/telegram",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18897",
+							"uri": "http://host.docker.internal:8014/integrations/telegram/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/telegram\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "219",
+							"uri": "http://host.docker.internal:8014/integrations/telegram/9206071918190033127",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/telegram\/9206071918190033127",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "23",
+							"uri": "http://host.docker.internal:8014/integrations/telegram/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/telegram\/status",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18904",
+							"uri": "http://host.docker.internal:8014/integrations/telegram/status/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/telegram\/status\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "802",
+							"uri": "http://host.docker.internal:8014/lender",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18902",
+							"uri": "http://host.docker.internal:8014/lender/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "220",
+							"uri": "http://host.docker.internal:8014/lender/1871927721285027940",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/1871927721285027940",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "827",
+							"uri": "http://host.docker.internal:8014/lender/passports",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/passports",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18905",
+							"uri": "http://host.docker.internal:8014/lender/passports/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/passports\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "221",
+							"uri": "http://host.docker.internal:8014/lender/passports/779051183591717318",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/passports\/779051183591717318",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "133",
+							"uri": "http://host.docker.internal:8014/lender/passports/grant_token",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/passports\/grant_token",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18907",
+							"uri": "http://host.docker.internal:8014/lender/passports/grant_token",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/passports\/grant_token",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "429",
+							"otherinfo": ""
+						},
+						{
+							"id": "18908",
+							"uri": "http://host.docker.internal:8014/lender/passports/grant_token/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/passports\/grant_token\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "429",
+							"otherinfo": ""
+						},
+						{
+							"id": "36",
+							"uri": "http://host.docker.internal:8014/outreach",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "27",
+							"uri": "http://host.docker.internal:8014/outreach-policy",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach-policy",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18922",
+							"uri": "http://host.docker.internal:8014/outreach-policy/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach-policy\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18925",
+							"uri": "http://host.docker.internal:8014/outreach/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "222",
+							"uri": "http://host.docker.internal:8014/outreach/3230116810739985719",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/3230116810739985719",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "38",
+							"uri": "http://host.docker.internal:8014/outreach/action_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18928",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "223",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/3171719495951361851",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/3171719495951361851",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "40",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/status",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/status",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18921",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/status/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/status\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "95",
+							"uri": "http://host.docker.internal:8014/passports",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18919",
+							"uri": "http://host.docker.internal:8014/passports/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "224",
+							"uri": "http://host.docker.internal:8014/passports/5564830630630664163",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/5564830630630664163",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "97",
+							"uri": "http://host.docker.internal:8014/passports/passport_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18927",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "225",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/6132252694872073659",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/6132252694872073659",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "99",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18926",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "226",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants/6429434052208527075",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants\/6429434052208527075",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "90",
+							"uri": "http://host.docker.internal:8014/positions",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18920",
+							"uri": "http://host.docker.internal:8014/positions/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "227",
+							"uri": "http://host.docker.internal:8014/positions/2432882241265060991",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/2432882241265060991",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "836",
+							"uri": "http://host.docker.internal:8014/positions/owner",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/owner",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18910",
+							"uri": "http://host.docker.internal:8014/positions/owner/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/owner\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "228",
+							"uri": "http://host.docker.internal:8014/positions/owner/5859258082450507084",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/owner\/5859258082450507084",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "91",
+							"uri": "http://host.docker.internal:8014/positions/owner/workspace",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/owner\/workspace",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18932",
+							"uri": "http://host.docker.internal:8014/positions/owner/workspace/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/positions\/owner\/workspace\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "844",
+							"uri": "http://host.docker.internal:8014/privacy",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18911",
+							"uri": "http://host.docker.internal:8014/privacy/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "229",
+							"uri": "http://host.docker.internal:8014/privacy/240234110392970503",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/240234110392970503",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "866",
+							"uri": "http://host.docker.internal:8014/privacy/tokens",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18930",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "230",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/4174827683862547668",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/4174827683862547668",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "76",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/token",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/token",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18936",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/token/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/token\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "231",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/token/2677100387708225694",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/token\/2677100387708225694",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "876",
+							"uri": "http://host.docker.internal:8014/query-turns",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18934",
+							"uri": "http://host.docker.internal:8014/query-turns/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "881",
+							"uri": "http://host.docker.internal:8014/query-turns/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18938",
+							"uri": "http://host.docker.internal:8014/query-turns/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "233",
+							"uri": "http://host.docker.internal:8014/query-turns/10/6769622445504518062",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/6769622445504518062",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "892",
+							"uri": "http://host.docker.internal:8014/query-turns/10/citations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/citations",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18939",
+							"uri": "http://host.docker.internal:8014/query-turns/10/citations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/citations\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "234",
+							"uri": "http://host.docker.internal:8014/query-turns/10/citations/9017397515162778036",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/citations\/9017397515162778036",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18",
+							"uri": "http://host.docker.internal:8014/query-turns/10/citations/citation_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/citations\/citation_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18943",
+							"uri": "http://host.docker.internal:8014/query-turns/10/citations/citation_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/citations\/citation_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "232",
+							"uri": "http://host.docker.internal:8014/query-turns/7369113942733841361",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/7369113942733841361",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "44",
+							"uri": "http://host.docker.internal:8014/recommendations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18946",
+							"uri": "http://host.docker.internal:8014/recommendations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "916",
+							"uri": "http://host.docker.internal:8014/recommendations/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18941",
+							"uri": "http://host.docker.internal:8014/recommendations/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "236",
+							"uri": "http://host.docker.internal:8014/recommendations/10/4769099612207969881",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/4769099612207969881",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "235",
+							"uri": "http://host.docker.internal:8014/recommendations/1352841787094485932",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/1352841787094485932",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "949",
+							"uri": "http://host.docker.internal:8014/review-inbox",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "88",
+							"uri": "http://host.docker.internal:8014/review-inbox?job_function=",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox (job_function)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18950",
+							"uri": "http://host.docker.internal:8014/review-inbox/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "237",
+							"uri": "http://host.docker.internal:8014/review-inbox/8435444663763740824",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/8435444663763740824",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "956",
+							"uri": "http://host.docker.internal:8014/review-inbox/action_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/action_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18948",
+							"uri": "http://host.docker.internal:8014/review-inbox/action_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/action_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "238",
+							"uri": "http://host.docker.internal:8014/review-inbox/action_id/3131404412310583067",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/action_id\/3131404412310583067",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "143",
+							"uri": "http://host.docker.internal:8014/settings",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18956",
+							"uri": "http://host.docker.internal:8014/settings/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "239",
+							"uri": "http://host.docker.internal:8014/settings/3844694269775300817",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/3844694269775300817",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "162",
+							"uri": "http://host.docker.internal:8014/settings/alert-rules",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/alert-rules",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18955",
+							"uri": "http://host.docker.internal:8014/settings/alert-rules/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/alert-rules\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "993",
+							"uri": "http://host.docker.internal:8014/settings/changes",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "145",
+							"uri": "http://host.docker.internal:8014/settings/changes?status=",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes (status)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18964",
+							"uri": "http://host.docker.internal:8014/settings/changes/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "240",
+							"uri": "http://host.docker.internal:8014/settings/changes/2666192441628312898",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/2666192441628312898",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1002",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18959",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "241",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id/8840545847711566748",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id\/8840545847711566748",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "159",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18971",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "242",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings/3138441349466349847",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings\/3138441349466349847",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "156",
+							"uri": "http://host.docker.internal:8014/settings/message-templates",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18972",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "243",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/2765822749195856024",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/2765822749195856024",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1006",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/template_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/template_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18962",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/template_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/template_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "244",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/template_id/363095903345888189",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/template_id\/363095903345888189",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "144",
+							"uri": "http://host.docker.internal:8014/settings/schema",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/schema",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18978",
+							"uri": "http://host.docker.internal:8014/settings/schema/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/schema\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "150",
+							"uri": "http://host.docker.internal:8014/settings/templates",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18977",
+							"uri": "http://host.docker.internal:8014/settings/templates/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "245",
+							"uri": "http://host.docker.internal:8014/settings/templates/7483544520556340189",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/7483544520556340189",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1031",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18966",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "246",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading/8747248915954285061",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading\/8747248915954285061",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1043",
+							"uri": "http://host.docker.internal:8014/team",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18974",
+							"uri": "http://host.docker.internal:8014/team/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "247",
+							"uri": "http://host.docker.internal:8014/team/4571201841283821397",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/4571201841283821397",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "139",
+							"uri": "http://host.docker.internal:8014/team/members",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18987",
+							"uri": "http://host.docker.internal:8014/team/members/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "248",
+							"uri": "http://host.docker.internal:8014/team/members/16401386450065439",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/16401386450065439",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "1046",
+							"uri": "http://host.docker.internal:8014/team/members/user_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "18982",
+							"uri": "http://host.docker.internal:8014/team/members/user_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "405",
+							"otherinfo": ""
+						},
+						{
+							"id": "249",
+							"uri": "http://host.docker.internal:8014/team/members/user_id/2124809236172273736",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id\/2124809236172273736",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1067",
+							"uri": "http://host.docker.internal:8014/trust",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18984",
+							"uri": "http://host.docker.internal:8014/trust/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "250",
+							"uri": "http://host.docker.internal:8014/trust/7214252543840969514",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/7214252543840969514",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18991",
+							"uri": "http://host.docker.internal:8014/trust/guardrail-events",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/guardrail-events",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "138",
+							"uri": "http://host.docker.internal:8014/trust/guardrail-events?limit=50",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/guardrail-events (limit)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18993",
+							"uri": "http://host.docker.internal:8014/trust/guardrail-events/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/guardrail-events\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "137",
+							"uri": "http://host.docker.internal:8014/trust/posture",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/posture",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18989",
+							"uri": "http://host.docker.internal:8014/trust/posture/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/trust\/posture\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "1084",
+							"uri": "http://host.docker.internal:8014/uploads",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18990",
+							"uri": "http://host.docker.internal:8014/uploads/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "251",
+							"uri": "http://host.docker.internal:8014/uploads/186617454865649928",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads\/186617454865649928",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "21",
+							"uri": "http://host.docker.internal:8014/workflow-audit",
+							"nodeName": "http:\/\/host.docker.internal:8014\/workflow-audit",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18994",
+							"uri": "http://host.docker.internal:8014/workflow-audit/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/workflow-audit\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "54",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10 ()({supplier_name,supplier_tin,buyer_name,invoice_no,issue_date,due_date,currency,tax_type,tax_rate,total_amount})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18697",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/ ()({supplier_name,supplier_tin,buyer_name,invoice_no,issue_date,due_date,currency,tax_type,tax_rate,total_amount})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "39",
+							"uri": "http://host.docker.internal:8014/outreach/action_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id ()({\"subject\":Zaproxy dolore alias impedit expedita quisquam.,\"body\":\"John Doe\"})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18593",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/ ()({\"subject\":Zaproxy dolore alias impedit expedita quisquam.,\"body\":\"John Doe\"})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "141",
+							"uri": "http://host.docker.internal:8014/team/members/user_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id ()({role,job_functions:[],active})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18753",
+							"uri": "http://host.docker.internal:8014/team/members/user_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id\/ ()({role,job_functions:[],active})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "85",
+							"uri": "http://host.docker.internal:8014/agents/agent_id/autonomy",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/agent_id\/autonomy ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18630",
+							"uri": "http://host.docker.internal:8014/agents/agent_id/autonomy/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/agent_id\/autonomy\/ ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "86",
+							"uri": "http://host.docker.internal:8014/agents/kill-switch",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/kill-switch ()({agent_id,engaged})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18620",
+							"uri": "http://host.docker.internal:8014/agents/kill-switch/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/kill-switch\/ ()({agent_id,engaged})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "83",
+							"uri": "http://host.docker.internal:8014/agents/runs",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs ()({goal})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18621",
+							"uri": "http://host.docker.internal:8014/agents/runs/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/agents\/runs\/ ()({goal})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "176",
+							"uri": "http://host.docker.internal:8014/alerts/check",
+							"nodeName": "http:\/\/host.docker.internal:8014\/alerts\/check",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18597",
+							"uri": "http://host.docker.internal:8014/alerts/check/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/alerts\/check\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "175",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/send-now",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/send-now",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18664",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/send-now/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/send-now\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "171",
+							"uri": "http://host.docker.internal:8014/assistant/interpret",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/interpret ()({text})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18655",
+							"uri": "http://host.docker.internal:8014/assistant/interpret/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/interpret\/ ()({text})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "170",
+							"uri": "http://host.docker.internal:8014/assistant/playbooks/playbook_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/playbooks\/playbook_id",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18633",
+							"uri": "http://host.docker.internal:8014/assistant/playbooks/playbook_id/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/playbooks\/playbook_id\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "169",
+							"uri": "http://host.docker.internal:8014/assistant/transcribe",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/transcribe",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18623",
+							"uri": "http://host.docker.internal:8014/assistant/transcribe/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/transcribe\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "102",
+							"uri": "http://host.docker.internal:8014/audit-packs",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs ()({period})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18652",
+							"uri": "http://host.docker.internal:8014/audit-packs/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/ ()({period})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "131",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants ()({grantee_email,expires_in_days,allow_exact_values})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18651",
+							"uri": "http://host.docker.internal:8014/audit-packs/pack_id/grants/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/audit-packs\/pack_id\/grants\/ ()({grantee_email,expires_in_days,allow_exact_values})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "11345",
+							"uri": "http://host.docker.internal:8014/auth/company",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/company ()({company_name,slug})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "14",
+							"uri": "http://host.docker.internal:8014/auth/company",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/company ()({company_name,slug})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18634",
+							"uri": "http://host.docker.internal:8014/auth/company/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/company\/ ()({company_name,slug})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "2",
+							"uri": "http://host.docker.internal:8014/auth/demo",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "18668",
+							"uri": "http://host.docker.internal:8014/auth/demo/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/demo\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "7",
+							"uri": "http://host.docker.internal:8014/auth/email/verify",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/email\/verify ()({code})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18617",
+							"uri": "http://host.docker.internal:8014/auth/email/verify/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/email\/verify\/ ()({code})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "6",
+							"uri": "http://host.docker.internal:8014/auth/invitation",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/invitation ()({email})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "262",
+							"uri": "http://host.docker.internal:8014/auth/invitation",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/invitation ()({email})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18677",
+							"uri": "http://host.docker.internal:8014/auth/invitation/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/invitation\/ ()({email})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "11",
+							"uri": "http://host.docker.internal:8014/auth/mfa/enroll",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/enroll",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18622",
+							"uri": "http://host.docker.internal:8014/auth/mfa/enroll/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/enroll\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "12",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factor_id/challenge",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factor_id\/challenge",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18596",
+							"uri": "http://host.docker.internal:8014/auth/mfa/factor_id/challenge/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/factor_id\/challenge\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "13",
+							"uri": "http://host.docker.internal:8014/auth/mfa/verify",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/verify ()({factor_id,challenge_id,code})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18607",
+							"uri": "http://host.docker.internal:8014/auth/mfa/verify/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/verify\/ ()({factor_id,challenge_id,code})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "270",
+							"uri": "http://host.docker.internal:8014/auth/password",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/password ()({password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "9",
+							"uri": "http://host.docker.internal:8014/auth/password",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/password ()({password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18636",
+							"uri": "http://host.docker.internal:8014/auth/password/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/password\/ ()({password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "5",
+							"uri": "http://host.docker.internal:8014/auth/recovery",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/recovery ()({email})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "258",
+							"uri": "http://host.docker.internal:8014/auth/recovery",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/recovery ()({email})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18673",
+							"uri": "http://host.docker.internal:8014/auth/recovery/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/recovery\/ ()({email})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "1",
+							"uri": "http://host.docker.internal:8014/auth/sign-in",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-in ()({email,password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "253",
+							"uri": "http://host.docker.internal:8014/auth/sign-in",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-in ()({email,password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18670",
+							"uri": "http://host.docker.internal:8014/auth/sign-in/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-in\/ ()({email,password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "15",
+							"uri": "http://host.docker.internal:8014/auth/sign-out",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-out",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "16",
+							"uri": "http://host.docker.internal:8014/auth/sign-out-everywhere",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-out-everywhere",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18615",
+							"uri": "http://host.docker.internal:8014/auth/sign-out-everywhere/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-out-everywhere\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18626",
+							"uri": "http://host.docker.internal:8014/auth/sign-out/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-out\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "678",
+							"uri": "http://host.docker.internal:8014/auth/sign-up",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-up ()({email,password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "403",
+							"otherinfo": ""
+						},
+						{
+							"id": "4",
+							"uri": "http://host.docker.internal:8014/auth/sign-up",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-up ()({email,password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "18624",
+							"uri": "http://host.docker.internal:8014/auth/sign-up/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-up\/ ()({email,password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "80",
+							"uri": "http://host.docker.internal:8014/cashflow/scenarios",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/scenarios ()({horizon_days,as_of,shifts:[{event_id,shift_days}]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18681",
+							"uri": "http://host.docker.internal:8014/cashflow/scenarios/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/cashflow\/scenarios\/ ()({horizon_days,as_of,shifts:[{event_id,shift_days}]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "13935",
+							"uri": "http://host.docker.internal:8014/computeMetadata/v1/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/computeMetadata\/v1\/ ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "69",
+							"uri": "http://host.docker.internal:8014/conversations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18629",
+							"uri": "http://host.docker.internal:8014/conversations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/conversations\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "34",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10/revoke",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10\/revoke",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18619",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10/revoke/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10\/revoke\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "33",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10/verify",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10\/verify",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18695",
+							"uri": "http://host.docker.internal:8014/customer-endpoints/10/verify/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-endpoints\/10\/verify\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "32",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/10/resolve",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/10\/resolve ()({decision})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18680",
+							"uri": "http://host.docker.internal:8014/customer-identity-claims/10/resolve/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customer-identity-claims\/10\/resolve\/ ()({decision})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "30",
+							"uri": "http://host.docker.internal:8014/customers/10/endpoints",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/endpoints ()({channel,value})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18674",
+							"uri": "http://host.docker.internal:8014/customers/10/endpoints/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/endpoints\/ ()({channel,value})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "1533",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach ()({customer_endpoint_id,subject,body,idempotency_key,evidence_content_ids:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "35",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach ()({customer_endpoint_id,subject,body,idempotency_key,evidence_content_ids:[{}]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18675",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach\/ ()({customer_endpoint_id,subject,body,idempotency_key,evidence_content_ids:[{}]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "37",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach/generate",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach\/generate ()({customer_endpoint_id,turn_id,instruction,idempotency_key})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18662",
+							"uri": "http://host.docker.internal:8014/customers/10/outreach/generate/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/customers\/10\/outreach\/generate\/ ()({customer_endpoint_id,turn_id,instruction,idempotency_key})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "64",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10/approve",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10\/approve",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18632",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10/approve/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10\/approve\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "65",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10/reject",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10\/reject",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18612",
+							"uri": "http://host.docker.internal:8014/einvoice-outreach-drafts/10/reject/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-outreach-drafts\/10\/reject\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "61",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10/request-fix",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10\/request-fix ()({channel})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18678",
+							"uri": "http://host.docker.internal:8014/einvoice-readiness/10/request-fix/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-readiness\/10\/request-fix\/ ()({channel})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "49",
+							"uri": "http://host.docker.internal:8014/einvoice-records",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records ()({supplier_name,supplier_tin,supplier_email,supplier_reg_no,supplier_phone,supplier_address,buyer_name,buyer_email,buyer_tin,buyer_reg_no,buyer_phone,buyer_address,invoice_no,item_description,issue_date,due_date,currency,tax_type,tax_rate,payment_terms,bank_account_no,total_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18692",
+							"uri": "http://host.docker.internal:8014/einvoice-records/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/ ()({supplier_name,supplier_tin,supplier_email,supplier_reg_no,supplier_phone,supplier_address,buyer_name,buyer_email,buyer_tin,buyer_reg_no,buyer_phone,buyer_address,invoice_no,item_description,issue_date,due_date,currency,tax_type,tax_rate,payment_terms,bank_account_no,total_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "58",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/approve",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/approve",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18682",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/approve/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/approve\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "51",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/document",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/document",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18679",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/document/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/document\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "59",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/mark-paid",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/mark-paid ()({paid_at})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18690",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/mark-paid/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/mark-paid\/ ()({paid_at})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "55",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/update",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/update ()({supplier_name,supplier_tin,buyer_name,invoice_no,issue_date,due_date,currency,tax_type,tax_rate,total_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18703",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/update/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/update\/ ()({supplier_name,supplier_tin,buyer_name,invoice_no,issue_date,due_date,currency,tax_type,tax_rate,total_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "50",
+							"uri": "http://host.docker.internal:8014/einvoice-records/extract",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/extract",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18645",
+							"uri": "http://host.docker.internal:8014/einvoice-records/extract/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/extract\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "93",
+							"uri": "http://host.docker.internal:8014/financing/application-packs",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/application-packs ()({product_id})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18702",
+							"uri": "http://host.docker.internal:8014/financing/application-packs/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/financing\/application-packs\/ ()({product_id})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "167",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1/commit",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1\/commit ()({csv_text,mapping_id})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18701",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1/commit/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1\/commit\/ ()({csv_text,mapping_id})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "166",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1/preview",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1\/preview ()({csv_text,mapping_id})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18696",
+							"uri": "http://host.docker.internal:8014/imports/bank_statement_v1/preview/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/imports\/bank_statement_v1\/preview\/ ()({csv_text,mapping_id})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "22",
+							"uri": "http://host.docker.internal:8014/ingestion",
+							"nodeName": "http:\/\/host.docker.internal:8014\/ingestion ()({source_record_id,source_system,record_type,text,occurred_at,metadata:{John Doe},tenant_id,refresh})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18698",
+							"uri": "http://host.docker.internal:8014/ingestion/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/ingestion\/ ()({source_record_id,source_system,record_type,text,occurred_at,metadata:{John Doe},tenant_id,refresh})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "26",
+							"uri": "http://host.docker.internal:8014/integrations/email/sync",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email\/sync",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18656",
+							"uri": "http://host.docker.internal:8014/integrations/email/sync/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/integrations\/email\/sync\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "13933",
+							"uri": "http://host.docker.internal:8014/latest/meta-data/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/latest\/meta-data\/ ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "887",
+							"uri": "http://host.docker.internal:8014/lender/verify",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/verify ()({id,version,company_label,issued_at,metrics:[{key,label,value,evidence:[{label,source}]}],sha256,audit_entry_id,anchor:{repository_path,anchored_at,commit}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1381",
+							"uri": "http://host.docker.internal:8014/lender/verify",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/verify ()({id,version,company_label,issued_at,metrics:[{key,label,value,evidence:[{label,source}]}],sha256,audit_entry_id,anchor:{repository_path,anchored_at,commit}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "429",
+							"otherinfo": ""
+						},
+						{
+							"id": "18618",
+							"uri": "http://host.docker.internal:8014/lender/verify/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/lender\/verify\/ ()({id,version,company_label,issued_at,metrics:[{key,label,value,evidence:[{label,source}]}],sha256,audit_entry_id,anchor:{repository_path,anchored_at,commit}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "429",
+							"otherinfo": ""
+						},
+						{
+							"id": "14057",
+							"uri": "http://host.docker.internal:8014/metadata/instance",
+							"nodeName": "http:\/\/host.docker.internal:8014\/metadata\/instance ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "14083",
+							"uri": "http://host.docker.internal:8014/metadata/v1",
+							"nodeName": "http:\/\/host.docker.internal:8014\/metadata\/v1 ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "13960",
+							"uri": "http://host.docker.internal:8014/opc/v1/instance/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/opc\/v1\/instance\/ ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "13996",
+							"uri": "http://host.docker.internal:8014/opc/v2/instance/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/opc\/v2\/instance\/ ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "14112",
+							"uri": "http://host.docker.internal:8014/openstack/latest/meta_data.json",
+							"nodeName": "http:\/\/host.docker.internal:8014\/openstack\/latest\/meta_data.json ()({action,level,max_amount})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "41",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/operation",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/operation",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18676",
+							"uri": "http://host.docker.internal:8014/outreach/action_id/operation/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach\/action_id\/operation\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "96",
+							"uri": "http://host.docker.internal:8014/passports",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18654",
+							"uri": "http://host.docker.internal:8014/passports/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "100",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants ()({grantee_email,expires_in_days,allow_exact_values})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18754",
+							"uri": "http://host.docker.internal:8014/passports/passport_id/grants/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/passports\/passport_id\/grants\/ ()({grantee_email,expires_in_days,allow_exact_values})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "77",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/token/erase",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/token\/erase",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18708",
+							"uri": "http://host.docker.internal:8014/privacy/tokens/token/erase/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/privacy\/tokens\/token\/erase\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "43",
+							"uri": "http://host.docker.internal:8014/process-analysis",
+							"nodeName": "http:\/\/host.docker.internal:8014\/process-analysis ()({window_days,source_systems:[],minimum_evidence})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18729",
+							"uri": "http://host.docker.internal:8014/process-analysis/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/process-analysis\/ ()({window_days,source_systems:[],minimum_evidence})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "17",
+							"uri": "http://host.docker.internal:8014/query",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query ()({question,conversation_id,customer_id,clear_customer_context})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "19",
+							"uri": "http://host.docker.internal:8014/query-turns/10/compare-roles",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/compare-roles ()({comparison_roles:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18734",
+							"uri": "http://host.docker.internal:8014/query-turns/10/compare-roles/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/compare-roles\/ ()({comparison_roles:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "42",
+							"uri": "http://host.docker.internal:8014/query-turns/10/recommendations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/recommendations ()({action_id,suggested_owner})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18733",
+							"uri": "http://host.docker.internal:8014/query-turns/10/recommendations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/recommendations\/ ()({action_id,suggested_owner})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18732",
+							"uri": "http://host.docker.internal:8014/query/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query\/ ()({question,conversation_id,customer_id,clear_customer_context})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "45",
+							"uri": "http://host.docker.internal:8014/recommendations/10/approve",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/approve ()({comment})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18745",
+							"uri": "http://host.docker.internal:8014/recommendations/10/approve/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/approve\/ ()({comment})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "47",
+							"uri": "http://host.docker.internal:8014/recommendations/10/mark-implemented",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/mark-implemented ()({comment})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18763",
+							"uri": "http://host.docker.internal:8014/recommendations/10/mark-implemented/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/mark-implemented\/ ()({comment})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "46",
+							"uri": "http://host.docker.internal:8014/recommendations/10/reject",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/reject ()({comment})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18758",
+							"uri": "http://host.docker.internal:8014/recommendations/10/reject/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/recommendations\/10\/reject\/ ()({comment})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "89",
+							"uri": "http://host.docker.internal:8014/review-inbox/action_id/decision",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/action_id\/decision ()({decision,edited_draft,reason})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18746",
+							"uri": "http://host.docker.internal:8014/review-inbox/action_id/decision/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/review-inbox\/action_id\/decision\/ ()({decision,edited_draft,reason})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "163",
+							"uri": "http://host.docker.internal:8014/settings/alert-rules",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/alert-rules ()({metric,operator,threshold,recipients:[],channel})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18755",
+							"uri": "http://host.docker.internal:8014/settings/alert-rules/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/alert-rules\/ ()({metric,operator,threshold,recipients:[],channel})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "146",
+							"uri": "http://host.docker.internal:8014/settings/changes",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes ()({area,value:{}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18756",
+							"uri": "http://host.docker.internal:8014/settings/changes/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/ ()({area,value:{}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "147",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id/approve",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id\/approve",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18730",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id/approve/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id\/approve\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "148",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id/reject",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id\/reject",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18716",
+							"uri": "http://host.docker.internal:8014/settings/changes/change_id/reject/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/changes\/change_id\/reject\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "160",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings ()({schema_name,name,headers:[],column_map:{John Doe}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18764",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings\/ ()({schema_name,name,headers:[],column_map:{John Doe}})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "161",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings/match",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings\/match ()({schema_name,headers:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18748",
+							"uri": "http://host.docker.internal:8014/settings/import-mappings/match/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/import-mappings\/match\/ ()({schema_name,headers:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "157",
+							"uri": "http://host.docker.internal:8014/settings/message-templates",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates ()({kind,language,tone,body})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18762",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/ ()({kind,language,tone,body})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "158",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/template_id/approve",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/template_id\/approve",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18727",
+							"uri": "http://host.docker.internal:8014/settings/message-templates/template_id/approve/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/message-templates\/template_id\/approve\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "149",
+							"uri": "http://host.docker.internal:8014/settings/rollback",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/rollback ()({version})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18757",
+							"uri": "http://host.docker.internal:8014/settings/rollback/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/rollback\/ ()({version})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "153",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading/apply",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading\/apply",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18731",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading/apply/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading\/apply\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "152",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading/preview",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading\/preview",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18728",
+							"uri": "http://host.docker.internal:8014/settings/templates/trading/preview/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/settings\/templates\/trading\/preview\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "140",
+							"uri": "http://host.docker.internal:8014/team/invitations",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/invitations ()({email,role,job_functions:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18743",
+							"uri": "http://host.docker.internal:8014/team/invitations/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/invitations\/ ()({email,role,job_functions:[]})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "142",
+							"uri": "http://host.docker.internal:8014/team/members/user_id/sign-out",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id\/sign-out",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18717",
+							"uri": "http://host.docker.internal:8014/team/members/user_id/sign-out/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/team\/members\/user_id\/sign-out\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "68",
+							"uri": "http://host.docker.internal:8014/uploads/commit",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads\/commit",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18715",
+							"uri": "http://host.docker.internal:8014/uploads/commit/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads\/commit\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "67",
+							"uri": "http://host.docker.internal:8014/uploads/preview",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads\/preview",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18726",
+							"uri": "http://host.docker.internal:8014/uploads/preview/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/uploads\/preview\/",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "174",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/preferences",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/preferences ()({email,telegram_chat_id})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18653",
+							"uri": "http://host.docker.internal:8014/assistant/briefing/preferences/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/assistant\/briefing\/preferences\/ ()({email,telegram_chat_id})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "53",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10 ()({supplier_name,supplier_tin,buyer_name,invoice_no,issue_date,due_date,currency,tax_type,tax_rate,total_amount})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18700",
+							"uri": "http://host.docker.internal:8014/einvoice-records/10/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/einvoice-records\/10\/ ()({supplier_name,supplier_tin,buyer_name,invoice_no,issue_date,due_date,currency,tax_type,tax_rate,total_amount})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "28",
+							"uri": "http://host.docker.internal:8014/outreach-policy",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach-policy ()({telegram_reminders_enabled,grace_days,repeat_interval_days,max_reminders,require_approval})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "18699",
+							"uri": "http://host.docker.internal:8014/outreach-policy/",
+							"nodeName": "http:\/\/host.docker.internal:8014\/outreach-policy\/ ()({telegram_reminders_enabled,grace_days,repeat_interval_days,max_reminders,require_approval})",
+							"method": "PUT",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						}
+					],
+					"count": "492",
+					"systemic": false,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "",
+					"cweid": "388",
+					"wascid": "20",
+					"sourceid": "164"
+				},
+				{
+					"pluginid": "10111",
+					"alertRef": "10111",
+					"alert": "Authentication Request Identified",
+					"name": "Authentication Request Identified",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>The given request has been identified as an authentication request. The 'Other Info' field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to \"Auto-Detect\" then this rule will change the authentication to match the request identified.</p>",
+					"instances":[ 
+						{
+							"id": "98",
+							"uri": "http://host.docker.internal:8014/auth/sign-in",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-in ()({email,password})",
+							"method": "POST",
+							"param": "email",
+							"attack": "",
+							"evidence": "password",
+							"otherinfo": "userParam=email\nuserValue=zaproxy@example.com\npasswordParam=password"
+						}
+					],
+					"count": "1",
+					"systemic": false,
+					"solution": "<p>This is an informational alert rather than a vulnerability and so there is nothing to fix.</p>",
+					"otherinfo": "<p>userParam=email</p><p>userValue=zaproxy@example.com</p><p>passwordParam=password</p>",
+					"reference": "<p>https://www.zaproxy.org/docs/desktop/addons/authentication-helper/auth-req-id/</p>",
+					"cweid": "-1",
+					"wascid": "-1",
+					"sourceid": "5"
+				},
+				{
+					"pluginid": "10049",
+					"alertRef": "10049-1",
+					"alert": "Non-Storable Content",
+					"name": "Non-Storable Content",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The response contents are not storable by caching components such as proxy servers. If the response does not contain sensitive, personal or user-specific information, it may benefit from being stored and cached, to improve performance.</p>",
+					"instances":[ 
+						{
+							"id": "121",
+							"uri": "http://host.docker.internal:8014/query-turns/10/citations/citation_id",
+							"nodeName": "http:\/\/host.docker.internal:8014\/query-turns\/10\/citations\/citation_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "122",
+							"uri": "http://host.docker.internal:8014/workflow-audit",
+							"nodeName": "http:\/\/host.docker.internal:8014\/workflow-audit",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "401",
+							"otherinfo": ""
+						},
+						{
+							"id": "105",
+							"uri": "http://host.docker.internal:8014/auth/mfa/enroll",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/mfa\/enroll",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						},
+						{
+							"id": "124",
+							"uri": "http://host.docker.internal:8014/auth/password",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/password ()({password})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						},
+						{
+							"id": "128",
+							"uri": "http://host.docker.internal:8014/auth/sign-out",
+							"nodeName": "http:\/\/host.docker.internal:8014\/auth\/sign-out",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>The content may be marked as storable by ensuring that the following conditions are satisfied:</p><p>The request method must be understood by the cache and defined as being cacheable (\"GET\", \"HEAD\", and \"POST\" are currently defined as cacheable)</p><p>The response status code must be understood by the cache (one of the 1XX, 2XX, 3XX, 4XX, or 5XX response classes are generally understood)</p><p>The \"no-store\" cache directive must not appear in the request or response header fields</p><p>For caching by \"shared\" caches such as \"proxy\" caches, the \"private\" response directive must not appear in the response</p><p>For caching by \"shared\" caches such as \"proxy\" caches, the \"Authorization\" header field must not appear in the request, unless the response explicitly allows it (using one of the \"must-revalidate\", \"public\", or \"s-maxage\" Cache-Control response directives)</p><p>In addition to the conditions above, at least one of the following conditions must also be satisfied by the response:</p><p>It must contain an \"Expires\" header field</p><p>It must contain a \"max-age\" response directive</p><p>For \"shared\" caches such as \"proxy\" caches, it must contain a \"s-maxage\" response directive</p><p>It must contain a \"Cache Control Extension\" that allows it to be cached</p><p>It must have a status code that is defined as cacheable by default (200, 203, 204, 206, 300, 301, 404, 405, 410, 414, 501).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234</p><p>https://datatracker.ietf.org/doc/html/rfc7231</p><p>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+					"cweid": "524",
+					"wascid": "13",
+					"sourceid": "27"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}
