@@ -1,6 +1,6 @@
 # A day with DuitDuit — Demo Video Script
 
-Topic E: SME Finance Copilot · Running time: **5:00 maximum** · Updated 2026-10-10
+Topic E: SME Finance Copilot · Running time: **5:00 maximum** · Updated 2026-10-11
 
 One working day at the **SYNTHETIC Malaysian Home Goods Importer**, a fictional
 company. The day uses the assistant built last (briefing, playbooks, voice, confirmations)
@@ -37,6 +37,12 @@ evidence is in [execution-evidence.md](execution-evidence.md).
 - **Sessions.** Prepare authenticated Owner, Finance, Employee (sales) and
   Compliance sessions for this tenant in separate browser profiles. The visible
   persona selector alone does not change backend authorization.
+- **Demo sign-in.** Once the backend owner has run
+  `python -m scripts.provision_demo_account` and set the four `DEMO_*` settings
+  (see `docs/deployment/production-checklist.md`), the sign-in page shows **Open the
+  demo company**. It opens the Owner session in one click and shows a **Demo
+  authenticator** with the current code. Use it for the Owner scenes and for the
+  closing shot. Finance, Employee and Compliance still need their own accounts.
 - **Frame.** Use 1440×900, the light theme and the English UI. Record scenes
   separately and trim loading and account-switch pauses.
 - **Telegram insert.** Use a prerecorded Telegram briefing clip from an opted-in
@@ -50,7 +56,11 @@ evidence is in [execution-evidence.md](execution-evidence.md).
   seven-day grant, with ranges only. The Share button issues a link; it does not
   email it.
 - **Step-up.** Record the real authenticator prompt when verification has expired,
-  then obscure the code. Never stage a pretend prompt.
+  then obscure the code. Never stage a pretend prompt. In the demo company the
+  code comes from the on-screen Demo authenticator, which may stay visible: it is
+  that shared account's code, and the narration says so.
+- **Subtitles.** English subtitles always. Chinese subtitles only after a fluent
+  reader has checked `docs/submission/subtitles-zh-draft.md`; otherwise leave them out.
 
 ## Timeline
 
@@ -61,12 +71,12 @@ before it.
 | --- | --- | --- | --- | --- |
 | 1 | 0:00–0:25 | 08:00 | Owner | Telegram briefing **N** → Today page **O** → in-app briefing **N** |
 | 2 | 0:25–0:55 | 08:30 | Owner | Data sources import **O** → cash forecast and range **O** |
-| 3 | 0:55–1:50 | 09:00 | Owner | Bank meeting playbook **N** → scorecard and matches **O** → inbox L2 **O** → Passport share with step-up **O** |
+| 3 | 0:55–1:50 | 09:00 | Owner | Bank meeting playbook **N** → scorecard and matches **O** → inbox L2 **O** → Passport share with step-up **O** → lender view and public verification **O** |
 | 4 | 1:50–2:30 | 10:30 | Finance → Owner | Chase late payers **N** → Customers **O** → owner confirms **N** |
 | 5 | 2:30–3:05 | 14:00 | Finance | Can we pay everyone **N** → what-if scenario **O** |
 | 6 | 3:05–3:35 | 15:00 | Employee | Voice request **N** refused by role **N** |
 | 7 | 3:35–4:15 | 17:00 | Owner | Close the month **N** → e-Invoicing readiness **O** |
-| 8 | 4:15–5:00 | 17:15 | Compliance | Agents & autonomy, kill switch **O** → audit chains **O** |
+| 8 | 4:15–5:00 | 17:15 | Compliance | Agents & autonomy, kill switch **O** → audit chains **O** → "Open the demo company" **N** |
 
 ## 1. 08:00 — The morning briefing (0:00–0:25)
 
@@ -126,8 +136,11 @@ briefing format" instead of "arrives".
    and approve it.
 6. Back on Financing & Passport, issue a Passport and share it with the fictional
    lender for seven days, with exact values unchecked.
-7. Complete the real authenticator check and show the issued link. Opening the
-   lender view in a second tab is optional.
+7. Complete the real authenticator check and show the issued link.
+8. Open the link in a second tab: the lender's view, with every amount as a band.
+   Press **Verify this Passport** and hold the **Verified** result with the audit
+   chain intact (about ten seconds in all). The public `/verify` page does the same
+   for a downloaded Passport file.
 
 **Narration:**
 
@@ -137,7 +150,9 @@ briefing format" instead of "arrives".
 > have no source it says so and gives no points. Sharing with a lender is an L2
 > action, so it waits in the inbox for the owner. Approving it creates no link:
 > the owner chooses the lender and the expiry, and confirms with an authenticator
-> code. This prepares a conversation with a lender. It is not a loan approval.
+> code. The lender sees bands, not the books, and anyone can check on a public page
+> that the Passport is genuine and the audit chain behind it is intact. This
+> prepares a conversation with a lender. It is not a loan approval.
 
 ## 4. 10:30 — Chase the late payers (1:50–2:30)
 
@@ -218,13 +233,16 @@ voice test.
 2. Open **Trust & audit → Audit & access → Workflow events**. Show today's
    playbook, command and review-decision events by kind and id.
 3. Press **Re-verify both chains** and hold the result.
+4. Closing shot (five seconds): the sign-in page with **Open the demo company**,
+   then Today opening with the Demo authenticator in the corner.
 
 **Narration:**
 
 > Compliance closes the day. Each agent's autonomy is earned and capped, money is
 > never delegated, and one switch stops them all. Every proposal, decision and
 > share is on a hash chain by kind and id, never by the words people typed.
-> DuitDuit prepares the work, and people make the decisions.
+> DuitDuit prepares the work, and people make the decisions. You can open the same
+> synthetic company yourself, in one click, from the sign-in page.
 
 ## Evidence and recording handoff
 
@@ -232,12 +250,12 @@ voice test.
 | --- | --- |
 | 1 | `app/services/briefing.py`, `briefing_push.py`, `components/BriefingCard.tsx`, `screens/Home.tsx` |
 | 2 | `app/services/business_imports.py`, `cashflow_engine.py`, `screens/CashFlow.tsx`; evaluation F01 |
-| 3 | `app/services/playbooks.py` (`bank_meeting`), `app/stubs/financing.py` (`scorecard`), `app/services/financing_profile.py`; `tests/test_cash_basis.py`, `tests/test_playbooks.py` |
+| 3 | `app/services/passports.py`, `screens/SharedView.tsx`; `app/services/playbooks.py` (`bank_meeting`), `app/stubs/financing.py` (`scorecard`), `app/services/financing_profile.py`; `tests/test_cash_basis.py`, `tests/test_playbooks.py` |
 | 4 | `playbooks.py` (`chase_late_payers`), `app/services/customer_intelligence.py`; `tests/test_ledger_customers.py` |
 | 5 | `playbooks.py` (`pay_everyone`), the cash scenarios; `tests/test_playbooks.py` |
 | 6 | `components/VoiceInput.tsx`, `app/services/assistant_voice.py`; evaluation tasks `A-trick-spoken`, `A-trick-typed` and `A-role-limits` |
 | 7 | `playbooks.py` (`month_end`), `app/services/einvoice_readiness.py` |
-| 8 | `screens/Autonomy.tsx`, `screens/Audit.tsx`; evaluation tasks `A-no-confirm` and `A-no-words-in-audit`, plus the chain tests |
+| 8 | `screens/Autonomy.tsx`, `screens/Audit.tsx`; evaluation tasks `A-no-confirm` and `A-no-words-in-audit`, plus the chain tests; demo sign-in: `app/auth/demo.py`, `screens/Login.tsx`, `components/DemoAuthenticator.tsx`, `tests/test_demo_sign_in.py` |
 
 Paths are relative to `backend/` (`app/`, `tests/`) and `frontend/src/`
 (`components/`, `screens/`). For each scene, record whether it used the working

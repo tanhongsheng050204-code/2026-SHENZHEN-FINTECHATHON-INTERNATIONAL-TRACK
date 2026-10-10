@@ -1,3 +1,5 @@
 # Test fixtures: PERSON_existing00 is a fake vault token name, not a credential.
 149a151b3a30555e1d0539f95b8509ac50e8e676:backend/tests/test_customer_endpoint_resolution.py:generic-api-key:80
 149a151b3a30555e1d0539f95b8509ac50e8e676:backend/tests/test_customer_endpoint_resolution.py:generic-api-key:122
+# Test fixture: the RFC 6238 published test key ("12345678901234567890" in base32), not a credential.
+4af778738888ec7f3b9905b93258d4d742de950a:backend/tests/test_demo_sign_in.py:generic-api-key:31

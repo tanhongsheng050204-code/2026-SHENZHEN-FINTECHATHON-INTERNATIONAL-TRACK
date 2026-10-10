@@ -1,9 +1,38 @@
 # DuitDuit — Execution Evidence
 
-Updated 2026-10-10 after the playbooks, voice input, assistant security evaluation and demo-script rewrite. Historical
+Updated 2026-10-11 after the one-click demo company and ZAP scans; earlier: 2026-10-10 after the playbooks, voice input, assistant security evaluation and demo-script rewrite. Historical
 figures below describe the earlier contract pass. The assistant evidence is below;
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
+
+## One-click demo company and ZAP scans: Oct 11 local verification
+
+**Open the demo company** signs in to the synthetic company through the real password and
+authenticator steps, run by the API with secrets only it holds (`app/auth/demo.py`).
+`tests/test_demo_sign_in.py` covers it with a mocked identity provider:
+- the RFC 6238 code vectors;
+- the feature is off without all three secrets;
+- origin checks;
+- an account outside the demo company is refused;
+- only the demo session can read the code;
+- global sign-out, new authenticators and team changes are refused;
+- briefings, alerts, email outreach and (in `tests/test_telegram_sender.py`) Telegram reminders from the demo company are never sent;
+- the provisioning script writes secrets only to a new file.
+
+In a browser, the real route ran against a local backend with a faked provider. It opened Today with the Demo authenticator showing a live code.
+
+OWASP ZAP (`ghcr.io/zaproxy/zaproxy:stable`) scanned two targets locally: the production build served with the `vercel.json` headers, and the API offline. After the header fixes that the first run asked for, the results were:
+- frontend baseline: **0 failures, 3 warnings, 64 passed**;
+- API scan: **0 failures, 3 warnings, 117 passed**.
+
+Reports are in `evidence/zap-2026-10-11/`. CI job `dast` repeats both scans.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Full backend suite (SQLite) | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **625 passed, 5 skipped** |
+| Offline evaluation | `backend/`: `python -m eval.run <output dir>` | **42 passed, 0 failed, 0 skipped** |
+| Frontend | `npx tsc -b`, `npm run build`, `npm run lint`, hardening check | Passed; 0 errors, 14 existing warnings |
+| Hosted demo sign-in against real Supabase | — | **Not measured**: needs the production steps in `docs/deployment/production-checklist.md` |
 
 ## Financial analysis: Oct 10 local verification
 
