@@ -5,6 +5,27 @@ figures below describe the earlier contract pass. The assistant evidence is belo
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
 
+## Consistency, privacy and bank matching: Oct 10 local verification
+
+Commits after the playbooks: one company across cash, customers, financing and
+playbooks; masked customer contacts for general employees (known risk 2); and
+bank-line matching for the last completed month, which feeds the scorecard and
+the month-end checklist. Checked against a local SQLite copy of the deployed
+synthetic tenant seeded with the same scripts: month-end reports "September
+2026: 4 of 5 bank lines match a record" with the RM1,250.00 transfer listed, and
+the scorecard is 580 (grade C) with bank matching at 80%.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Backend lint | `backend/`: `python -m ruff check .` | All checks passed |
+| Full backend suite | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **580 passed, 2 skipped** |
+| Offline evaluation | `backend/`: `python -m eval.run <output dir>` | **36 passed, 0 failed, 0 skipped** |
+| Frontend typecheck, build, lint | `frontend/`: `npx tsc -b`, `npm run build`, `npm run lint` | Passed; 0 errors, 14 existing warnings |
+| Web hardening | `frontend/`: `node scripts/check-web-hardening.mjs` | Passed |
+
+Hosted PostgreSQL, the production seed re-run and a browser recording are **not
+measured** in this pass.
+
 ## A day with DuitDuit script: Oct 10 local verification
 
 Section 4's deliverable is the rewritten `docs/submission/demo-script.md`.

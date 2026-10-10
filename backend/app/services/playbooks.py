@@ -28,6 +28,7 @@ from app.models import (
 from app.schemas import UserRole
 from app.services import (
     agent_runtime,
+    bank_matching,
     cashflow,
     cashflow_engine,
     einvoice_readiness,
@@ -385,6 +386,33 @@ def _pay_everyone(db, principal):
     return steps, [], "cashflow", forecast.data_mode
 
 
+def _today() -> dt.date:
+    return dt.date.today()
+
+
+def _reconciliation_step(db, tenant_id: str):
+    result = bank_matching.match(db, tenant_id, _today())
+    if not result.lines:
+        return _step(
+            "Bank reconciliation",
+            "not_measured",
+            f"Bank reconciliation: not measured. No bank lines for {result.label} are on record.",
+        )
+    text = (
+        f"{result.label}: {result.matched} of {result.lines} bank lines match a record "
+        f"(same amount, within {bank_matching.WINDOW_DAYS} days)."
+    )
+    if result.unmatched:
+        shown = "; ".join(
+            f"{_money(u.amount)} {'out' if u.direction == 'debit' else 'in'} "
+            f"on {u.posted_on:%d %b}"
+            for u in result.unmatched[:3]
+        )
+        more = len(result.unmatched) - 3
+        text += f" No record yet for: {shown}" + (f" and {more} more." if more > 0 else ".")
+    return _step("Bank reconciliation", "attention" if result.unmatched else "done", text)
+
+
 def _month_end(db, principal):
     tenant_id = str(principal.tenant_id)
     latest = db.scalar(
@@ -440,7 +468,7 @@ def _month_end(db, principal):
             "attention" if opened else "done",
             f"{opened} item{'s' if opened != 1 else ''} still open in your review inbox.",
         ),
-        _step("Bank reconciliation", "not_measured", "Bank reconciliation: not measured"),
+        _reconciliation_step(db, tenant_id),
     ]
     return steps, [], "inbox", None
 

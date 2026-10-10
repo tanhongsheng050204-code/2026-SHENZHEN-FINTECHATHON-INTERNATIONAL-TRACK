@@ -112,11 +112,9 @@ def test_pay_everyone_is_read_only_and_reports_demo_gap_and_scenarios(db):
 def test_month_end_never_invents_a_reconciliation_or_no_data_tick(db):
     result = _run(db, "month_end", UserRole.COMPLIANCE)
     steps = _steps(result)
-    assert steps["Bank reconciliation"] == {
-        "label": "Bank reconciliation",
-        "status": "not_measured",
-        "text": "Bank reconciliation: not measured",
-    }
+    # No bank lines on record: still "not measured", never a tick.
+    assert steps["Bank reconciliation"]["status"] == "not_measured"
+    assert steps["Bank reconciliation"]["text"].startswith("Bank reconciliation: not measured.")
     assert steps["Recent import"]["status"] == "not_measured"
     assert steps["e-Invoices"]["status"] == "not_measured"
     assert result["inbox_item_ids"] == []

@@ -14,6 +14,8 @@ than passing on an invented value:
 - annual_revenue: the synthetic seed's declared revenue, when the tenant is synthetic.
 - months_trading: whole months since the registration date the owner declares in
   company settings.
+- bank_lines_matched_share: last month's bank lines that match a settled record
+  (bank_matching); left out when there were no bank lines that month.
 - anchor_buyer_programme: no source yet.
 """
 
@@ -25,7 +27,7 @@ from sqlalchemy import func, select
 from app import models
 from app.contracts.cashflow import ForecastResponse
 from app.contracts.common import DataMode
-from app.services import cash_basis
+from app.services import bank_matching, cash_basis
 from app.stubs.financing import DEMO_PROFILE, Profile
 
 _ZERO = Decimal("0")
@@ -106,6 +108,9 @@ def compute(db, tenant_id: str, forecast: ForecastResponse) -> Profile:
 
     if cash_basis._plan3_deployed():
         _business_facts(db, tenant_id, as_of, values)
+        matched = bank_matching.match(db, tenant_id, as_of).share
+        if matched is not None:
+            values["bank_lines_matched_share"] = matched
 
     settings = db.get(m.TenantSettingsRecord, tenant_id)
     registered = (settings.document.get("profile") or {}).get("registered_on") if settings else None

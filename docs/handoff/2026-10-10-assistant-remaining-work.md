@@ -223,6 +223,9 @@ Baseline on Oct 10: **470 passed, 2 skipped**. Frontend lint has 14 warnings tha
   - `AUTH_ALLOW_BEARER=true`;
   - optionally `BRIEFING_PUSH_ENABLED=true`, plus SMTP settings and/or `TELEGRAM_BOT_TOKEN`.
 - Test sign-in as `owner@finbrain-demo.test`.
+- Re-run the synthetic seed once (`python -m seed.topic_e --allow-postgres`): it
+  adds September's settled history so bank reconciliation is measured, and it
+  rechecks the October cash story. Idempotent; refuses unmarked tenants.
 - Re-run the synthetic fixtures seed once on the provisioning connection so the
   demo tenant tells one story (August bills paid, registration date declared):
   `python -m seed.topic_e_original_fixtures --tenant-id 858f0c1c-42fa-52a2-91b3-80a19d816356`.

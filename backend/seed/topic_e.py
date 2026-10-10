@@ -53,6 +53,13 @@ def datasets(as_of: date):
     def day(offset):
         return (as_of + timedelta(days=offset)).isoformat()
 
+    last_month_start = (as_of.replace(day=1) - timedelta(days=1)).replace(day=1)
+
+    def last_month(day_of_month):
+        # September's settled history, for matching bank lines to records. It is
+        # all before the seed date, so the October cash story is unchanged.
+        return (last_month_start + timedelta(days=day_of_month - 1)).isoformat()
+
     def payroll_period(index):
         month_index = as_of.year * 12 + as_of.month - 1 + index
         return f"{month_index // 12:04}-{month_index % 12 + 1:02}"
@@ -73,6 +80,18 @@ def datasets(as_of: date):
             bank_headers,
             bank_map,
             [
+                # Last month: two marketplace payouts, rent and payroll, each with a
+                # record, and one transfer with none (left for a person to explain).
+                [last_month(3), last_month(3), "SYNTHETIC Shopee payout", "0.00",
+                 "9400.00", "181850.00", "SYNTHETIC-BANK-0903"],
+                [last_month(7), last_month(7), "SYNTHETIC rent", "14800.00",
+                 "0.00", "167050.00", "SYNTHETIC-BANK-0907"],
+                [last_month(19), last_month(19), "SYNTHETIC Lazada payout", "0.00",
+                 "12600.00", "179650.00", "SYNTHETIC-BANK-0919"],
+                [last_month(23), last_month(23), "SYNTHETIC payroll", "62000.00",
+                 "0.00", "117650.00", "SYNTHETIC-BANK-0923"],
+                [last_month(27), last_month(27), "SYNTHETIC unexplained transfer", "1250.00",
+                 "0.00", "116400.00", "SYNTHETIC-BANK-0927"],
                 [
                     day(0),
                     day(0),
@@ -81,13 +100,22 @@ def datasets(as_of: date):
                     "116400.00",
                     "116400.00",
                     "SYNTHETIC-BANK-OPEN",
-                ]
+                ],
             ],
         ),
         "payables_register_v1": (
             ["bill_id", "supplier", "amount", "currency", "fx_rate", "due_date", "status"],
             None,
             [
+                [
+                    "SYNTHETIC-RENT-0",
+                    "SYNTHETIC local landlord",
+                    "14800.00",
+                    "MYR",
+                    "1",
+                    last_month(7),
+                    "paid",
+                ],
                 [
                     "SYNTHETIC-RENT-1",
                     "SYNTHETIC local landlord",
@@ -208,6 +236,17 @@ def datasets(as_of: date):
                 ]
                 for index, offset in enumerate((23, 53, 83))
                 for i in range(1, 11)
+            ]
+            + [
+                [
+                    payroll_period(-1),
+                    last_month(23),
+                    f"SYNTHETIC Employee {i:02}",
+                    "5000.00",
+                    "1200.00",
+                    "paid",
+                ]
+                for i in range(1, 11)
             ],
         ),
         "marketing_spend_v1": (
@@ -237,6 +276,24 @@ def datasets(as_of: date):
             ["reference", "platform", "payout_date", "gross", "fees", "net", "status"],
             None,
             [
+                [
+                    "SYNTHETIC-PAYOUT-0903",
+                    "SYNTHETIC Shopee settlement",
+                    last_month(3),
+                    "10000.00",
+                    "600.00",
+                    "9400.00",
+                    "paid",
+                ],
+                [
+                    "SYNTHETIC-PAYOUT-0919",
+                    "SYNTHETIC Lazada settlement",
+                    last_month(19),
+                    "13400.00",
+                    "800.00",
+                    "12600.00",
+                    "paid",
+                ],
                 [
                     "SYNTHETIC-PAYOUT-1",
                     "SYNTHETIC Shopee settlement",
