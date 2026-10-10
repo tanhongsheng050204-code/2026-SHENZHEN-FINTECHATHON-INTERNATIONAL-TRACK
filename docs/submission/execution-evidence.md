@@ -5,6 +5,23 @@ figures below describe the earlier contract pass. The assistant evidence is belo
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
 
+## Alerts, eligibility steps and security checks: Oct 10 local verification
+
+Alert rules now fire from imported records (`tests/test_alerts.py`); financing
+matches name their next step (`tests/test_financing_path.py`); public share views
+run under row-level security scoped to the link's tenant, rate limits are shared
+in the database, and Trust & audit runs live checks.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Backend lint | `backend/`: `python -m ruff check .` | All checks passed |
+| Full backend suite (SQLite) | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **595 passed, 5 skipped** (the 3 new skips are the PostgreSQL-only tests) |
+| PostgreSQL RLS tests | `FINBRAIN_REVIEW_POSTGRES_URL=<disposable pgvector/pg17> pytest tests/test_plan23_postgres.py tests/test_passports_postgres.py tests/test_rate_limit_shared.py` | **4 passed**, after `scripts.check_plan23_migrations` applied every migration and `scripts.check_supabase` passed |
+| Offline evaluation | `backend/`: `python -m eval.run <output dir>` | **36 passed, 0 failed, 0 skipped** |
+| Frontend typecheck, build, lint, hardening | `frontend/` | Passed; 0 errors, 14 existing warnings; hardening passed |
+
+The hosted Supabase project has not been re-tested in this pass.
+
 ## Consistency, privacy and bank matching: Oct 10 local verification
 
 Commits after the playbooks: one company across cash, customers, financing and
