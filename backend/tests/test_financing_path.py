@@ -54,3 +54,9 @@ def test_targets_out_of_reach_soon_say_so_plainly():
     match = _match(_live(months_trading="38", annual_revenue="2600000"), "my_term_loan")
 
     assert "RM3,000,000.00" in match.next_step and "now RM2,600,000.00" in match.next_step
+
+
+def test_steps_nobody_can_take_in_the_app_have_no_link():
+    match = _match(_live(months_trading="38", annual_revenue="2600000"), "my_term_loan")
+
+    assert match.next_screen is None

@@ -94,7 +94,7 @@ function Matches({ canPrepare }: { canPrepare: boolean }) {
               <article key={m.product.id} className={"fb-fin-match" + (i === 0 && m.eligible ? " is-best" : "")}>
                 <div className="fb-fin-match-head">
                   {i === 0 && m.eligible && <span className="fb-inbox-pill is-can">Best fit</span>}
-                  <span className={"fb-inbox-pill " + (m.eligible ? "is-approved" : m.steps_away === 1 ? "is-can" : "is-rejected")}>{m.eligible ? "Eligible" : m.steps_away === 1 ? "One step away" : `${m.steps_away} steps away`}</span>
+                  <span className={"fb-inbox-pill " + (m.eligible ? "is-approved" : m.steps_away === 1 && m.next_screen ? "is-can" : "is-rejected")}>{m.eligible ? "Eligible" : m.steps_away === 1 && m.next_screen ? "One step away" : "Not eligible yet"}</span>
                   <span className="fb-fin-score" aria-label={`Fit score ${m.fit_score} out of 100`}>{m.fit_score}<small>/100</small></span>
                 </div>
                 <h3>{m.product.name}</h3>

@@ -311,11 +311,10 @@ _STEP_SCREENS = {
     "months_trading": "company",
     "receivables_over_90_share": "customers",
     "top_customer_share": "customers",
-    "anchor_buyer_programme": "financing",
     "import_payables_share": "cashflow",
-    "annual_revenue": "finance",
-    "projected_shortfall_gap": "cashflow",
 }
+# Revenue size, an anchor-buyer programme and the size of the cash gap have no
+# step a person can take in DuitDuit, so they get no link.
 
 
 def _next_step(rule: _Rule, profile: Profile) -> str:
