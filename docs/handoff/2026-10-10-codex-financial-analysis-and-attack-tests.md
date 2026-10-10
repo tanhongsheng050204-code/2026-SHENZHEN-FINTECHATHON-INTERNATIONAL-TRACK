@@ -1,5 +1,9 @@
 # Codex plan: financial analysis and attack tests (Oct 10–15, 2026)
 
+> **Status, Oct 10 evening:** Codex had not started, so Claude is building both tasks
+> (Task 2 is done; Task 1 is in progress on `claude/financial-analysis`). **Codex: do not
+> start either task.** Ask the user for new work instead.
+
 Read `AGENTS.md` first for the house rules. Claude is building other features in parallel (see "Who touches what"), so stay inside the files listed for you.
 
 ## Why
