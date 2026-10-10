@@ -20,7 +20,7 @@ from app.security.tokenize import protect_scalar
 TENANT = "00000000-0000-0000-0000-000000000001"
 
 
-def test_dispatch_sends_to_decrypted_chat_and_marks_sent(monkeypatch):
+def _approved_telegram_action():
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     db = Session(engine)
@@ -56,6 +56,11 @@ def test_dispatch_sends_to_decrypted_chat_and_marks_sent(monkeypatch):
     )
     db.add(action)
     db.commit()
+    return db, action
+
+
+def test_dispatch_sends_to_decrypted_chat_and_marks_sent(monkeypatch):
+    db, action = _approved_telegram_action()
     sent = []
 
     class Bot:
@@ -76,3 +81,27 @@ def test_dispatch_sends_to_decrypted_chat_and_marks_sent(monkeypatch):
     finally:
         db.close()
 
+
+
+def test_demo_company_reminders_are_never_sent(monkeypatch):
+    db, action = _approved_telegram_action()
+    sent = []
+
+    class Bot:
+        async def send_message(self, *, chat_id, text):
+            sent.append((chat_id, text))
+            return SimpleNamespace(message_id=78)
+
+    monkeypatch.setattr(
+        "app.integrations.telegram.sender.get_settings",
+        lambda: SimpleNamespace(
+            telegram_outbound_enabled=True, demo_sign_in_enabled=True, demo_tenant_id=TENANT
+        ),
+    )
+    try:
+        result = asyncio.run(dispatch_one(db, Bot()))
+        assert sent == []
+        assert result.status == "cancelled"
+        assert result.failure_code == "demo_delivery_simulated"
+    finally:
+        db.close()

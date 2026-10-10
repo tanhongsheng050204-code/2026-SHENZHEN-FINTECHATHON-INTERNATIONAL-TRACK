@@ -37,6 +37,14 @@ async def dispatch_one(db: Session, bot: Bot | None = None) -> OutreachAction | 
     action.send_started_at = datetime.now(UTC)
     action.attempt_count += 1
     db.commit()
+    if getattr(settings, "demo_sign_in_enabled", False) and action.tenant_id == getattr(
+        settings, "demo_tenant_id", None
+    ):
+        # The shared demo company approves real proposals, but no message leaves the system.
+        action.status = "cancelled"
+        action.failure_code = "demo_delivery_simulated"
+        db.commit()
+        return action
 
     endpoint = db.get(CustomerEndpoint, action.customer_endpoint_id)
     customer = db.get(Customer, action.customer_id)
