@@ -9,6 +9,7 @@ import {
   TEMPLATE_PLACEHOLDERS,
   applyIndustryTemplate,
   approveMessageTemplate,
+  checkAlerts,
   createAlertRule,
   createMessageTemplate,
   decideSettingsChange,
@@ -541,6 +542,16 @@ function RulesTab({ isOwner }: { isOwner: boolean }) {
   const [recipients, setRecipients] = useState<JobFunction[]>(["customer_service"]);
   const [channel, setChannel] = useState<AlertRule["channel"]>("in_app");
   const [error, setError] = useState<string | null>(null);
+  const [checked, setChecked] = useState<string[] | null>(null);
+
+  const checkNow = async () => {
+    setError(null);
+    try {
+      setChecked(await checkAlerts());
+    } catch (e) {
+      setError(message(e));
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -567,7 +578,7 @@ function RulesTab({ isOwner }: { isOwner: boolean }) {
   return (
     <section className="fb-cash-card">
       <h2>Alert rules</h2>
-      <p className="fb-inbox-muted">Extra alerts on fixed measures, sent to the positions you choose.</p>
+      <p className="fb-inbox-muted">Extra alerts on fixed measures, sent to the positions you choose. DuitDuit checks them every 15 minutes and after each import; each rule fires at most once a day. Open disputes has no data source yet, so it never fires.</p>
       <ul className="fb-fin-items">
         {rules.map((r) => (
           <li key={r.id}>
@@ -576,6 +587,12 @@ function RulesTab({ isOwner }: { isOwner: boolean }) {
           </li>
         ))}
       </ul>
+      {isOwner && rules.length > 0 && (
+        <div className="fb-assistant-actions">
+          <button type="button" className="fb-btn fb-btn-outline" onClick={() => void checkNow()}>Check now</button>
+          {checked && <span className="fb-inbox-muted" role="status">{checked.length ? checked.join(" ") : "Nothing new crossed a threshold today."}</span>}
+        </div>
+      )}
       {isOwner && (
         <form className="fb-cs-subform" onSubmit={(e) => void create(e)}>
           <div className="fb-cash-whatif">

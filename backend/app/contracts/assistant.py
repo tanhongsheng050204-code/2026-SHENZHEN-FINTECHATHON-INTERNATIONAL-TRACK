@@ -65,7 +65,7 @@ class AssistantPlan(BaseModel):
 
 
 class BriefingLine(BaseModel):
-    kind: Literal["inbox", "cash", "sharing", "guardrails", "data"]
+    kind: Literal["inbox", "cash", "sharing", "guardrails", "data", "alerts"]
     text: str
     screen: str | None = None
     tone: Literal["ok", "attention", "risk"] = "ok"

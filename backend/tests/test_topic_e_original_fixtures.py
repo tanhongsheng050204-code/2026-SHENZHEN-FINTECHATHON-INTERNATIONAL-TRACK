@@ -141,3 +141,25 @@ def test_the_synthetic_company_declares_its_registration_date_once():
     assert row.document["profile"]["registered_on"] == "2023-08-01"
     assert row.version == 2
     assert _count(db, TenantSettingsVersion, SYNTHETIC_ID) == 2
+
+
+def test_the_synthetic_company_has_three_demo_alert_rules_once():
+    from app.models import TenantCustomization
+
+    db = _db()
+    _with_seed_marker(db)
+
+    seed_original_fixtures(db, SYNTHETIC_ID)
+    seed_original_fixtures(db, SYNTHETIC_ID)
+
+    rules = db.scalars(
+        select(TenantCustomization).where(
+            TenantCustomization.tenant_id == SYNTHETIC_ID,
+            TenantCustomization.kind == "alert_rule",
+        )
+    ).all()
+    assert sorted(r.document["metric"] for r in rules) == [
+        "overdue_amount_per_customer",
+        "projected_balance",
+        "stock_below_reorder",
+    ]

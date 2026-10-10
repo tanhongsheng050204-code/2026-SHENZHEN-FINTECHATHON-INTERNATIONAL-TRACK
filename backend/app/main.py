@@ -47,6 +47,7 @@ from app.routes import (
     trust,
     uploads,
 )
+from app.routes import alerts as alerts_routes
 from app.routes import settings as settings_routes
 from app.security.detect import warm_detector
 
@@ -57,24 +58,32 @@ logger = logging.getLogger(__name__)
 
 
 async def _briefing_loop() -> None:
-    """Opt-in morning briefings: check once a minute, send at the configured hour."""
+    """Once a minute: opt-in morning briefings at the configured hour, and every
+    15 minutes the saved alert rules (each fires at most once a day)."""
     from zoneinfo import ZoneInfo
 
     from app.db import SessionLocal
-    from app.services import briefing_push
+    from app.services import alerts, briefing_push
 
-    def tick() -> int:
+    def tick() -> tuple[int, int]:
         now = datetime.now(ZoneInfo(settings.application_timezone)).replace(tzinfo=None)
+        sent = fired = 0
         with SessionLocal() as db:
-            return briefing_push.run_due(db, now)
+            if settings.briefing_push_enabled:
+                sent = briefing_push.run_due(db, now)
+            if settings.alert_checks_enabled and now.minute % 15 == 0:
+                fired = alerts.run_due(db, now)
+        return sent, fired
 
     while True:
         try:
-            sent = await asyncio.to_thread(tick)
+            sent, fired = await asyncio.to_thread(tick)
             if sent:
                 logger.info("briefings_pushed", extra={"count": sent})
+            if fired:
+                logger.info("alerts_fired", extra={"count": fired})
         except Exception as error:  # a failed tick must not stop tomorrow's briefing
-            logger.warning("briefing_push_failed", extra={"error_type": type(error).__name__})
+            logger.warning("scheduled_tick_failed", extra={"error_type": type(error).__name__})
         await asyncio.sleep(60)
 
 
@@ -107,7 +116,8 @@ async def lifespan(_: FastAPI):
                 "failure_code": detector.failure_code,
             },
         )
-    briefings = asyncio.create_task(_briefing_loop()) if settings.briefing_push_enabled else None
+    scheduled = settings.briefing_push_enabled or settings.alert_checks_enabled
+    briefings = asyncio.create_task(_briefing_loop()) if scheduled else None
     yield
     if briefings is not None:
         briefings.cancel()
@@ -196,6 +206,7 @@ app.include_router(settings_routes.router)
 app.include_router(customization.router)
 app.include_router(imports.router)
 app.include_router(assistant.router)
+app.include_router(alerts_routes.router)
 
 
 @app.exception_handler(RequestValidationError)

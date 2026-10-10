@@ -1010,3 +1010,8 @@ export async function saveBriefingPreference(email: boolean, telegramChatId: str
 export async function sendBriefingNow(): Promise<{ sent: ("email" | "telegram")[] }> {
   return parse<{ sent: ("email" | "telegram")[] }>(await authenticatedFetch("/assistant/briefing/send-now", { method: "POST" }));
 }
+
+/** Check the saved alert rules now. Each rule still fires at most once a day. */
+export async function checkAlerts(): Promise<string[]> {
+  return (await parse<{ fired: string[] }>(await authenticatedFetch("/alerts/check", { method: "POST" }))).fired;
+}

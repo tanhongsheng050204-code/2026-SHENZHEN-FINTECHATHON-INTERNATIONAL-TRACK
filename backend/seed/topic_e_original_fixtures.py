@@ -13,6 +13,8 @@ Two adjustments keep that one story consistent:
   paid on their due date instead of showing as overdue next to the cash forecast.
 - The synthetic company declares a registration date (as an owner would in Company
   settings), which is the source of months trading for financing.
+- It also saves three alert rules an owner would set: low projected cash, stock below
+  reorder level and a large overdue balance per customer.
 """
 
 import argparse
@@ -64,6 +66,51 @@ def _declare_registration(db, tenant_id: str) -> None:
     db.commit()
 
 
+_DEMO_RULES = (
+    ("projected_balance", "below", "50000", ["owner", "finance"], "in_app"),
+    ("stock_below_reorder", "above", "0", ["procurement", "owner"], "in_app"),
+    ("overdue_amount_per_customer", "above", "20000", ["finance", "owner"], "email"),
+)
+
+
+def _demo_alert_rules(db, tenant_id: str) -> None:
+    from decimal import Decimal
+    from uuid import UUID
+
+    from app.auth.principal import AuthPrincipal
+    from app.contracts.customization import AlertRuleRequest
+    from app.models import TenantCustomization
+    from app.schemas import UserRole
+    from app.services.customization import create_rule
+
+    exists = db.scalar(
+        select(TenantCustomization.id).where(
+            TenantCustomization.tenant_id == tenant_id,
+            TenantCustomization.kind == "alert_rule",
+        )
+    )
+    if exists is not None:
+        return
+    owner = AuthPrincipal(
+        user_id=UUID("00000000-0000-0000-0000-000000000003"),
+        email=None,
+        role=UserRole.OWNER_DIRECTOR,
+        tenant_id=UUID(tenant_id),
+    )
+    for metric, operator, threshold, recipients, channel in _DEMO_RULES:
+        create_rule(
+            db,
+            owner,
+            AlertRuleRequest(
+                metric=metric,
+                operator=operator,
+                threshold=Decimal(threshold),
+                recipients=recipients,
+                channel=channel,
+            ),
+        )
+
+
 def seed_original_fixtures(db, tenant_id: str) -> None:
     tenant = _synthetic_tenant(db, str(tenant_id))
     tenant_id = str(tenant.id)
@@ -80,6 +127,7 @@ def seed_original_fixtures(db, tenant_id: str) -> None:
         invoices.append(record)
     seed_einvoice_records(db, invoices)
     _declare_registration(db, tenant_id)
+    _demo_alert_rules(db, tenant_id)
 
     for record in SAMPLE_RECORDS:
         canonical = adapt_seed_record(record).model_copy(

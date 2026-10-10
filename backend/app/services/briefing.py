@@ -6,6 +6,7 @@ ranges and counts plus a prompt to sign in, because a message can be forwarded.
 """
 
 import datetime as dt
+from decimal import Decimal
 
 from sqlalchemy import func, select
 
@@ -134,12 +135,36 @@ def _data_line(db, principal: AuthPrincipal) -> BriefingLine | None:
     )
 
 
+def _alerts_line(db, principal: AuthPrincipal, exact: bool) -> BriefingLine | None:
+    from app.services import alerts
+
+    if db is None:
+        return None
+    jobs = set(getattr(principal, "job_functions", ()) or ())
+    if principal.role == UserRole.OWNER_DIRECTOR:
+        jobs.add("owner")
+    fired = alerts.fired_today(db, str(principal.tenant_id), jobs, dt.date.today())
+    if not fired:
+        return None
+    texts = [
+        alerts.describe(item["metric"], Decimal(item["value"]), exact=exact) for item in fired
+    ]
+    count = len(texts)
+    return BriefingLine(
+        kind="alerts",
+        text=(f"{count} alerts: " if count > 1 else "Alert: ") + " ".join(texts[:3]),
+        screen=alerts.SCREENS.get(fired[0]["metric"]),
+        tone="risk",
+    )
+
+
 def build(db, principal: AuthPrincipal, *, exact: bool | None = None) -> Briefing:
     exact = _sees_exact(principal) if exact is None else exact
     lines = [
         line
         for line in (
             _cash_line(db, principal, exact),
+            _alerts_line(db, principal, exact),
             _inbox_line(db, principal, exact),
             _sharing_line(db, principal),
             _guardrail_line(db, principal),

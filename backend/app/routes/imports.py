@@ -1,3 +1,5 @@
+import datetime as dt
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,6 +19,7 @@ from app.contracts.imports import (
 from app.db import get_db
 from app.models import BusinessImportBatch
 from app.schemas import UserRole
+from app.services import alerts
 from app.services.business_imports import WRITER_JOBS, authorize, commit_import, prepare
 
 router = APIRouter(prefix="/imports", tags=["imports"])
@@ -91,4 +94,14 @@ def commit(
     db: Session = Depends(get_db),
 ):
     authorize(principal, schema_name)
-    return commit_import(db, principal, schema_name, request.csv_text, request.mapping_id)
+    result = commit_import(db, principal, schema_name, request.csv_text, request.mapping_id)
+    _after_commit(db, principal)
+    return result
+
+
+def _after_commit(db: Session, principal: AuthPrincipal) -> None:
+    """New records may cross an alert threshold; a failed check never fails the import."""
+    try:
+        alerts.evaluate(db, str(principal.tenant_id), dt.date.today())
+    except Exception:
+        db.rollback()
