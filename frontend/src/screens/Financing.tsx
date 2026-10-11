@@ -99,6 +99,13 @@ function Matches({ canPrepare }: { canPrepare: boolean }) {
                 </div>
                 <h3>{m.product.name}</h3>
                 <p className="fb-inbox-muted">{m.product.illustrative_terms}</p>
+                {m.product.source_url && (
+                  <p className="fb-fine">
+                    <a href={m.product.source_url} target="_blank" rel="noopener noreferrer">Read the public source</a>
+                    {m.product.last_verified && <>, checked {new Date(m.product.last_verified).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</>}
+                    . Synthetic demo product; no partnership with the scheme's owner.
+                  </p>
+                )}
                 <ul className="fb-fin-rules">
                   {m.rules.map((r) => (
                     <li key={r.rule} className={r.passed ? "is-pass" : "is-fail"}>

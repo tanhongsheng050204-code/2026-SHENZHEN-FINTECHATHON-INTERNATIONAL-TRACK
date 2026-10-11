@@ -150,6 +150,7 @@ def _product(
     terms: str,
     rules: tuple[_Rule, ...],
     fit_score: int,
+    source_url: str | None = None,
 ) -> _Product:
     return _Product(
         product=FinancingProduct(
@@ -158,13 +159,17 @@ def _product(
             category=category,
             name=name,
             illustrative_terms=terms,
-            last_verified=None,
-            source_url=None,
+            last_verified=_SOURCES_CHECKED if source_url else None,
+            source_url=source_url,
         ),
         rules=rules,
         fit_score=fit_score,
     )
 
+
+# Malaysian products are modelled on public schemes. Their terms quote only what the
+# linked page states; the matching thresholds in `rules` are DuitDuit's own, illustrative.
+_SOURCES_CHECKED = dt.date(2026, 10, 11)
 
 _MONTHS_24 = _Rule("months_trading_min", "months_trading", ">=", Decimal("24"))
 _NO_ANCHOR = _Rule("anchor_programme_required", "anchor_buyer_programme", ">=", Decimal("1"))
@@ -175,66 +180,84 @@ _CATALOGUE: tuple[_Product, ...] = (
         "MY",
         "invoice_financing",
         "Invoice financing",
-        "Advance up to 80% of validated invoice value; repaid when the customer pays.",
+        "Modelled on SARANA, the Securities Commission's scheme: invoice financing from "
+        "SC-registered peer-to-peer platforms, supporting cash flow after delivery. "
+        "The source states no amounts or rates.",
         (
             _Rule("einvoice_share_min", "validated_einvoice_share", ">=", Decimal("0.50")),
             _Rule("aging_over_90_max", "receivables_over_90_share", "<=", Decimal("0.15")),
         ),
         92,
+        "https://www.sc.com.my/resources/media/media-release/"
+        "sc-launches-sarana-to-widen-financing-options-for-msmes-and-small-contractors",
     ),
     _product(
         "my_trade_import",
         "MY",
         "trade_financing",
         "Import trade financing",
-        "Pays overseas suppliers, including RMB settlement; repaid in 90 to 120 days.",
+        "Modelled on EXIM Bank Malaysia's import financing: short-term trust receipt "
+        "financing that bridges an importer's working capital under documentary credit.",
         (
             _Rule("import_share_min", "import_payables_share", ">=", Decimal("0.20")),
             _MONTHS_24,
         ),
         85,
+        "https://exim.com.my/annual-report/2020/ebook/files/basic-html/page37.html",
     ),
     _product(
         "my_guarantee_scheme",
         "MY",
         "government_guarantee",
         "Government-guaranteed SME financing",
-        "Bank financing with a partial government guarantee for viable SMEs.",
+        "Modelled on SJPP's government guarantee schemes: a participating bank finances "
+        "the SME and asks SJPP for a guarantee when collateral is lacking; up to 1% "
+        "guarantee fee.",
         (
             _Rule("months_trading_min", "months_trading", ">=", Decimal("12")),
             _Rule("revenue_max", "annual_revenue", "<=", Decimal("25000000.00")),
         ),
         78,
+        "https://sjpp.com.my/eligibility/applying-for-government-guarantee-schemes",
     ),
     _product(
         "my_islamic_working_capital",
         "MY",
         "islamic_working_capital",
         "Islamic working-capital financing (tawarruq)",
-        "Shariah-compliant revolving working capital.",
+        "Modelled on tawarruq as Bank Negara Malaysia's Shariah Advisory Council rules "
+        "it may be executed, under the policy document on Tawarruq.",
         (_MONTHS_24, _Rule("revenue_min", "annual_revenue", ">=", Decimal("1000000.00"))),
         74,
+        "https://www.bnm.gov.my/-/ruling-of-the-shariah-advisory-council-sac-"
+        "of-the-bank-negara-malaysia-at-its-199th-meeting",
     ),
     _product(
         "my_digital_micro",
         "MY",
         "digital_micro_financing",
         "Digital micro-financing",
-        "Online application and fast decision, up to RM50,000.",
+        "Modelled on Bank Negara Malaysia's Micro Enterprises Facility: working capital or "
+        "capital expenditure up to RM50,000, rate set by the participating bank.",
         (
             _Rule("months_trading_min", "months_trading", ">=", Decimal("6")),
             _Rule("gap_max", "projected_shortfall_gap", "<=", Decimal("50000.00")),
         ),
         66,
+        "https://www.bnm.gov.my/-/"
+        "new-and-enhanced-financing-facilities-for-smes-affected-by-covid-19/",
     ),
     _product(
         "my_term_loan",
         "MY",
         "working_capital_term_loan",
         "Working-capital term loan",
-        "Three- to five-year term financing for working capital.",
+        "Modelled on Bank Negara Malaysia's All Economic Sectors facility: working capital "
+        "or capital expenditure, up to RM5 million over up to 5 years (its 7% rate cap "
+        "applied until 30 June 2021).",
         (_MONTHS_24, _Rule("revenue_min", "annual_revenue", ">=", Decimal("3000000.00"))),
         40,
+        "https://www.bnm.gov.my/documents/20124/2294076/AES_Eng.pdf",
     ),
     _product(
         "my_revolving_credit",

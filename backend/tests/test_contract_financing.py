@@ -29,13 +29,15 @@ def test_ineligible_product_explains_the_failing_rule():
     assert term_loan["explanation"].startswith("Not eligible: Annual revenue")
 
 
-def test_every_rule_cites_evidence_and_terms_are_unverified():
+def test_every_rule_cites_evidence_and_only_sourced_terms_carry_a_check_date():
     body = client_for(router).get("/financing/matches").json()
 
     for match in body["matches"]:
         assert match["rules"]
         assert all(rule["evidence"] for rule in match["rules"])
-        assert match["product"]["last_verified"] is None
+        # A check date appears only beside the public source it was checked against.
+        product = match["product"]
+        assert (product["last_verified"] is None) == (product["source_url"] is None)
     assert "illustrative" in body["disclaimer"]
 
 
