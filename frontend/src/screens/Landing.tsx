@@ -137,7 +137,7 @@ export default function Landing() {
         </div>
         <div className="lv-hero-stage">
           <HeroApp />
-          <p className="lv-fine">The synthetic demo company, inside the real app.</p>
+          <p className="lv-fine">A replay of the app's own screens and figures, with the synthetic demo company.</p>
         </div>
       </header>
 

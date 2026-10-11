@@ -145,7 +145,7 @@ export function HeroApp() {
             <span className="lv-card-foot"><em>L2 · owner approves</em></span>
           </div>
           <div className="lv-card">
-            <span className="lv-card-who"><i className="is-sales">S</i>Sales agent drafted</span>
+            <span className="lv-card-who"><i className="is-finance">F</i>Collections agent drafted</span>
             <strong>Payment reminder for customer #1</strong>
             <span className="lv-card-foot"><em>L2 · owner approves</em></span>
           </div>
