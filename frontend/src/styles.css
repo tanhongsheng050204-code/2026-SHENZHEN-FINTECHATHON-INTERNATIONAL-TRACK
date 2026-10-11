@@ -2139,3 +2139,27 @@ html{scroll-behavior:smooth;}
   .fb-root input[type="checkbox"],.fb-root input[type="radio"]{width:22px;height:22px;}
   .fb-sidebar-close{width:44px;height:44px;}
 }
+
+/* ══ App, Attio pass: white surfaces with hairlines, a quiet grey sidebar, ink
+   primary buttons, Inter with its display cut for headings, 8–12px radii. ══ */
+:root:not([data-theme="dark"]) .fb-shell{--bg:#FFFFFF;--bg-alt:#F4F6F5;--line:#E6EAE8;--btn-bg:#10241F;--btn-text:#FFFFFF}
+:root:not([data-theme="dark"]) .fb-shell{background:#FFFFFF}
+:root:not([data-theme="dark"]) .fb-sidebar{background:#FAFBFB;border-right-color:#E6EAE8}
+.fb-sidebar-link{font-size:.88rem;font-weight:500;border-radius:8px;padding:.5rem .65rem;gap:.65rem}
+:root:not([data-theme="dark"]) .fb-sidebar-link{color:#3E4A46}
+:root:not([data-theme="dark"]) .fb-sidebar-link.is-current{background:#ECEFEE;color:#10241F}
+:root[data-theme="dark"] .fb-sidebar-link.is-current{background:var(--bg-alt);color:var(--ink)}
+.fb-sidebar-link.is-current svg{color:var(--accent)}
+.fb-sidebar-group-label{text-transform:none;letter-spacing:0;font-weight:500}
+.fb-btn{border-radius:10px;font-size:.86rem;font-weight:600}
+.fb-btn-outline{border-color:var(--line);box-shadow:0 1px 2px rgba(16,36,31,.06)}
+.fb-btn-outline:hover{background:var(--bg-alt)}
+:root[data-theme="dark"] .fb-shell{--btn-bg:#EAF2EF;--btn-text:#0C1714}
+.fb-app-header h1,.fb-shell h2,.fb-shell h3{font-family:'Inter Variable','Inter',system-ui,sans-serif;font-optical-sizing:auto}
+.fb-app-header h1{font-weight:600;letter-spacing:-.035em;font-size:1.85rem}
+.fb-shell h2{font-weight:600;letter-spacing:-.025em}
+.fb-kpi-tile{border-radius:12px;box-shadow:0 1px 2px rgba(16,36,31,.04)}
+:root:not([data-theme="dark"]) .fb-topbar{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.fb-topbar-search{border-radius:10px}
+.fb-topbar-ask,.fb-topbar-profile-trigger{border-radius:10px}
+.fb-topbar-icon-btn{border-radius:10px}

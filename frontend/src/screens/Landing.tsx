@@ -116,6 +116,10 @@ export default function Landing() {
 
   return (
     <div className="fb-root fb-mkt lx lv">
+      <button type="button" className="lv-announce" onClick={() => (demoOpen ? void openDemo() : goToSecurity("landing"))}>
+        {demoOpen ? "Judging DuitDuit? Open the synthetic demo company in one click" : "How DuitDuit keeps every decision with a person"}
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
       <MarketingNav />
 
       <header className="lv-hero">
@@ -198,24 +202,40 @@ export default function Landing() {
         <FaqAccordion />
       </section>
 
-      <section className="lx-closing">
-        <h2>See your next 90 days.</h2>
+      <section className="lx-closing lv-closing">
+        <h2>Finance work that waits for you.</h2>
+        <p>Agents prepare it. You decide. Every step is on the record.</p>
         <div className="lx-ctas">
-          <button className="lx-btn is-primary" type="button" onClick={() => show("signup")}>Get started</button>
+          {demoOpen ? (
+            <button className="lx-btn is-primary" type="button" onClick={() => void openDemo()} disabled={demoBusy}>Open the demo company</button>
+          ) : (
+            <button className="lx-btn is-primary" type="button" onClick={() => show("signup")}>Get started</button>
+          )}
           <button className="lx-btn is-quiet" type="button" onClick={() => show("login")}>Log in</button>
         </div>
       </section>
 
-      <footer className="lx-footer">
-        <div>
+      <footer className="lx-footer lv-footer">
+        <div className="lv-footer-brand">
           <Wordmark />
-          <p>Finance copilot for Malaysian SMEs. A prototype built for the 2026 Shenzhen FinTech competition.</p>
+          <p>Finance copilot for Malaysian SMEs. A prototype built for the 2026 Shenzhen FinTech competition, shown with a synthetic company.</p>
         </div>
-        <nav aria-label="Footer">
+        <nav aria-label="Product">
+          <h3>Product</h3>
+          <button type="button" onClick={() => document.getElementById("landing-product")?.scrollIntoView({ behavior: "smooth" })}>How it works</button>
+          <button type="button" onClick={() => document.getElementById("landing-security")?.scrollIntoView({ behavior: "smooth" })}>Nothing moves without you</button>
+          <button type="button" onClick={() => document.getElementById("landing-faq")?.scrollIntoView({ behavior: "smooth" })}>Questions</button>
+        </nav>
+        <nav aria-label="Trust">
+          <h3>Trust</h3>
           <button type="button" onClick={() => goToSecurity("landing")}>Security</button>
           <button type="button" onClick={() => goToLegal("privacy", "landing")}>Privacy policy</button>
           <button type="button" onClick={() => goToLegal("terms", "landing")}>Terms of service</button>
-          <a href="mailto:hello@duitduit.example">Contact</a>
+        </nav>
+        <nav aria-label="Contact">
+          <h3>Contact</h3>
+          <a href="mailto:hello@duitduit.example">Email the team</a>
+          <button type="button" onClick={() => show("login")}>Log in</button>
         </nav>
       </footer>
 

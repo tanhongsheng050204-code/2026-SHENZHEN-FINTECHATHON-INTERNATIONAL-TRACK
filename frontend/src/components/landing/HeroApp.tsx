@@ -77,10 +77,7 @@ export function HeroApp() {
   return (
     <div ref={root} className={"lv-app" + (step >= 0 ? " is-live" : "")} key={take}>
       <div className="lv-app-bar">
-        <span className="lv-app-workspace">
-          <LogoMark />
-          <span>Synthetic Home Goods Importer</span>
-        </span>
+        <span className="lv-app-lights" aria-hidden="true"><i /><i /><i /></span>
         {step >= FINAL && !instant && (
           <button type="button" className="lv-app-replay" onClick={replay}>Play again</button>
         )}
@@ -93,6 +90,12 @@ export function HeroApp() {
 
       <div className="lv-app-body">
         <nav className="lv-app-nav" aria-hidden="true">
+          <span className="lv-app-workspace">
+            <LogoMark />
+            <b>Home Goods Importer</b>
+            <svg viewBox="0 0 12 12" width="10" height="10"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+          </span>
+          <span className="lv-app-quick">Quick actions <kbd>⌘K</kbd></span>
           <span>Today</span>
           <span className="is-current">Ask DuitDuit</span>
           <span>
