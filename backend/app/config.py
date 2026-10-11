@@ -117,6 +117,21 @@ class Settings(BaseSettings):
     demo_tenant_id: str = "858f0c1c-42fa-52a2-91b3-80a19d816356"
     # Start the shared demo company clean each day (app.services.demo_reset).
     demo_daily_reset: bool = True
+    # Automations are checked with the 15-minute alert checks (app.services.automations).
+    automations_enabled: bool = True
+    # "Items wait for review" messages to Slack or WhatsApp (app.services.chat_notify).
+    # One company per deployment: CHAT_NOTIFY_TENANT_ID. Off unless switched on.
+    chat_notifications_enabled: bool = False
+    chat_notify_tenant_id: str = ""
+    app_public_url: str = "https://duitduit-umber.vercel.app"
+    slack_webhook_url: str = ""
+    whatsapp_access_token: str = ""
+    whatsapp_phone_number_id: str = ""
+    whatsapp_recipient: str = ""
+    # An approved WhatsApp template with one body variable; without one, plain text,
+    # which WhatsApp only delivers within 24 hours of the recipient's last message.
+    whatsapp_template: str = ""
+    whatsapp_template_language: str = "en"
     agent_daily_tool_limit: int = 100
     agent_daily_cost_limit: float = Field(default=10.0, gt=0, allow_inf_nan=False)
     einvoice_document_bucket: str = "einvoice-documents"

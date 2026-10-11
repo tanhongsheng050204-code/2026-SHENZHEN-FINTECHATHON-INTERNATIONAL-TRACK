@@ -49,6 +49,7 @@ from app.routes import (
 )
 from app.routes import alerts as alerts_routes
 from app.routes import analysis as analysis_routes
+from app.routes import collaboration as collaboration_routes
 from app.routes import settings as settings_routes
 from app.security.detect import warm_detector
 
@@ -60,12 +61,13 @@ logger = logging.getLogger(__name__)
 
 async def _briefing_loop() -> None:
     """Once a minute: opt-in morning briefings at the configured hour, every
-    15 minutes the saved alert rules (each fires at most once a day), and once a
-    day a clean start for the shared demo company while one-click demo is on."""
+    15 minutes the saved alert rules (each fires at most once a day), automations
+    and chat notifications, and once a day a clean start for the shared demo
+    company while one-click demo is on."""
     from zoneinfo import ZoneInfo
 
     from app.db import SessionLocal
-    from app.services import alerts, briefing_push, demo_reset
+    from app.services import alerts, automations, briefing_push, chat_notify, demo_reset
 
     def tick() -> tuple[int, int]:
         now = datetime.now(ZoneInfo(settings.application_timezone)).replace(tzinfo=None)
@@ -77,6 +79,10 @@ async def _briefing_loop() -> None:
                 sent = briefing_push.run_due(db, now)
             if settings.alert_checks_enabled and now.minute % 15 == 0:
                 fired = alerts.run_due(db, now)
+            if settings.automations_enabled and now.minute % 15 == 0:
+                automations.run_due(db, now)
+            if settings.chat_notifications_enabled and now.minute % 15 == 0:
+                chat_notify.run_due(db)
         return sent, fired
 
     while True:
@@ -124,6 +130,8 @@ async def lifespan(_: FastAPI):
         settings.briefing_push_enabled
         or settings.alert_checks_enabled
         or (settings.demo_sign_in_enabled and settings.demo_daily_reset)
+        or settings.automations_enabled
+        or settings.chat_notifications_enabled
     )
     briefings = asyncio.create_task(_briefing_loop()) if scheduled else None
     yield
@@ -236,6 +244,7 @@ app.include_router(imports.router)
 app.include_router(assistant.router)
 app.include_router(alerts_routes.router)
 app.include_router(analysis_routes.router)
+app.include_router(collaboration_routes.router)
 
 
 @app.exception_handler(RequestValidationError)

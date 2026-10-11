@@ -688,6 +688,9 @@ class CustomerSummaryResponse(BaseModel):
     overdue_total: Decimal
     invoice_count: int
     linked_source_count: int
+    # One sentence written by fixed rules from the records named in risk_sources.
+    risk_note: str | None = None
+    risk_sources: list[str] = Field(default_factory=list)
 
 
 class CustomerTimelineItemResponse(BaseModel):

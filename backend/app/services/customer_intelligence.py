@@ -20,6 +20,11 @@ from app.schemas import (
     CustomerTimelineItemResponse,
 )
 from app.services.customer_attention import latest_attention
+from app.services.customer_notes import money_timeline, risk_note
+
+
+def _aware(value: datetime | None) -> datetime | None:
+    return value.replace(tzinfo=UTC) if value is not None and value.tzinfo is None else value
 
 
 def _financials(db: Session, tenant_id: str, customer_id: int) -> tuple[Decimal, Decimal, int]:
@@ -66,6 +71,9 @@ def customer_summary(db: Session, tenant_id: str, customer: Customer) -> Custome
         if customer.primary_name_token
         else None
     )
+    note, sources = risk_note(
+        db, tenant_id, customer.id, snapshot.id if snapshot else None, datetime.now(UTC).date()
+    )
     return CustomerSummaryResponse(
         id=customer.id, name=registry.masked_value if registry else customer.canonical_name,
         profile_status=customer.profile_status,
@@ -75,6 +83,7 @@ def customer_summary(db: Session, tenant_id: str, customer: Customer) -> Custome
         priority=snapshot.priority if snapshot else "healthy",
         outstanding_total=outstanding, overdue_total=overdue,
         invoice_count=invoice_count, linked_source_count=linked,
+        risk_note=note, risk_sources=sources,
     )
 
 
@@ -124,8 +133,9 @@ def customer_detail(db: Session, tenant_id: str, customer_id: int) -> CustomerDe
             )
         ).all()
     ]
+    timeline.extend(money_timeline(db, tenant_id, customer_id))
     timeline.sort(
-        key=lambda item: item.occurred_at or datetime.min.replace(tzinfo=UTC),
+        key=lambda item: _aware(item.occurred_at) or datetime.min.replace(tzinfo=UTC),
         reverse=True,
     )
     return CustomerDetailResponse(
