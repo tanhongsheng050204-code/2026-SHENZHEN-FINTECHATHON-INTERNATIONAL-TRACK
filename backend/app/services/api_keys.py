@@ -117,6 +117,14 @@ def revoke(db, principal: AuthPrincipal, key_id: str) -> None:
     db.commit()
 
 
+def holder_still_owner(db: Session, principal: AuthPrincipal) -> bool:
+    """A key works only while the owner who created it is still an active owner."""
+    from app.models import AuthUserRole
+
+    row = db.get(AuthUserRole, (str(principal.user_id), str(principal.tenant_id)))
+    return row is not None and row.active and row.user_role == UserRole.OWNER_DIRECTOR.value
+
+
 def authenticate(db: Session, key: str) -> tuple[AuthPrincipal, str] | None:
     """The read-only principal a key stands for, and its id; None for any bad key.
 

@@ -29,6 +29,9 @@ router = APIRouter(tags=["mcp"], include_in_schema=False)
 
 PROTOCOL = "2025-06-18"
 _per_key = rate_limit.counter("mcp", 60)
+# Before a key is checked, so guessing keys is slow too.
+_per_address = rate_limit.counter("mcp-address", 120)
+MAX_BATCH = 10
 
 TOOLS = [
     {
@@ -230,6 +233,7 @@ def _answer(db, principal, key_id: str, message: dict) -> dict | None:
 
 @router.post("/mcp")
 async def mcp(request: Request, db: Session = Depends(get_db)):
+    _per_address(rate_limit.client_address(request))
     header = request.headers.get("authorization", "")
     found = api_keys.authenticate(db, header.removeprefix("Bearer ").strip())
     if found is None:
@@ -239,7 +243,6 @@ async def mcp(request: Request, db: Session = Depends(get_db)):
             headers={"WWW-Authenticate": 'Bearer realm="duitduit"'},
         )
     principal, key_id = found
-    _per_key(f"key:{key_id}")
     # Read with the owner's role, but never restore protected values.
     db.info["finbrain_disclosure_allowed"] = False
     set_rls_context(
@@ -249,10 +252,17 @@ async def mcp(request: Request, db: Session = Depends(get_db)):
         actor_ref=principal.actor_ref,
         tenant_id=str(principal.tenant_id),
     )
+    if not api_keys.holder_still_owner(db, principal):
+        return JSONResponse({"detail": "invalid_api_key"}, status_code=401)
     try:
         body = json.loads(await request.body())
     except ValueError:
         return JSONResponse(_error(None, -32700, "Parse error"), status_code=400)
+    messages = body if isinstance(body, list) else [body]
+    if len(messages) > MAX_BATCH:
+        return JSONResponse(_error(None, -32600, "Too many messages in one batch"), status_code=400)
+    for _ in messages:
+        _per_key(f"key:{key_id}")  # every message counts against the key's limit
     if isinstance(body, list):
         answers = [a for a in (_answer(db, principal, key_id, m) for m in body) if a is not None]
         return JSONResponse(answers) if answers else Response(status_code=202)

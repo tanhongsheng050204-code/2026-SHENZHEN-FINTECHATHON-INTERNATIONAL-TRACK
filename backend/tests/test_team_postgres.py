@@ -172,6 +172,15 @@ def test_an_mcp_key_reads_its_own_company_under_rls():
         db.add(Tenant(id=tid, name="SYNTHETIC mcp review", slug=f"review-{tid}"))
         db.flush()
         initialize_settings(db, tid, "SYNTHETIC mcp review")
+        db.add(
+            AuthUserRole(
+                user_id=str(owner.user_id),
+                tenant_id=tid,
+                user_role="owner_director",
+                job_functions=["owner"],
+                active=True,
+            )
+        )
         db.commit()
         _as(db, owner)
         _, secret = api_keys.create(db, owner)

@@ -9,7 +9,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.auth.dependencies import get_current_user
 from app.db import get_db
-from app.models import Base, Tenant, WorkflowAuditEntry
+from app.models import AuthUserRole, Base, Tenant, WorkflowAuditEntry
 from app.routes.collaboration import router as keys_router
 from app.routes.mcp import router as mcp_router
 from app.schemas import UserRole
@@ -26,6 +26,16 @@ def db():
     Base.metadata.create_all(engine)
     session = Session(engine)
     session.add(Tenant(id=str(TENANT_A), slug="tenant-a", name="Tenant A"))
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    session.add(
+        AuthUserRole(
+            user_id=str(owner.user_id),
+            tenant_id=str(TENANT_A),
+            user_role="owner_director",
+            job_functions=["owner"],
+            active=True,
+        )
+    )
     session.commit()
     return session
 
@@ -137,3 +147,27 @@ def test_unknown_tools_and_methods_are_json_rpc_errors(db):
         json={"jsonrpc": "2.0", "method": "notifications/initialized"},
     )
     assert notice.status_code == 202
+
+
+def test_a_key_stops_working_when_its_owner_is_no_longer_an_owner(db):
+    key, client = _key(db), _app(db)
+    assert _rpc(client, key, "tools/list").status_code == 200
+
+    db.get(
+        AuthUserRole, (str(principal(UserRole.OWNER_DIRECTOR).user_id), str(TENANT_A))
+    ).user_role = "finance_ops"
+    db.commit()
+    assert _rpc(client, key, "tools/list").status_code == 401
+
+
+def test_guessing_keys_is_rate_limited_before_any_key_is_checked(db):
+    client = _app(db)
+    codes = {_rpc(client, "ddk_000000000000_" + "x" * 40, "ping").status_code for _ in range(125)}
+    assert 429 in codes
+
+
+def test_a_batch_cannot_carry_more_than_ten_messages(db):
+    key, client = _key(db), _app(db)
+    batch = [{"jsonrpc": "2.0", "id": n, "method": "ping"} for n in range(11)]
+    response = client.post("/mcp", headers={"Authorization": f"Bearer {key}"}, json=batch)
+    assert response.status_code == 400
