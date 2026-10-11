@@ -11,9 +11,9 @@
 ![AI](https://img.shields.io/badge/AI-Morpheus_+_Gemini-8A2BE2)
 ![Security](https://img.shields.io/badge/security-AES--256--GCM_vault_+_RLS-D97706)
 ![Tests](https://img.shields.io/badge/tests-pytest_offline-2496ED?logo=pytest&logoColor=white)
-[![Website](https://img.shields.io/badge/website-finbrainos.vercel.app-black?logo=vercel&logoColor=white)](https://finbrainos.vercel.app/)
+[![Website](https://img.shields.io/badge/website-duitduit--umber.vercel.app-black?logo=vercel&logoColor=white)](https://duitduit-umber.vercel.app/)
 
-**Live site: <https://finbrainos.vercel.app/>**
+**Live site: <https://duitduit-umber.vercel.app/>** (the API behind it runs on a team member's server; see [Build status](#build-status))
 
 DuitDuit is our entry for the **2026 Shenzhen International FinTech Competition
 (FinTechathon), International Track — Topic E: SME Finance Copilot**. It gives a small
@@ -33,10 +33,12 @@ and every disclosure and decision lands in a hash-chained audit log.
 
 All figures shown come from a **synthetic** Malaysian home-goods importer.
 
-**Try it:** on the deployed site, press **Open the demo company**. It signs you in as the
-owner of the synthetic company in one click, with a real password-and-authenticator session
-run by the server. Anything that would leave the company is recorded and never sent. Locally,
-see [Setup](#setup).
+**Try it:** open the live site and choose **Log in**. Once the server operator switches on
+the demo account (step 4 of the [production checklist](docs/deployment/production-checklist.md)),
+an **Open the demo company** button appears there. It signs you in as the owner of the
+synthetic company in one click, with a real password-and-authenticator session run by the
+server. Anything that would leave the company is recorded and never sent. Until then you can
+create your own company. Locally, see [Setup](#setup).
 
 ---
 
@@ -112,9 +114,11 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 | Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested** |
 | Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
 | Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. Hosted end-to-end testing is pending. |
-| One-click demo company for judges | **Built and tested** with a mocked provider. It switches on with the [production checklist](docs/deployment/production-checklist.md). |
+| One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
+| Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
-| Hosted deployment reachable from mainland China | **Pending.** Needs the production steps and a custom domain. |
+| Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Sign-in reaches the server. The API currently runs through a temporary tunnel, whose address changes when it restarts. Email codes need the Supabase settings in step 6b of the [production checklist](docs/deployment/production-checklist.md). |
+| Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
 
 ### How the entry maps to the scoring criteria
 
@@ -911,17 +915,27 @@ poller per bot token — disable the deployed Telegram worker while testing loca
 
 ### Frontend — Vercel
 
-Set the Vercel project root to `frontend/` (`vercel.json` configures the Vite build with
-an SPA fallback). Build-time variables:
+The live frontend is the Vercel project `duitduit`, at <https://duitduit-umber.vercel.app>. Set the project root to
+`frontend/`. `vercel.json` configures the Vite build, the SPA fallback and the security
+headers. The browser only ever talks to the site itself: an edge function
+(`frontend/api/proxy.js`) forwards `/api/*` to the backend, so the session cookie stays
+first-party and the strict content security policy holds.
 
-```dotenv
-VITE_API_URL=https://<your-backend-domain>
-VITE_SUPABASE_URL=https://<PROJECT_REF>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
-```
+| Variable | Value |
+| --- | --- |
+| `VITE_AUTH_MODE` | `backend` (the server runs sign-in; the browser never contacts Supabase) |
+| `VITE_API_URL` | `/api`. Never the backend's own address: the content security policy blocks it, and every request fails with "Failed to fetch". |
+| `BACKEND_ORIGIN` | The backend's public HTTPS address, with no trailing slash |
 
-On the backend, add the Vercel domain to `CORS_ORIGINS` (or match it with
-`CORS_ORIGIN_REGEX`), and add the Vercel URL to Supabase Auth's redirect URLs.
+`VITE_` values are baked in at build time, so redeploy after changing them.
+
+On the backend:
+- `CORS_ORIGINS` must list the site's exact address;
+- `SUPABASE_URL` and `SUPABASE_ANON_KEY` must both be set, or sign-in answers "Supabase Auth is not configured";
+- in the Supabase dashboard, the Site URL, redirect URLs and email templates must be set so emails carry a 6-digit code instead of a `localhost` link.
+
+The full list, with checks for each step, is in the
+[production checklist](docs/deployment/production-checklist.md).
 
 ### CI/CD
 
@@ -965,7 +979,7 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **628 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
+- backend: **629 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
 - evaluation: **42 of 42**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
@@ -1083,6 +1097,7 @@ This is a proof of concept. The following boundaries are deliberate and document
   - The app no longer loads third-party fonts or scripts; CI checks this.
   - With `VITE_AUTH_MODE=backend`, the browser never contacts `supabase.co`.
   - The deployed site is still on `vercel.app`, which is mostly blocked in mainland China, so a custom domain is needed. See [china-reachability.md](docs/deployment/china-reachability.md).
+- **Hosting**: the API runs on a team member's machine through a temporary tunnel. It is only up while that machine is on, and the address changes on restart. Moving it to Cloud Run is described in [cloud-run-and-vercel.md](docs/deployment/cloud-run-and-vercel.md).
 - **Shared demo company**: it is not reset automatically. Changes visitors make stay until an operator reverts them.
 - **Assurance**: automated scans and adversarial tests only. There is no independent penetration test and no certification.
 - **Chinese interface**: navigation and page titles are translated, but most screen content and the assistant's sentences are still English.
@@ -1126,6 +1141,6 @@ This is a proof of concept. The following boundaries are deliberate and document
 **DuitDuit** - AI agents run the finance back office, people review every action, and
 lenders can verify the result, with customer data protected before any AI sees it.
 
-[finbrainos.vercel.app](https://finbrainos.vercel.app/)
+[duitduit-umber.vercel.app](https://duitduit-umber.vercel.app/)
 
 </div>
