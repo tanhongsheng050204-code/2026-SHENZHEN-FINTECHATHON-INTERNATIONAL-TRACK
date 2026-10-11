@@ -4,4 +4,4 @@ Allow: /security
 Allow: /legal
 Disallow: /
 
-Sitemap: https://finbrainos.vercel.app/sitemap.xml
+Sitemap: https://duitduit-umber.vercel.app/sitemap.xml
