@@ -16,3 +16,8 @@ dist/
 backups/
 .DS_Store
 
+
+# Generated run logs, previews and browser-test files; the evidence lives in docs/submission/
+output/*
+!output/eval-report.*
+.playwright-mcp/
