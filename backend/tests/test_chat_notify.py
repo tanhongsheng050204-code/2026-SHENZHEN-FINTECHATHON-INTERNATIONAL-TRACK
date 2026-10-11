@@ -146,3 +146,23 @@ def test_only_the_owner_sends_a_test_and_unconfigured_channels_say_so(db, sent):
     ]
     app.dependency_overrides[get_current_user] = lambda: principal(UserRole.FINANCE_OPS)
     assert TestClient(app).post("/notifications/test", json={"channel": "slack"}).status_code == 403
+
+
+def test_another_company_can_neither_see_nor_use_the_channels(db, sent):
+    from tests.auth_support import TENANT_B
+
+    db.add(Tenant(id=str(TENANT_B), slug="tenant-b", name="Tenant B"))
+    db.commit()
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[get_db] = lambda: db
+    app.dependency_overrides[get_current_user] = lambda: principal(
+        UserRole.OWNER_DIRECTOR, TENANT_B
+    )
+    other = TestClient(app)
+
+    assert other.post("/notifications/test", json={"channel": "slack"}).json()["status"] == (
+        "not_configured"
+    )
+    assert sent == []
+    assert not any(c["configured"] for c in other.get("/notifications/channels").json()["channels"])

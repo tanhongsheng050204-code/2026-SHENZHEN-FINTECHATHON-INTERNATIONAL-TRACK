@@ -192,7 +192,9 @@ def remove_view(
 def chat_channels(
     principal: AuthPrincipal = Depends(require_roles(*_MONEY_READ)),
 ) -> ChatNotificationsResponse:
-    return ChatNotificationsResponse(data_mode=DataMode.LIVE, channels=chat_notify.statuses())
+    return ChatNotificationsResponse(
+        data_mode=DataMode.LIVE, channels=chat_notify.statuses(str(principal.tenant_id))
+    )
 
 
 @router.post("/notifications/test", response_model=ChatTestResponse)

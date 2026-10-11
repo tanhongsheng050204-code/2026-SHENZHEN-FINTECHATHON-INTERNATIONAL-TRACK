@@ -14,11 +14,17 @@ from app.schemas import (
     CustomerDetailResponse,
     CustomerSummaryResponse,
     CustomerTimelineItemResponse,
+    UserRole,
 )
 from app.security.detokenize import detokenize_response_with_trace, hash_query
 from app.services.customer_intelligence import customer_detail, customer_summary, list_customers
 
 router = APIRouter(tags=["customers"])
+
+# Invoices, payments and reminder proposals on a customer's timeline belong to the
+# money roles; the review items behind reminders are not theirs to see otherwise.
+_MONEY_ROLES = {UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR, UserRole.COMPLIANCE}
+_MONEY_SOURCES = {"sales_ledger", "einvoice", "review_inbox"}
 
 
 def _require_customer_intelligence() -> None:
@@ -27,6 +33,18 @@ def _require_customer_intelligence() -> None:
 
 
 def _authorized_customer_summary(
+    db: Session,
+    principal: AuthPrincipal,
+    summary: CustomerSummaryResponse,
+) -> CustomerSummaryResponse:
+    summary = _restored_name(db, principal, summary)
+    if principal.role in _MONEY_ROLES:
+        return summary
+    # The risk note reads receivables and warning signs: the money roles' view.
+    return summary.model_copy(update={"risk_note": None, "risk_sources": []})
+
+
+def _restored_name(
     db: Session,
     principal: AuthPrincipal,
     summary: CustomerSummaryResponse,
@@ -51,11 +69,13 @@ def _authorized_customer_summary(
     # A name from the company's own imported sales ledger is the company's own
     # record, not an identity observed in an inbound message, so it needs no claim.
     from_ledger = db.scalar(
-        select(SalesPipeline.id).where(
+        select(SalesPipeline.id)
+        .where(
             SalesPipeline.tenant_id == str(principal.tenant_id),
             SalesPipeline.customer_id == customer.id,
             SalesPipeline.customer_token == customer.primary_name_token,
-        ).limit(1)
+        )
+        .limit(1)
     )
     if accepted is None and from_ledger is None:
         return summary
@@ -81,13 +101,26 @@ def display_name(db: Session, principal: AuthPrincipal, customer_id: int) -> str
     return _authorized_customer_summary(db, principal, summary).name
 
 
+def _visible_timeline(principal: AuthPrincipal, timeline: list) -> list:
+    if principal.role in _MONEY_ROLES:
+        return timeline
+    return [item for item in timeline if item.source_system not in _MONEY_SOURCES]
+
+
 def _authorized_customer_detail(
     db: Session,
     principal: AuthPrincipal,
     detail: CustomerDetailResponse,
 ) -> CustomerDetailResponse:
     summary = _authorized_customer_summary(db, principal, detail)
-    return detail.model_copy(update={"name": summary.name})
+    return detail.model_copy(
+        update={
+            "name": summary.name,
+            "risk_note": summary.risk_note,
+            "risk_sources": summary.risk_sources,
+            "timeline": _visible_timeline(principal, detail.timeline),
+        }
+    )
 
 
 @router.get("/customers", response_model=list[CustomerSummaryResponse])
@@ -119,7 +152,9 @@ def customer(customer_id: int, principal: CurrentUser, db: Session = Depends(get
 def customer_timeline(customer_id: int, principal: CurrentUser, db: Session = Depends(get_db)):
     _require_customer_intelligence()
     try:
-        return customer_detail(db, str(principal.tenant_id), customer_id).timeline
+        return _visible_timeline(
+            principal, customer_detail(db, str(principal.tenant_id), customer_id).timeline
+        )
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
 

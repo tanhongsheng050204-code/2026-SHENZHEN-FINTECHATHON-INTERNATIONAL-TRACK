@@ -58,10 +58,17 @@ def configured(channel: str) -> bool:
     )
 
 
-def statuses() -> list[ChatChannelStatus]:
-    enabled = get_settings().chat_notifications_enabled
+def serves(tenant_id: str) -> bool:
+    """The channels belong to one company; no other company may see or use them."""
+    target = get_settings().chat_notify_tenant_id
+    return bool(target) and str(tenant_id) == target
+
+
+def statuses(tenant_id: str) -> list[ChatChannelStatus]:
+    mine = serves(tenant_id)
+    enabled = get_settings().chat_notifications_enabled and mine
     return [
-        ChatChannelStatus(channel=channel, configured=configured(channel), enabled=enabled)
+        ChatChannelStatus(channel=channel, configured=mine and configured(channel), enabled=enabled)
         for channel in CHANNELS
     ]
 
@@ -116,7 +123,7 @@ def _send(channel: str, text: str) -> None:
 def notify(db, tenant_id: str, channel: str, counts: dict[str, int]) -> str:
     """Send one message on one channel; record and return the outcome."""
     settings = get_settings()
-    if not configured(channel):
+    if not serves(tenant_id) or not configured(channel):
         status = "not_configured"
     elif settings.demo_sign_in_enabled and tenant_id == settings.demo_tenant_id:
         status = "simulated"
