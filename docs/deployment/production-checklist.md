@@ -103,6 +103,43 @@ Redeploy afterwards. `VITE_` settings are baked into the build, so changing them
 
 **Check:** open the site, then **Log in**. The **Open the demo company** card appears above the sign-in form.
 
+## 6b. Supabase Auth settings (dashboard)
+
+DuitDuit signs people in with **6-digit codes**, not email links. Supabase's defaults send a link that points at `http://localhost:3000`, so these settings must change. They are in the Supabase dashboard of the project the backend's `SUPABASE_URL` points to. They need an **Owner** or **Administrator** role in that organisation.
+
+**1. Authentication → URL Configuration**
+- **Site URL:** `https://duitduit-umber.vercel.app` → **Save changes**.
+- **Redirect URLs → Add URL:** `https://duitduit-umber.vercel.app/**` → **Save**.
+
+**2. Authentication → Emails → Templates.** Each of the four templates below must show the code `{{ .Token }}`. The backend checks that code with the matching type:
+
+| Template | Used when | Suggested subject |
+|---|---|---|
+| Confirm signup | Someone creates a company | Your DuitDuit code |
+| Magic Link | **Every sign-in**: the code after the password | Your DuitDuit sign-in code |
+| Invite user | An owner invites a team member | You're invited to DuitDuit |
+| Reset password | "Forgot password" | Your DuitDuit reset code |
+
+Body for each (replace the whole message; keep `{{ .Token }}` exactly):
+
+```html
+<h2>Your DuitDuit code</h2>
+<p>Enter this code in DuitDuit to continue:</p>
+<p style="font-size:28px;font-weight:700;letter-spacing:4px">{{ .Token }}</p>
+<p>It expires soon. If you did not ask for it, you can ignore this email.</p>
+```
+
+**3. Authentication → Sign In / Providers → Email**
+- **Email provider:** enabled. **Confirm email:** on.
+- **Email OTP length:** 6 (the app accepts 6 to 8 digits).
+
+**4. Authentication → Multi-Factor**
+- **TOTP (authenticator app):** enabled. Owners, finance and compliance must enrol one.
+
+**5. Email delivery.** Supabase's built-in mail sender is for testing only. It sends very few emails an hour, and may only deliver to members of the Supabase organisation. For anyone else, set **Authentication → Emails → SMTP Settings** to a real mailbox. The Gmail SMTP details already in the backend `.env` (`EMAIL_SMTP_*`, with an app password) work: host `smtp.gmail.com`, port `587`.
+
+**Check:** on the site, **Log in → Create a company** with a new address. The email shows a 6-digit code and no `localhost` link. Entering it moves on to the authenticator step.
+
 ## 7. End-to-end check (five minutes)
 
 1. Press **Open the demo company**. Today opens, with the Demo authenticator in the lower-left corner.
