@@ -59,17 +59,20 @@ logger = logging.getLogger(__name__)
 
 
 async def _briefing_loop() -> None:
-    """Once a minute: opt-in morning briefings at the configured hour, and every
-    15 minutes the saved alert rules (each fires at most once a day)."""
+    """Once a minute: opt-in morning briefings at the configured hour, every
+    15 minutes the saved alert rules (each fires at most once a day), and once a
+    day a clean start for the shared demo company while one-click demo is on."""
     from zoneinfo import ZoneInfo
 
     from app.db import SessionLocal
-    from app.services import alerts, briefing_push
+    from app.services import alerts, briefing_push, demo_reset
 
     def tick() -> tuple[int, int]:
         now = datetime.now(ZoneInfo(settings.application_timezone)).replace(tzinfo=None)
         sent = fired = 0
         with SessionLocal() as db:
+            if demo_reset.run_due(db, now):
+                logger.info("demo_company_reset")
             if settings.briefing_push_enabled:
                 sent = briefing_push.run_due(db, now)
             if settings.alert_checks_enabled and now.minute % 15 == 0:
@@ -117,7 +120,11 @@ async def lifespan(_: FastAPI):
                 "failure_code": detector.failure_code,
             },
         )
-    scheduled = settings.briefing_push_enabled or settings.alert_checks_enabled
+    scheduled = (
+        settings.briefing_push_enabled
+        or settings.alert_checks_enabled
+        or (settings.demo_sign_in_enabled and settings.demo_daily_reset)
+    )
     briefings = asyncio.create_task(_briefing_loop()) if scheduled else None
     yield
     if briefings is not None:

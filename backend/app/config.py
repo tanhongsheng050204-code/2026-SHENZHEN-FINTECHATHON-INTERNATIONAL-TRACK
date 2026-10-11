@@ -115,6 +115,8 @@ class Settings(BaseSettings):
     demo_password: str = ""
     demo_totp_secret: str = ""
     demo_tenant_id: str = "858f0c1c-42fa-52a2-91b3-80a19d816356"
+    # Start the shared demo company clean each day (app.services.demo_reset).
+    demo_daily_reset: bool = True
     agent_daily_tool_limit: int = 100
     agent_daily_cost_limit: float = Field(default=10.0, gt=0, allow_inf_nan=False)
     einvoice_document_bucket: str = "einvoice-documents"

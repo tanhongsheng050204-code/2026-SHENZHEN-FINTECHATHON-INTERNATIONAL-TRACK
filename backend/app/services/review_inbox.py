@@ -93,14 +93,18 @@ def _replayable(action: ReviewAction, decision: str, approver_id: str) -> bool:
 
 
 def _replay(db, tenant_id: str) -> dict[str, _Item]:
+    from app.services.demo_reset import reset_mark
+
     items: dict[str, _Item] = {}
+    # Decisions before the demo company's latest reset stay on the chain, unused.
+    mark = reset_mark(db, tenant_id)
     for row in _events(db, tenant_id):
         payload = row.event_payload
         if row.event_type == "agent_proposal_created":
             items[row.resource_id] = _Item(ReviewAction.model_validate(payload["action"]))
             continue
         item = items.get(row.resource_id)
-        if item is None or row.event_type != "review_decision":
+        if item is None or row.event_type != "review_decision" or row.id <= mark:
             continue
         action = item.action
         decision = payload["decision"]

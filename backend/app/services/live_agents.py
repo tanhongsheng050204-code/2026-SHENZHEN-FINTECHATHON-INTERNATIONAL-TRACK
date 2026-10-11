@@ -68,12 +68,15 @@ def inbox_for(db, principal: AuthPrincipal, job_function: JobFunction | None):
 
 
 def _grants(db, tenant_id: str) -> dict[str, list[ScopedAutonomy]]:
+    from app.services.demo_reset import reset_mark
+
     grants: dict[str, dict[str, ScopedAutonomy]] = {}
     for row in db.scalars(
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
             WorkflowAuditEntry.event_type == "autonomy_granted",
+            WorkflowAuditEntry.id > reset_mark(db, tenant_id),
         )
         .order_by(WorkflowAuditEntry.id)
     ):
