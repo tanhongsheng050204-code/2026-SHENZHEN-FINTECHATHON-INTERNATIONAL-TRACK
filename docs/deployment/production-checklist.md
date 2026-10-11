@@ -4,6 +4,8 @@ This is for the person who holds the production keys and runs the backend. Do th
 
 You never need to paste a secret into chat, a commit or this file. The steps use only key names.
 
+For a slower, click-by-click version of the sign-in, email, demo and tunnel steps, see [backend-owner-setup-guide.md](backend-owner-setup-guide.md).
+
 ## 1. Update the code
 
 From the repository root:
