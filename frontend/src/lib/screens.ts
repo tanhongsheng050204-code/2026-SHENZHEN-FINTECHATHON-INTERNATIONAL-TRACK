@@ -1,6 +1,6 @@
 // Every screen id: the app's routes and the URL paths that restore them.
 export const SCREENS = [
-  "landing", "login", "signup", "onboarding", "security", "legal",
+  "landing", "login", "signup", "onboarding", "security", "legal", "pricing", "changelog", "help",
   "home", "agents", "customers", "einvoice", "einvoice-detail", "finance", "audit", "approvals", "ingestion", "settings",
   // Topic E pages
   "inbox", "positions", "autonomy", "cashflow", "analysis", "collections", "financing", "team", "trust", "company",
@@ -16,6 +16,9 @@ export const PAGE_TITLES: Record<Screen, string> = {
   onboarding: "Welcome",
   security: "Security",
   legal: "Legal",
+  pricing: "Pricing",
+  changelog: "Changelog",
+  help: "Help center",
   home: "Today",
   agents: "Ask DuitDuit",
   customers: "Customers",

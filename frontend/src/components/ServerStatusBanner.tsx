@@ -5,7 +5,7 @@ import "./ServerStatusBanner.css";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 // Pages that never need the server: a visitor reading them is not affected by an outage.
-const STATIC_SCREENS = new Set(["landing", "security", "legal"]);
+const STATIC_SCREENS = new Set(["landing", "security", "legal", "pricing", "changelog", "help"]);
 
 /** One sentence when the API can't be reached, with a way to try again. */
 export function ServerStatusBanner() {

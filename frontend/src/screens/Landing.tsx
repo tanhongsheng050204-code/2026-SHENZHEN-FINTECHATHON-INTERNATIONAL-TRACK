@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAppState } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
 import { authMode, demoAvailable, demoSignIn } from "../api/session";
-import { MarketingNav } from "../components/Nav";
-import { Wordmark } from "../components/Logo";
+import { MegaNav } from "../components/MegaNav";
+import { MarketingFooter } from "../components/MarketingFooter";
 import { Guilloche } from "../components/Guilloche";
 import { HeroApp } from "../components/landing/HeroApp";
 import { SourcesGrid } from "../components/landing/SourcesGrid";
@@ -120,7 +120,7 @@ export default function Landing() {
         {demoOpen ? "Judging DuitDuit? Open the synthetic demo company in one click" : "How DuitDuit keeps every decision with a person"}
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
-      <MarketingNav />
+      <MegaNav />
 
       <header className="lv-hero">
         <Guilloche className="lv-hero-guilloche" />
@@ -215,29 +215,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="lx-footer lv-footer">
-        <div className="lv-footer-brand">
-          <Wordmark />
-          <p>Finance copilot for Malaysian SMEs. A prototype built for the 2026 Shenzhen FinTech competition, shown with a synthetic company.</p>
-        </div>
-        <nav aria-label="Product">
-          <h3>Product</h3>
-          <button type="button" onClick={() => document.getElementById("landing-product")?.scrollIntoView({ behavior: "smooth" })}>How it works</button>
-          <button type="button" onClick={() => document.getElementById("landing-security")?.scrollIntoView({ behavior: "smooth" })}>Nothing moves without you</button>
-          <button type="button" onClick={() => document.getElementById("landing-faq")?.scrollIntoView({ behavior: "smooth" })}>Questions</button>
-        </nav>
-        <nav aria-label="Trust">
-          <h3>Trust</h3>
-          <button type="button" onClick={() => goToSecurity("landing")}>Security</button>
-          <button type="button" onClick={() => goToLegal("privacy", "landing")}>Privacy policy</button>
-          <button type="button" onClick={() => goToLegal("terms", "landing")}>Terms of service</button>
-        </nav>
-        <nav aria-label="Contact">
-          <h3>Contact</h3>
-          <a href="mailto:hello@duitduit.example">Email the team</a>
-          <button type="button" onClick={() => show("login")}>Log in</button>
-        </nav>
-      </footer>
+      <MarketingFooter />
 
       <CookieConsentBanner onReadMore={() => goToLegal("privacy", "landing")} />
       <SupportWidget topics={supportTopics} onEmail={() => { window.location.href = "mailto:hello@duitduit.example"; }} />

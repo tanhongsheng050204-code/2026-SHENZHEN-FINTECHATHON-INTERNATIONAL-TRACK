@@ -16,38 +16,59 @@ import { PAGE_TITLES } from "./lib/screens";
 // Route-level code splitting: a visitor to the marketing landing page
 // shouldn't have to download the chat interface, invoice forms, and
 // finance charts before the page they actually asked for can render.
-const Landing = lazy(() => import("./screens/Landing"));
-const Login = lazy(() => import("./screens/Login"));
-const Signup = lazy(() => import("./screens/Signup"));
-const Onboarding = lazy(() => import("./screens/Onboarding"));
-const Security = lazy(() => import("./screens/Security"));
-const Legal = lazy(() => import("./screens/Legal"));
-const Home = lazy(() => import("./screens/Home"));
-const Agents = lazy(() => import("./screens/Agents"));
-const Customers = lazy(() => import("./screens/Customers"));
-const Einvoice = lazy(() => import("./screens/Einvoice"));
-const EinvoiceDetail = lazy(() => import("./screens/EinvoiceDetail"));
-const Finance = lazy(() => import("./screens/Finance"));
-const Analysis = lazy(() => import("./screens/Analysis"));
-const Collections = lazy(() => import("./screens/Collections"));
-const Audit = lazy(() => import("./screens/Audit"));
-const Approvals = lazy(() => import("./screens/Approvals"));
-const Ingestion = lazy(() => import("./screens/Ingestion"));
-const Settings = lazy(() => import("./screens/Settings"));
-const ReviewInbox = lazy(() => import("./screens/ReviewInbox"));
-const CashFlow = lazy(() => import("./screens/CashFlow"));
-const Financing = lazy(() => import("./screens/Financing"));
-const Positions = lazy(() => import("./screens/Positions"));
-const Autonomy = lazy(() => import("./screens/Autonomy"));
-const Team = lazy(() => import("./screens/Team"));
-const Trust = lazy(() => import("./screens/Trust"));
-const CompanySettings = lazy(() => import("./screens/CompanySettings"));
-const SharedView = lazy(() => import("./screens/SharedView"));
+// After a redeploy, a page left open asks for code files that no longer exist.
+// Reload once to pick up the new build instead of showing an error.
+function fresh<T>(load: () => Promise<T>): Promise<T> {
+  return load().catch((error: unknown) => {
+    let reloaded = false;
+    try { reloaded = sessionStorage.getItem("dd-reloaded-for-build") === "1"; } catch { /* storage blocked */ }
+    if (!reloaded) {
+      try { sessionStorage.setItem("dd-reloaded-for-build", "1"); } catch { /* storage blocked */ }
+      window.location.reload();
+      return new Promise<T>(() => undefined);
+    }
+    throw error;
+  }).then((module) => {
+    try { sessionStorage.removeItem("dd-reloaded-for-build"); } catch { /* storage blocked */ }
+    return module;
+  });
+}
+
+const Landing = lazy(() => fresh(() => import("./screens/Landing")));
+const Login = lazy(() => fresh(() => import("./screens/Login")));
+const Signup = lazy(() => fresh(() => import("./screens/Signup")));
+const Onboarding = lazy(() => fresh(() => import("./screens/Onboarding")));
+const Security = lazy(() => fresh(() => import("./screens/Security")));
+const Legal = lazy(() => fresh(() => import("./screens/Legal")));
+const Pricing = lazy(() => fresh(() => import("./screens/Pricing")));
+const Changelog = lazy(() => fresh(() => import("./screens/Changelog")));
+const Help = lazy(() => fresh(() => import("./screens/Help")));
+const Home = lazy(() => fresh(() => import("./screens/Home")));
+const Agents = lazy(() => fresh(() => import("./screens/Agents")));
+const Customers = lazy(() => fresh(() => import("./screens/Customers")));
+const Einvoice = lazy(() => fresh(() => import("./screens/Einvoice")));
+const EinvoiceDetail = lazy(() => fresh(() => import("./screens/EinvoiceDetail")));
+const Finance = lazy(() => fresh(() => import("./screens/Finance")));
+const Analysis = lazy(() => fresh(() => import("./screens/Analysis")));
+const Collections = lazy(() => fresh(() => import("./screens/Collections")));
+const Audit = lazy(() => fresh(() => import("./screens/Audit")));
+const Approvals = lazy(() => fresh(() => import("./screens/Approvals")));
+const Ingestion = lazy(() => fresh(() => import("./screens/Ingestion")));
+const Settings = lazy(() => fresh(() => import("./screens/Settings")));
+const ReviewInbox = lazy(() => fresh(() => import("./screens/ReviewInbox")));
+const CashFlow = lazy(() => fresh(() => import("./screens/CashFlow")));
+const Financing = lazy(() => fresh(() => import("./screens/Financing")));
+const Positions = lazy(() => fresh(() => import("./screens/Positions")));
+const Autonomy = lazy(() => fresh(() => import("./screens/Autonomy")));
+const Team = lazy(() => fresh(() => import("./screens/Team")));
+const Trust = lazy(() => fresh(() => import("./screens/Trust")));
+const CompanySettings = lazy(() => fresh(() => import("./screens/CompanySettings")));
+const SharedView = lazy(() => fresh(() => import("./screens/SharedView")));
 
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
   const { identity, loading } = useAuth();
-  const isPublic = ["landing", "login", "signup", "security", "legal"].includes(screen);
+  const isPublic = ["landing", "login", "signup", "security", "legal", "pricing", "changelog", "help"].includes(screen);
 
   useEffect(() => {
     if (identity) setAskRole(identity.role);
@@ -77,6 +98,9 @@ function Screens() {
     case "onboarding": return <Onboarding />;
     case "security": return <Security />;
     case "legal": return <Legal />;
+    case "pricing": return <Pricing />;
+    case "changelog": return <Changelog />;
+    case "help": return <Help />;
     case "home": return <Home />;
     case "agents": return <Agents />;
     case "customers": return <Customers />;
