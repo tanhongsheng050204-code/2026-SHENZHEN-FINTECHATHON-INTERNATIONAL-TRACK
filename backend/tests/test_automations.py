@@ -124,3 +124,67 @@ def test_the_scheduler_runs_every_tenant_with_automations(live_db):  # noqa: F81
     )
 
     assert automations.run_due(live_db, dt.datetime.combine(TODAY, dt.time(9))) == 1
+
+
+def _sequence(db):
+    _client(db).post(
+        "/automations",
+        json={"trigger": "invoice_overdue_days", "days": 7, "action": "reminder_sequence"},
+    )
+
+
+def _decide(db, action_id):
+    from app.contracts.agents import ReviewDecisionRequest
+
+    review_inbox.decide(
+        db, principal(UserRole.OWNER_DIRECTOR), action_id, ReviewDecisionRequest(decision="approve")
+    )
+
+
+def test_a_sequence_moves_from_friendly_to_firm_one_step_at_a_time(live_db):  # noqa: F811
+    _sequence(live_db)
+    owner = _client(live_db)
+
+    [friendly] = owner.post("/automations/run").json()["proposals"]
+    assert _open(live_db)[friendly].title == "Friendly reminder for INV-1"
+    # Nothing new while the friendly reminder waits for approval.
+    assert owner.post("/automations/run").json()["proposals"] == []
+
+    _decide(live_db, friendly)
+    [firm] = owner.post("/automations/run").json()["proposals"]
+    assert _open(live_db)[firm].title == "Firm reminder for INV-1"
+    assert _open(live_db)[firm].autonomy_level.value == "L2"
+
+    # INV-1 is 20 days overdue: the call step (7 + 21 = 28 days) is not due yet.
+    _decide(live_db, firm)
+    assert owner.post("/automations/run").json()["proposals"] == []
+
+
+def test_the_call_step_asks_finance_to_phone_the_customer(live_db):  # noqa: F811
+    from app.models import SalesPipeline
+
+    # INV-1 becomes 30 days overdue: every step of a 0-day sequence is due.
+    live_db.get(SalesPipeline, 1).expected_payment_date = TODAY - dt.timedelta(days=30)
+    live_db.commit()
+    _client(live_db).post(
+        "/automations",
+        json={"trigger": "invoice_overdue_days", "days": 0, "action": "reminder_sequence"},
+    )
+    owner = _client(live_db)
+    for _ in range(2):
+        [step] = owner.post("/automations/run").json()["proposals"]
+        _decide(live_db, step)
+
+    [call] = owner.post("/automations/run").json()["proposals"]
+    action = _open(live_db)[call]
+    assert action.title == "Call the customer about INV-1"
+    assert (action.autonomy_level.value, action.reviewer_job_function.value) == ("L1", "finance")
+    assert action.draft is None
+
+
+def test_sequences_only_follow_an_overdue_trigger(live_db):  # noqa: F811
+    response = _client(live_db).post(
+        "/automations",
+        json={"trigger": "bill_due_within_days", "days": 7, "action": "reminder_sequence"},
+    )
+    assert response.status_code == 422

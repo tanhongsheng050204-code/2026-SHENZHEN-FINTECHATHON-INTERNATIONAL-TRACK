@@ -92,7 +92,7 @@ class ReminderProposalResponse(BaseModel):
 AutomationTrigger = Literal[
     "invoice_overdue_days", "cash_shortfall_within_days", "bill_due_within_days"
 ]
-AutomationAction = Literal["draft_reminder", "ask_review"]
+AutomationAction = Literal["draft_reminder", "reminder_sequence", "ask_review"]
 
 
 class AutomationRequest(BaseModel):

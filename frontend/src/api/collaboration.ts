@@ -98,7 +98,7 @@ export async function askForReminder(ref: string): Promise<string> {
 // ── Automations ─────────────────────────────────────────────────────────────
 
 export type AutomationTrigger = "invoice_overdue_days" | "cash_shortfall_within_days" | "bill_due_within_days";
-export type AutomationAction = "draft_reminder" | "ask_review";
+export type AutomationAction = "draft_reminder" | "reminder_sequence" | "ask_review";
 
 export interface AutomationRequest {
   trigger: AutomationTrigger;

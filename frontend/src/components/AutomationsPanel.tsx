@@ -20,6 +20,7 @@ const TRIGGERS: Record<AutomationTrigger, string> = {
 };
 const ACTIONS: Record<AutomationAction, string> = {
   draft_reminder: "Draft a payment reminder (L2, the owner approves)",
+  reminder_sequence: "Run a reminder sequence: friendly at N days, firm at N+7, a call at N+21",
   ask_review: "Ask a position to review it (L1)",
 };
 const REVIEWERS: JobFunction[] = ["finance", "owner", "operations", "procurement", "sales"];
@@ -51,7 +52,7 @@ export function AutomationsPanel({ isOwner, canRun }: { isOwner: boolean; canRun
   }, []);
 
   const describe = (a: Automation) =>
-    `${tx("When")} ${tx(TRIGGERS[a.trigger], { n: a.days }).toLowerCase()} → ${a.action === "draft_reminder" ? tx("draft a payment reminder") : tx("ask {who} to review it", { who: tx(JOB_LABELS[a.reviewer]) })}`;
+    `${tx("When")} ${tx(TRIGGERS[a.trigger], { n: a.days }).toLowerCase()} → ${a.action === "draft_reminder" ? tx("draft a payment reminder") : a.action === "reminder_sequence" ? tx("run the reminder sequence (friendly, firm, then a call)") : tx("ask {who} to review it", { who: tx(JOB_LABELS[a.reviewer]) })}`;
 
   const create = async (event: FormEvent) => {
     event.preventDefault();

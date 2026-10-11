@@ -324,6 +324,8 @@ export const FB_ZH: Record<string, string> = {
   "Draft a payment reminder (L2, the owner approves)": "起草付款提醒（L2，由负责人批准）",
   "Ask a position to review it (L1)": "请某个岗位审核（L1）",
   "draft a payment reminder": "起草付款提醒",
+  "Run a reminder sequence: friendly at N days, firm at N+7, a call at N+21": "运行催款序列：N 天时友好提醒，N+7 天时正式提醒，N+21 天时电话联系",
+  "run the reminder sequence (friendly, firm, then a call)": "运行催款序列（友好提醒、正式提醒，然后电话联系）",
   "ask {who} to review it": "请{who}审核",
   "{n} proposals are waiting in the review inbox. Nothing has been sent.": "{n} 项提案正在审核收件箱中等待处理。尚未发送任何内容。",
   "Nothing new matched right now.": "目前没有新的匹配项。",
@@ -535,6 +537,9 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(.+) agent$/, (m, tr) => `${tr(m[1])}智能体`],
   [/^Review one reminder covering (\d+) (.+)\. Verify the recipient, balance and timing before sending\. Nothing has been sent\.$/, (m) =>
     `审核一封涵盖 ${m[1]} 项的催款提醒。发送前请核对收件人、金额和时间。尚未发送任何内容。`],
+  [/^Friendly reminder for (.+)$/, (m, tr) => `给 ${tr(m[1])} 的友好提醒`],
+  [/^Firm reminder for (.+)$/, (m, tr) => `给 ${tr(m[1])} 的正式提醒`],
+  [/^Call the customer about (.+)$/, (m, tr) => `就 ${tr(m[1])} 致电客户`],
   [/^Invoice due (.+)$/, (m) => `${m[1]} 到期的发票`],
   [/^(.+) is (\d+) days overdue$/, (m, tr) => `${tr(m[1])} 已逾期 ${m[2]} 天`],
   [/^Cash falls below your minimum in (\d+) days$/, (m) => `${m[1]} 天后现金低于最低余额`],

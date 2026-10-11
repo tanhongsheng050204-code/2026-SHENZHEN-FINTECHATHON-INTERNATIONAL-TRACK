@@ -32,6 +32,20 @@ from app.services import cashflow, cashflow_engine, collections, review_inbox
 from app.services.workflow_audit import chain_scalars, write_workflow_event
 
 SAVED, REMOVED = "automation_saved", "automation_removed"
+_REMINDERS = ("draft_reminder", "reminder_sequence")
+# A collections sequence: (days after the automation's N, title, kind). Each step is
+# proposed once per invoice, only after the previous one was decided.
+SEQUENCE = (
+    (0, "Friendly reminder for {label}", "reminder"),
+    (7, "Firm reminder for {label}", "reminder"),
+    (21, "Call the customer about {label}", "call"),
+)
+_DRAFTS = {
+    "Friendly": "A gentle reminder that the invoice on your account is now due. Could you "
+    "confirm when payment will be made? If it is already on its way, thank you.",
+    "Firm": "Our records show the invoice on your account is still unpaid and now well past "
+    "due. Please arrange payment this week or let us know of any issue with it.",
+}
 HORIZON_DAYS = 90
 
 
@@ -72,7 +86,7 @@ def automations(db, tenant_id: str) -> list[Automation]:
 
 
 def save(db, principal: AuthPrincipal, request: AutomationRequest) -> Automation:
-    if request.action == "draft_reminder" and request.trigger != "invoice_overdue_days":
+    if request.action in _REMINDERS and request.trigger != "invoice_overdue_days":
         raise AutomationError("reminders_need_an_overdue_trigger", 422)
     automation_id = "auto_" + secrets.token_hex(6)
     write_workflow_event(
@@ -122,6 +136,56 @@ def _ask(db, tenant_id, automation, agent, title, summary, amount, source) -> st
     )
 
 
+def _sequence_step(db, tenant_id: str, automation: Automation, card) -> str | None:
+    """Propose the next step for one overdue invoice, or nothing yet."""
+    cited = [
+        item.action
+        for item in review_inbox._replay(db, tenant_id).values()
+        if any(evidence.source == card.ref for evidence in item.action.evidence)
+    ]
+    for offset, title, kind in SEQUENCE:
+        name = title.format(label=card.label)
+        earlier = [action for action in cited if action.title == name]
+        if earlier:
+            if earlier[-1].status not in ("approved", "rejected"):
+                return None  # this step still waits for a person
+            continue
+        if card.days_overdue < automation.days + offset:
+            return None
+        evidence = [
+            EvidenceRef(label="Automation", source=f"automation:{automation.id}"),
+            EvidenceRef(label="Receivable record", source=card.ref),
+        ]
+        if kind == "call":
+            return review_inbox.propose(
+                db,
+                tenant_id,
+                agent_id="receivables",
+                reviewer=JobFunction.FINANCE,
+                level=AutonomyLevel.L1,
+                title=name,
+                summary=f"{card.label} is {card.days_overdue} days overdue after two reminders. "
+                "Phone the customer and note what they say. Nothing is sent by DuitDuit.",
+                amount=card.amount,
+                evidence=evidence,
+            )
+        return review_inbox.propose(
+            db,
+            tenant_id,
+            agent_id="receivables",
+            reviewer=JobFunction.FINANCE,
+            level=AutonomyLevel.L2,
+            title=name,
+            summary=f"Step {SEQUENCE.index((offset, title, kind)) + 1} of 3 for {card.label}, "
+            f"{card.days_overdue} days overdue. Verify the recipient, balance and timing "
+            "before sending. Nothing has been sent.",
+            amount=card.amount,
+            draft=_DRAFTS[title.split()[0]],
+            evidence=evidence,
+        )
+    return None
+
+
 def _run_one(db, tenant_id: str, automation: Automation, as_of: dt.date) -> list[str]:
     actor = SimpleNamespace(tenant_id=tenant_id)
     created = []
@@ -135,6 +199,10 @@ def _run_one(db, tenant_id: str, automation: Automation, as_of: dt.date) -> list
                     continue
                 if automation.action == "draft_reminder":
                     created.append(collections.propose_reminder(db, actor, card.ref, as_of))
+                elif automation.action == "reminder_sequence":
+                    step = _sequence_step(db, tenant_id, automation, card)
+                    if step is not None:
+                        created.append(step)
                 else:
                     created.append(
                         _ask(
