@@ -5,7 +5,12 @@ import { authMode, demoAvailable, demoSignIn } from "../api/session";
 import { MarketingNav } from "../components/Nav";
 import { Wordmark } from "../components/Logo";
 import { Guilloche } from "../components/Guilloche";
-import { RunwayFilm } from "../components/RunwayFilm";
+import { HeroApp } from "../components/landing/HeroApp";
+import { SourcesGrid } from "../components/landing/SourcesGrid";
+import { DayRail } from "../components/landing/DayRail";
+import { Desks } from "../components/landing/Desks";
+import { ChainProof } from "../components/landing/ChainProof";
+import "./Landing.css";
 import { CookieConsentBanner, SupportWidget } from "../components/MarketingWidgets";
 
 // Every figure below is the synthetic demo company's, from seed/topic_e.py.
@@ -56,76 +61,6 @@ function FaqAccordion() {
     </div>
   );
 }
-
-function AlertStack() {
-  return (
-    <ul className="lx-mini lx-alerts" aria-label="Example alerts">
-      <li className="is-risk"><strong>Lowest balance in 30 days: RM20,560</strong><span>Below your RM50,000 minimum on day 23</span></li>
-      <li className="is-attn"><strong>3 items below their reorder level</strong><span>Sent to purchasing and the owner</span></li>
-      <li><strong>Morning briefing sent at 8:00</strong><span>By Telegram, with ranges instead of amounts</span></li>
-    </ul>
-  );
-}
-
-function MatchList() {
-  return (
-    <ul className="lx-mini lx-matches" aria-label="Example financing matches">
-      <li><span>Import trade financing</span><em className="is-ok">Eligible</em></li>
-      <li><span>Government-guaranteed SME financing</span><em className="is-ok">Eligible</em></li>
-      <li>
-        <span>Invoice financing</span><em className="is-near">One step away</em>
-        <small>Validate 7 more e-invoices (3 of 19 validated; 50% needed)</small>
-      </li>
-    </ul>
-  );
-}
-
-function PnlBars() {
-  const months = [
-    { m: "Jul", net: 20_000 },
-    { m: "Aug", net: 23_800 },
-    { m: "Sep", net: 39_200 },
-  ];
-  return (
-    <div className="lx-mini lx-pnl" role="img" aria-label="Net result by month: July RM20,000, August RM23,800, September RM39,200">
-      <span className="lx-pnl-title">Net result by month</span>
-      <div className="lx-pnl-bars">
-        {months.map((row) => (
-          <div key={row.m} className="lx-pnl-col">
-            <span className="lx-pnl-net">RM{row.net.toLocaleString("en-MY")}</span>
-            <span className="lx-pnl-bar" style={{ height: `${(row.net / 40_000) * 100}%` }} />
-            <span className="lx-pnl-m">{row.m}</span>
-          </div>
-        ))}
-      </div>
-      <p className="lx-pnl-note">Net result rose RM15,400 (+64.7%) in September, on RM249,400 of revenue.</p>
-    </div>
-  );
-}
-
-const PILLARS = [
-  {
-    id: "cash",
-    title: "Cash flow and alerts",
-    body: "A 90-day forecast with a best and worst case, built from your bank, bills, payroll and invoices. Alerts fire when a rule you set is crossed, and the morning briefing tells each person what needs them.",
-    facts: ["What-if scenarios before you move a payment", "Alerts to the right position, in the app, by email or Telegram", "Bank lines matched to records each month"],
-    visual: <AlertStack />,
-  },
-  {
-    id: "financing",
-    title: "Financing that fits the gap",
-    body: "Eight product categories in Malaysia and China, each checked rule by rule against your records. When a product is out of reach, DuitDuit names the smallest step that would change that.",
-    facts: ["A credit scorecard on the same facts as the matches", "A Passport a lender can verify, shared for a fixed number of days", "No invented rates: terms are labelled illustrative"],
-    visual: <MatchList />,
-  },
-  {
-    id: "analysis",
-    title: "Financial analysis you can check",
-    body: "Monthly profit and loss, margins and where the money went, from the same records as the forecast. Every ratio shows its formula and the records it used.",
-    facts: ["Days to get paid and days to pay suppliers", "Marketing return and largest customer's share", "Plain sentences on what changed this month"],
-    visual: <PnlBars />,
-  },
-];
 
 const PROTECTIONS = [
   { title: "Two people for every payment", body: "A money item needs a maker, a different checker and an authenticator code from the last five minutes." },
@@ -180,49 +115,45 @@ export default function Landing() {
   ];
 
   return (
-    <div className="fb-root fb-mkt lx">
+    <div className="fb-root fb-mkt lx lv">
       <MarketingNav />
 
-      <header className="lx-hero">
-        <Guilloche className="lx-hero-guilloche" />
-        <div className="lx-hero-copy">
-          <p className="lx-kicker">Finance copilot for Malaysian SMEs</p>
-          <h1>See the cash gap three weeks before it hits.</h1>
-          <p className="lx-lede">
-            DuitDuit reads your bank, bills, payroll and invoices, warns you before cash runs short, finds financing that fits and drafts the fix. Nothing moves until you approve it.
-          </p>
-          <div className="lx-ctas">
-            {demoOpen ? (
-              <button className="lx-btn is-primary" type="button" onClick={() => void openDemo()} disabled={demoBusy}>
-                {demoBusy ? "Opening the demo company…" : "Open the demo company"}
-              </button>
-            ) : (
-              <button className="lx-btn is-primary" type="button" onClick={() => show("signup")}>Get started</button>
-            )}
-            <button className="lx-btn is-quiet" type="button" onClick={() => document.getElementById("landing-product")?.scrollIntoView({ behavior: "smooth" })}>See how it works</button>
-          </div>
+      <header className="lv-hero">
+        <Guilloche className="lv-hero-guilloche" />
+        <p className="lv-pill">Finance copilot for Malaysian SMEs</p>
+        <h1>See the cash gap three weeks before it hits.</h1>
+        <p className="lv-lede">
+          DuitDuit reads your bank, bills, payroll and invoices, warns you before cash runs short, finds financing that fits and drafts the fix. Nothing moves until you approve it.
+        </p>
+        <div className="lx-ctas lv-ctas">
+          {demoOpen ? (
+            <button className="lx-btn is-primary" type="button" onClick={() => void openDemo()} disabled={demoBusy}>
+              {demoBusy ? "Opening the demo company…" : "Open the demo company"}
+            </button>
+          ) : (
+            <button className="lx-btn is-primary" type="button" onClick={() => show("signup")}>Get started</button>
+          )}
+          <button className="lx-btn is-quiet" type="button" onClick={() => document.getElementById("landing-product")?.scrollIntoView({ behavior: "smooth" })}>See how it works</button>
         </div>
-        <div className="lx-hero-film">
-          <RunwayFilm />
+        <div className="lv-hero-stage">
+          <HeroApp />
+          <p className="lv-fine">The synthetic demo company, inside the real app.</p>
         </div>
       </header>
 
-      <section className="lx-section" id="landing-product" aria-labelledby="lx-product-title">
-        <div className="lx-section-head">
-          <h2 id="lx-product-title">Three jobs, one copilot</h2>
-          <p>Each one reads the same records, so the numbers agree from page to page.</p>
-        </div>
-        {PILLARS.map((pillar, i) => (
-          <article key={pillar.id} className={"lx-pillar" + (i % 2 ? " is-flipped" : "")}>
-            <div className="lx-pillar-copy">
-              <h3>{pillar.title}</h3>
-              <p>{pillar.body}</p>
-              <ul>{pillar.facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
-            </div>
-            <div className="lx-pillar-visual">{pillar.visual}</div>
-          </article>
-        ))}
-        <p className="lx-fine">Figures from the synthetic demo company.</p>
+      <section className="lv-frame" aria-labelledby="lv-sources-title">
+        <h2 id="lv-sources-title" className="lv-two-tone"><span>Reads what you already have.</span> Bank files, bills, payroll and e-invoices, with names and amounts protected before any AI sees them.</h2>
+        <SourcesGrid />
+      </section>
+
+      <section className="lv-frame" id="landing-product" aria-labelledby="lx-product-title">
+        <h2 id="lx-product-title" className="lv-two-tone"><span>One day at a small importer.</span> Cash flow, financing and analysis, all from the same records, so the numbers agree from page to page.</h2>
+        <DayRail />
+      </section>
+
+      <section className="lv-frame" aria-labelledby="lv-desks-title">
+        <h2 id="lv-desks-title" className="lv-two-tone"><span>Every position has a desk.</span> Agents prepare the work for each role. People decide, and money always needs two of them.</h2>
+        <Desks />
       </section>
 
       <section className="lx-band" id="landing-security" aria-labelledby="lx-security-title">
@@ -241,6 +172,7 @@ export default function Landing() {
               </div>
             ))}
           </dl>
+          <ChainProof />
         </div>
       </section>
 
