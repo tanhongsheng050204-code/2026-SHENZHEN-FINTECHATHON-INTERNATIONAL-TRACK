@@ -1,0 +1,48 @@
+/* Sign-in and sign-up, Attio-style: white, one 380px column, quiet controls. */
+.dd-auth{--a-bg:#FFFFFF;min-height:100vh;display:flex;flex-direction:column;background:#FFFFFF;color:#10241F;font-family:'Inter Variable','Inter',system-ui,sans-serif}
+:root[data-theme="dark"] .dd-auth{background:#0C1714;color:#EAF2EF}
+.dd-auth-top{display:flex;justify-content:center;padding:2rem 1rem 0}
+.dd-auth-top .fb-wordmark{font-size:1.15rem}
+.dd-auth-main{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 1rem}
+.dd-auth-col{width:min(380px,100%);display:flex;flex-direction:column;gap:1rem}
+.dd-auth-foot{display:flex;flex-direction:column;align-items:center;gap:.9rem;padding:0 1rem 2rem;text-align:center;font-size:.8rem;color:#5D6965}
+:root[data-theme="dark"] .dd-auth-foot{color:#A7B8B2}
+.dd-auth-foot p{margin:0;max-width:34ch;line-height:1.5}
+.dd-auth-foot nav{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center}
+.dd-auth-foot button{padding:0;border:0;background:none;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+
+/* The form, re-skinned inside the frame */
+.dd-auth .fb-mkt-auth-form{width:min(380px,100%);max-width:none;gap:1rem;text-align:left}
+.dd-auth .fb-mkt-auth-form h2,.dd-auth h1.dd-auth-title{margin:0 0 .25rem;text-align:center;font:600 1.6rem/1.2 'Inter Variable','Inter',system-ui,sans-serif;font-optical-sizing:auto;letter-spacing:-.03em;color:inherit}
+.dd-auth .fb-mkt-eyebrow{order:2;text-align:center;margin:-.6rem 0 .4rem;font-size:.9rem;font-weight:400;color:#5D6965;text-transform:none;letter-spacing:0;background:none;padding:0}
+:root[data-theme="dark"] .dd-auth .fb-mkt-eyebrow{color:#A7B8B2}
+.dd-auth .fb-mkt-auth-form h2{order:1}
+.dd-auth .fb-mkt-auth-fields{order:3;display:flex;flex-direction:column;gap:.85rem}
+.dd-auth .fb-mkt-auth-form>*:not(h2):not(.fb-mkt-eyebrow):not(.fb-mkt-auth-fields){order:4}
+.dd-auth .fb-mkt-field{display:flex;flex-direction:column;gap:.35rem;font-size:.86rem;font-weight:500;color:inherit}
+.dd-auth .fb-mkt-input{min-height:42px;padding:.55rem .8rem;border:1px solid #DDE2E0;border-radius:8px;background:#FFFFFF;color:#10241F;font:400 .95rem 'Inter Variable','Inter',system-ui,sans-serif;box-shadow:0 1px 2px rgba(16,36,31,.05)}
+.dd-auth .fb-mkt-input:focus{outline:none;border-color:#086759;box-shadow:0 0 0 3px rgba(8,103,89,.16)}
+:root[data-theme="dark"] .dd-auth .fb-mkt-input{background:#12201C;color:#EAF2EF;border-color:#24352F}
+.dd-auth .fb-mkt-btn.is-accent,.dd-auth .fb-auth-submit{width:100%;justify-content:center;min-height:42px;padding:.55rem 1rem;border-radius:8px;background:#10241F;color:#FFFFFF;font:600 .95rem 'Inter Variable','Inter',system-ui,sans-serif;box-shadow:0 1px 2px rgba(16,36,31,.25)}
+.dd-auth .fb-mkt-btn.is-accent:hover{background:#000;transform:none}
+:root[data-theme="dark"] .dd-auth .fb-mkt-btn.is-accent,:root[data-theme="dark"] .dd-auth .fb-auth-submit{background:#EAF2EF;color:#0C1714}
+.dd-auth .fb-auth-links{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem 1.1rem;margin-top:.25rem}
+.dd-auth .fb-auth-links button{padding:.3rem 0;border:0;background:none;color:#3E4A46;font:500 .86rem 'Inter Variable','Inter',system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:32px}
+:root[data-theme="dark"] .dd-auth .fb-auth-links button{color:#C9D6D1}
+.dd-auth .fb-mkt-callout{border-radius:8px;font-size:.88rem}
+.dd-auth .fb-mkt-fine{font-size:.82rem;color:#5D6965}
+
+/* The one-click demo, styled like Attio's "Sign in with Google" */
+.dd-auth-demo{display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;min-height:44px;padding:.55rem 1rem;border:1px solid #DDE2E0;border-radius:8px;background:#FFFFFF;color:#10241F;font:600 .95rem 'Inter Variable','Inter',system-ui,sans-serif;cursor:pointer;box-shadow:0 1px 2px rgba(16,36,31,.06)}
+.dd-auth-demo:hover{background:#F6F8F7}
+.dd-auth-demo:focus-visible{outline:3px solid #086759;outline-offset:2px}
+.dd-auth-demo svg{width:22px;height:22px}
+:root[data-theme="dark"] .dd-auth-demo{background:#12201C;color:#EAF2EF;border-color:#24352F}
+.dd-auth-demo-note{margin:-.4rem 0 0;text-align:center;font-size:.8rem;color:#5D6965}
+:root[data-theme="dark"] .dd-auth-demo-note{color:#A7B8B2}
+.dd-auth-or{display:flex;align-items:center;gap:.8rem;margin:.4rem 0;color:#5D6965;font-size:.8rem}
+.dd-auth-or::before,.dd-auth-or::after{content:"";flex:1;height:1px;background:#E6EAE8}
+:root[data-theme="dark"] .dd-auth-or::before,:root[data-theme="dark"] .dd-auth-or::after{background:#24352F}
+
+.dd-auth .fb-mkt-eyebrow::before{display:none}
+.dd-auth .fb-mkt-eyebrow{align-self:center;justify-content:center;width:100%;display:block}

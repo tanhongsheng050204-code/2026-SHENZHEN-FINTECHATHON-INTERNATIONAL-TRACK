@@ -1,0 +1,31 @@
+/* Today, Attio-style: a greeting, one place to ask, then the cash outlook as a
+   quiet white card and the numbers in a single hairline strip. */
+.th{gap:1.5rem}
+.th-ask-block{display:flex;flex-direction:column;align-items:center;gap:1rem;padding:clamp(1.5rem,5vh,3.25rem) 0 clamp(.5rem,2vh,1.25rem);text-align:center}
+.th-hello{margin:0;font:600 clamp(1.6rem,2.6vw,2.1rem)/1.15 'Inter Variable','Inter',system-ui,sans-serif;font-optical-sizing:auto;letter-spacing:-.035em;color:var(--ink)}
+.th-ask{position:relative;width:min(680px,100%)}
+.th-ask input{width:100%;min-height:56px;padding:.9rem 3.6rem .9rem 1.1rem;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:14px;background:var(--card);color:var(--ink);font:400 1rem 'Inter Variable','Inter',system-ui,sans-serif;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 9%,transparent),0 8px 24px -16px rgba(16,36,31,.25)}
+.th-ask input::placeholder{color:var(--ink-soft)}
+.th-ask input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent),0 8px 24px -16px rgba(16,36,31,.25)}
+.th-ask button{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:10px;background:var(--btn-bg);color:var(--btn-text);cursor:pointer}
+.th-ask button:disabled{background:var(--bg-alt);color:var(--ink-soft);cursor:default}
+.th-ask button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.th-suggest{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem}
+.th-suggest button{min-height:36px;padding:.4rem .85rem;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:500 .86rem 'Inter Variable','Inter',system-ui,sans-serif;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.th-suggest button:hover{background:var(--bg-alt);border-color:color-mix(in srgb,var(--ink) 18%,var(--line))}
+.th-suggest button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* The cash card: white with a hairline; colour only in the status dot and the chart. */
+.th .th-lead,.th .th-lead.is-risk{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(16,36,31,.04)}
+.th-status{display:inline-flex;align-items:center;gap:.5rem;margin:0 0 .7rem;font:500 .86rem 'Inter Variable','Inter',system-ui,sans-serif;color:var(--ink-soft)}
+.th-status i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.th-status.is-risk i{background:var(--danger,#C4320A);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger,#C4320A) 18%,transparent)}
+.th .th-headline,.th .th-lead.is-risk .th-headline{font-family:'Inter Variable','Inter',system-ui,sans-serif;font-optical-sizing:auto;font-weight:600;letter-spacing:-.03em;color:var(--ink)}
+.th .th-greeting{display:none}
+
+/* Numbers: one bordered strip of cells, not separate cards. */
+.th .th-tiles{gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.th .th-tile{border:0;border-radius:0;border-right:1px solid var(--line);background:transparent}
+.th .th-tile:last-child{border-right:0}
+.th .th-tile:hover{background:var(--bg-alt);transform:none}
+@media (max-width:760px){.th .th-tile{border-right:0;border-bottom:1px solid var(--line)}.th .th-tile:last-child{border-bottom:0}}

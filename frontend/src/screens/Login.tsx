@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { authMode, demoAvailable, demoSignIn, sessionMessage } from "../api/session";
 import { AuthFlow, type AuthFlowMode } from "../components/AuthFlow";
-import { AuthStory } from "../components/AuthStory";
+import { AuthShell } from "../components/AuthShell";
+import { LogoMark } from "../components/Logo";
 import { useAppState } from "../lib/appState";
 
 export default function Login() {
@@ -58,41 +59,19 @@ export default function Login() {
   };
 
   return (
-    <div className="fb-root fb-mkt lx lx-auth">
-      <div className="fb-mkt-auth-wrap">
-        <AuthStory
-          from="login"
-          title="Welcome back to your books."
-          body="Three locks stand between this page and your company's numbers. Your role decides what you see once you are in."
-        />
-        <div className="fb-mkt-auth-form-wrap">
+    <AuthShell from="login">
           {authMode === "backend" ? (
-            <div style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+            <div className="dd-auth-col">
               {demoOpen && flowMode === "signin" && (
-                <section
-                  aria-labelledby="dd-demo-title"
-                  style={{
-                    display: "flex", flexDirection: "column", gap: ".75rem", padding: "1.25rem 1.25rem 1rem",
-                    border: "1px solid var(--a-line)", borderRadius: 16, background: "var(--a-surface)",
-                  }}
-                >
-                  <h2 id="dd-demo-title" style={{ fontSize: "1.2rem", margin: 0 }}>Judging DuitDuit? Open the demo company</h2>
-                  <p style={{ margin: 0, color: "var(--a-ink-soft)", fontSize: ".92rem" }}>
-                    A synthetic Malaysian importer, signed in as its owner. No sign-up. Approvals work,
-                    and anything that would leave the company is recorded, never sent.
-                  </p>
-                  <button
-                    className="fb-mkt-btn is-accent is-lg"
-                    style={{ width: "100%", justifyContent: "center" }}
-                    type="button"
-                    onClick={openDemo}
-                    disabled={demoBusy}
-                  >
-                    {demoBusy && <span className="fb-mkt-btn-spinner" aria-hidden="true" />}
+                <>
+                  <button className="dd-auth-demo" type="button" onClick={openDemo} disabled={demoBusy}>
+                    <LogoMark />
                     {demoBusy ? "Opening the demo company…" : "Open the demo company"}
                   </button>
+                  <p className="dd-auth-demo-note">A synthetic importer, as its owner. Approvals work; nothing is sent.</p>
                   {demoError && <div className="fb-mkt-callout" role="alert">{demoError}</div>}
-                </section>
+                  <div className="dd-auth-or" aria-hidden="true">or sign in with your account</div>
+                </>
               )}
               <AuthFlow mode={flowMode} onModeChange={setFlowMode} />
             </div>
@@ -152,8 +131,6 @@ export default function Login() {
             <div className="fb-mkt-fine">Accounts and roles are provisioned by the DuitDuit administrator.</div>
           </form>
           )}
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

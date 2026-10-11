@@ -110,8 +110,8 @@ export function AuthFlow({ mode, onModeChange }: { mode: AuthFlowMode; onModeCha
 
   const heading: Record<string, [string, string]> = {
     start: {
-      signin: ["Welcome back", "Sign in to your workspace"],
-      signup: ["Create your company", "Start with the owner account"],
+      signin: ["Welcome back to your books", "Sign in"],
+      signup: ["Start with the owner account", "Create your company"],
       recovery: ["Forgot your password?", "We'll email you a code"],
       invitation: ["You were invited", "Accept your invitation"],
     }[mode] as [string, string],

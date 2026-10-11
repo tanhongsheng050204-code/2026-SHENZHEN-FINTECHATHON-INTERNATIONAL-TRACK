@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useI18n, type Lang } from "../lib/i18n";
+import { useI18n } from "../lib/i18n";
 import { useAppState } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
 import { Sidebar, AppTopBar } from "../components/Nav";
@@ -514,21 +514,18 @@ const GREETING_KEY: Record<GreetingPeriod, "home.greeting.morning" | "home.greet
   evening: "home.greeting.evening",
 };
 
-const GREETING_LOCALE: Record<Lang, string> = { en: "en-US", ms: "ms-MY", zh: "zh-CN" };
-
-function greetingLine(t: (key: "home.greeting.morning" | "home.greeting.afternoon" | "home.greeting.evening") => string, name: string | null, lang: Lang): string {
-  const now = new Date();
-  const locale = GREETING_LOCALE[lang] ?? "en-US";
-  const date = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(now);
-  return `${t(GREETING_KEY[greetingPeriod(now.getHours())])}${name ? `, ${name}` : ""}. ${date}.`;
+// Just the greeting, as Attio does it; the date lives in the system clock.
+function greetingLine(t: (key: "home.greeting.morning" | "home.greeting.afternoon" | "home.greeting.evening") => string, name: string | null): string {
+  return `${t(GREETING_KEY[greetingPeriod(new Date().getHours())])}${name ? `, ${name}` : ""}.`;
 }
 
 export default function Home() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { show, sampleBanner, dismissSampleBanner, displayName, askAbout, approvalsCount } = useAppState();
   const { identity } = useAuth();
   const emailFirstName = identity?.email ? identity.email.split("@")[0] : null;
-  const derivedName = emailFirstName ? emailFirstName.charAt(0).toUpperCase() + emailFirstName.slice(1) : null;
+  // A masked address ("d***") is not a name to greet anyone by.
+  const derivedName = emailFirstName && !emailFirstName.includes("*") ? emailFirstName.charAt(0).toUpperCase() + emailFirstName.slice(1) : null;
   const greetingName = displayName || derivedName;
 
   const [customers, setCustomers] = useState<CustomerSummary[]>([]);
@@ -578,7 +575,7 @@ export default function Home() {
       )}
 
       <div className="fb-page-body th-page">
-        <TodayHero greeting={greetingLine(t, greetingName, lang)} />
+        <TodayHero greeting={greetingLine(t, greetingName)} />
 
         <AttentionSection needsAttention={needsAttention} state={customersState} onRetry={retryCustomers} />
 

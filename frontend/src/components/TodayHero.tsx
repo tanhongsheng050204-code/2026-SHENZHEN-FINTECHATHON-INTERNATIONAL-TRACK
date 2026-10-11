@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import "./TodayHero.css";
 import { useAuth } from "../auth/AuthProvider";
 import { canOpen } from "../lib/access";
 import { useAppState } from "../lib/appState";
@@ -56,6 +57,7 @@ export function TodayHero({ greeting }: { greeting: string }) {
   const [waiting, setWaiting] = useState<ReviewAction[] | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [alerts, setAlerts] = useState<string[] | null>(null);
+  const [question, setQuestion] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -94,11 +96,42 @@ export function TodayHero({ greeting }: { greeting: string }) {
     detail = "New proposals from the agents will appear in your review inbox.";
   }
 
+  const suggestions = seesCash
+    ? ["Can I pay everyone this month?", "Prepare me for the bank meeting", "Chase the late payers", "Close the month"]
+    : ["What needs me today?", "Show my customers"];
+
+  const ask = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const text = question.trim();
+    if (text) askAbout(text);
+  };
+
   return (
     <section className="th" aria-label="Today">
+      <div className="th-ask-block">
+        <h1 className="th-hello">{greeting}</h1>
+        <form className="th-ask" onSubmit={ask} role="search" aria-label="Ask DuitDuit">
+          <input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ask DuitDuit, or tell it what to prepare"
+            aria-label="Ask DuitDuit, or tell it what to prepare"
+            maxLength={500}
+          />
+          <button type="submit" aria-label="Ask" disabled={!question.trim()}>
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
+        </form>
+        <div className="th-suggest" aria-label="Suggestions">
+          {suggestions.map((text) => (
+            <button key={text} type="button" onClick={() => askAbout(text)}>{text}</button>
+          ))}
+        </div>
+      </div>
+
       <div className={"th-lead" + (shortfall ? " is-risk" : "")}>
         <div className="th-lead-copy">
-          <p className="th-greeting">{greeting}</p>
+          <p className={"th-status" + (shortfall ? " is-risk" : "")}><i aria-hidden="true" />{shortfall ? `Below your minimum in ${shortfall.day} days` : "Cash outlook"}</p>
           <h2 className="th-headline">{headline}</h2>
           <p className="th-detail">{detail}</p>
           <div className="th-actions">
