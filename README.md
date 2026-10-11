@@ -117,7 +117,10 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 | Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. **On the live site (2026-10-11):** a new company's owner signed up end to end: password, 6-digit email code, authenticator setup, then into the app. One run, done by hand by the team; not yet repeated by an automated test. |
 | One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
 | Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. |
-| Team features: comments and @mentions on review items, a collections board, automations, saved views, customer risk notes and money timeline, Slack and WhatsApp notices | **Built and tested** offline (2026-10-11). Each ends in a proposal for a person to approve, or only shows information. Not yet deployed to the hosted API. WhatsApp is not tested against a live account. |
+| Team features: comments and @mentions on review items, a collections board, automations and reminder sequences, saved views, customer risk notes and money timeline, Slack and WhatsApp notices | **Built and tested**, including as Finance and staff under PostgreSQL row-level security. Each ends in a proposal for a person to approve, or only shows information. WhatsApp is not tested against a live account. |
+| Finance and staff on the live database | **Fixed 2026-10-12.** Row-level security let only the owner and Compliance read other people's audit-chain entries, so Finance saw an empty review inbox and could not record decisions. Chain reads and such writes now use a worker session scoped to the same company; a PostgreSQL test runs these paths as Finance and staff. |
+| AI connections (MCP) | **Built and tested.** Claude Code, Claude Desktop or any MCP client with a company key can read the forecast, forecast check, review inbox, collections board and financing matches. Read-only, masked labels, every call recorded, keys revocable. Not yet tried with ChatGPT. |
+| Public site | **Built.** Attio-style Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
 | Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Supabase Auth is configured: codes in every email template, sending through a dedicated Gmail account. The API still runs through a temporary tunnel, whose address changes when it restarts, and some requests time out. |
 | Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
@@ -276,6 +279,8 @@ finance-copilot capabilities and their status are listed under
 | Saved views | Filters on customers or the board, private or shared; filters only, no free text | Each person keeps the lists they check every day |
 | Customer risk note and money timeline | One sentence per customer written by fixed rules from its receivables, naming its sources; invoices, payments and reminder proposals on the customer's timeline. Money roles only | The state of a customer, explained without an AI model |
 | Team chat notices | Slack (incoming webhook) or WhatsApp Business: "3 items wait for review (Finance 2, Owner 1)" and a link. No titles, amounts or names; simulated in the demo company | People know when to open DuitDuit |
+| Reminder sequences | A friendly reminder at N days overdue, a firm one at N+7 and a call task for Finance at N+21; each step waits until a person decided the last | Collections escalate on time without anyone tracking dates |
+| AI connections (MCP) | `POST /mcp` with a read-only company key; five tools; HMAC-only key storage; each call on the audit chain | Owners can ask their own AI tool about their cash, without giving it the power to act |
 | E-invoice readiness | MyInvois-oriented scoring, LHDN-style invoice PDF, official payment receipt, owner UIN issuance | Submission blockers surface before LHDN rejects them |
 | PDPA subject rights | Token-level access export and crypto-shredding erasure, both audited | Data-subject requests are one audited operation |
 
@@ -992,7 +997,7 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **686 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
+- backend: **696 passed, 8 skipped** (the skipped tests need PostgreSQL; the 7 PostgreSQL tests also pass against a local migrated database) (the skipped tests need PostgreSQL, which CI provides);
 - evaluation: **42 of 42**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
