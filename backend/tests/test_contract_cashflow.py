@@ -192,3 +192,17 @@ def test_unauthenticated_request_is_rejected():
     response = client_for(router, role=None).get("/cashflow/forecast")
 
     assert response.status_code == 401
+
+
+def test_forecast_check_says_the_demo_company_is_not_measured():
+    body = client_for(router).get("/cashflow/forecast-check").json()
+
+    assert body["status"] == "not_measured"
+    assert body["reason"] == "synthetic_company"
+    assert [h["horizon_days"] for h in body["by_horizon"]] == [7, 14, 30]
+
+
+def test_forecast_check_is_closed_to_employees():
+    response = client_for(router, UserRole.GENERAL_EMPLOYEE).get("/cashflow/forecast-check")
+
+    assert response.status_code == 403

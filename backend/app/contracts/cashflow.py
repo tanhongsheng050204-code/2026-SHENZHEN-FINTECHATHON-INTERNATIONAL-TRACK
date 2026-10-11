@@ -98,3 +98,23 @@ class CashSignalsResponse(BaseModel):
     horizon_days: int
     signals: list[CashSignal]
     by_agent: list[AgentCashTotal]
+
+
+class ForecastCheckHorizon(BaseModel):
+    horizon_days: int
+    compared: int
+    within_range: int
+    mean_abs_error_myr: Decimal | None
+
+
+class ForecastCheckResponse(BaseModel):
+    """How past forecasts compare with the bank balance on the days they forecast."""
+
+    data_mode: DataMode
+    status: Literal["measured", "not_measured"]
+    reason: Literal["synthetic_company", "no_forecasts_kept", "awaiting_bank_statement"] | None
+    forecasts_kept: int
+    compared: int
+    within_range: int
+    first_comparison_on: dt.date | None
+    by_horizon: list[ForecastCheckHorizon]

@@ -1664,6 +1664,117 @@
         "title": "ForecastAlert",
         "type": "object"
       },
+      "ForecastCheckHorizon": {
+        "properties": {
+          "compared": {
+            "title": "Compared",
+            "type": "integer"
+          },
+          "horizon_days": {
+            "title": "Horizon Days",
+            "type": "integer"
+          },
+          "mean_abs_error_myr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Abs Error Myr"
+          },
+          "within_range": {
+            "title": "Within Range",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "horizon_days",
+          "compared",
+          "within_range",
+          "mean_abs_error_myr"
+        ],
+        "title": "ForecastCheckHorizon",
+        "type": "object"
+      },
+      "ForecastCheckResponse": {
+        "description": "How past forecasts compare with the bank balance on the days they forecast.",
+        "properties": {
+          "by_horizon": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastCheckHorizon"
+            },
+            "title": "By Horizon",
+            "type": "array"
+          },
+          "compared": {
+            "title": "Compared",
+            "type": "integer"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "first_comparison_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Comparison On"
+          },
+          "forecasts_kept": {
+            "title": "Forecasts Kept",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "synthetic_company",
+                  "no_forecasts_kept",
+                  "awaiting_bank_statement"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "enum": [
+              "measured",
+              "not_measured"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "within_range": {
+            "title": "Within Range",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data_mode",
+          "status",
+          "reason",
+          "forecasts_kept",
+          "compared",
+          "within_range",
+          "first_comparison_on",
+          "by_horizon"
+        ],
+        "title": "ForecastCheckResponse",
+        "type": "object"
+      },
       "ForecastPoint": {
         "properties": {
           "best": {
@@ -4862,6 +4973,32 @@
           }
         ],
         "summary": "Cashflow Forecast",
+        "tags": [
+          "cashflow"
+        ]
+      }
+    },
+    "/cashflow/forecast-check": {
+      "get": {
+        "operationId": "cashflow_forecast_check_cashflow_forecast_check_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastCheckResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cashflow Forecast Check",
         "tags": [
           "cashflow"
         ]

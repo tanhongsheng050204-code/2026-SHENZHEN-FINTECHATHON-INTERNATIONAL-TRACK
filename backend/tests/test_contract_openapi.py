@@ -11,6 +11,7 @@ CONTRACT_OPERATIONS = {
     ("get", "/cashflow/forecast"),
     ("post", "/cashflow/scenarios"),
     ("get", "/cashflow/signals"),
+    ("get", "/cashflow/forecast-check"),
     ("get", "/agents"),
     ("post", "/agents/runs"),
     ("get", "/agents/runs/{run_id}/events"),

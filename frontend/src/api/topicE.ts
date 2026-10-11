@@ -1064,3 +1064,26 @@ export interface AnalysisResponse {
 export async function fetchAnalysis(months = 3): Promise<AnalysisResponse> {
   return parse<AnalysisResponse>(await authenticatedFetch(`/analysis?months=${months}`));
 }
+
+export interface ForecastCheckHorizon {
+  horizon_days: number;
+  compared: number;
+  within_range: number;
+  mean_abs_error_myr: string | null;
+}
+
+/** Past forecasts against the bank balance on the days they forecast. */
+export interface ForecastCheckResponse {
+  data_mode: DataMode;
+  status: "measured" | "not_measured";
+  reason: "synthetic_company" | "no_forecasts_kept" | "awaiting_bank_statement" | null;
+  forecasts_kept: number;
+  compared: number;
+  within_range: number;
+  first_comparison_on: string | null;
+  by_horizon: ForecastCheckHorizon[];
+}
+
+export async function fetchForecastCheck(): Promise<ForecastCheckResponse> {
+  return parse<ForecastCheckResponse>(await authenticatedFetch("/cashflow/forecast-check"));
+}

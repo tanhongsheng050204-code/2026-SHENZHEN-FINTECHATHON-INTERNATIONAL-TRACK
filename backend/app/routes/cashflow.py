@@ -8,13 +8,14 @@ from app.auth.principal import AuthPrincipal
 from app.contracts.cashflow import (
     HORIZONS,
     CashSignalsResponse,
+    ForecastCheckResponse,
     ForecastResponse,
     ScenarioRequest,
 )
 from app.contracts.common import JobFunction
 from app.db import get_db
 from app.schemas import UserRole
-from app.services import cashflow_engine
+from app.services import cashflow_engine, forecast_check
 from app.services.cashflow import basis_for
 from app.services.cashflow_engine import UnknownEventError
 
@@ -38,9 +39,22 @@ def cashflow_forecast(
 ) -> ForecastResponse:
     _check_horizon(horizon_days)
     day = as_of or dt.date.today()
-    return cashflow_engine.build_forecast(
+    forecast = cashflow_engine.build_forecast(
         basis_for(db, principal, day), horizon_days=horizon_days, as_of=day
     )
+    if db is not None and as_of is None:
+        # Today's live forecast is kept once, to be scored when the bank catches up.
+        forecast_check.record(db, str(principal.tenant_id), forecast)
+    return forecast
+
+
+@router.get("/cashflow/forecast-check", response_model=ForecastCheckResponse)
+def cashflow_forecast_check(
+    principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+    db: Session = Depends(get_db),
+) -> ForecastCheckResponse:
+    data_mode = basis_for(db, principal, dt.date.today()).data_mode
+    return forecast_check.report(db, str(principal.tenant_id), data_mode)
 
 
 @router.post("/cashflow/scenarios", response_model=ForecastResponse)
