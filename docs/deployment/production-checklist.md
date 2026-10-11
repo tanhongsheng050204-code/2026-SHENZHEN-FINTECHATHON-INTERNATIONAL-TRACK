@@ -72,7 +72,7 @@ Copy the four lines into the API's environment (step 5), then delete `demo-accou
 | `DEMO_SIGN_IN_ENABLED`, `DEMO_EMAIL`, `DEMO_PASSWORD`, `DEMO_TOTP_SECRET` | From `demo-account.env` | Turns on **Open the demo company** |
 | `ALERT_CHECKS_ENABLED` | `true` | Alert rules are checked every 15 minutes |
 | `CUSTOMER_INTELLIGENCE_ENABLED` | `true` | The Customers page reads the sales ledger |
-| `CORS_ORIGINS` | The app's exact address, e.g. `https://<app-domain>` | Cookie sign-in only works from listed origins |
+| `CORS_ORIGINS` | `https://duitduit-umber.vercel.app`, the app's exact address with no trailing slash. Add a custom domain here too once there is one, separated by a comma. | Cookie sign-in only works from listed origins |
 | `AUTH_COOKIE_SECURE` | `true` (the default) | The session cookie is sent over HTTPS only |
 
 Nothing in the demo company leaves the system, whatever `OUTBOUND_EMAIL_ENABLED` or `TELEGRAM_OUTBOUND_ENABLED` say:
@@ -85,11 +85,17 @@ Restart the API after changing these.
 
 ## 6. Frontend (Vercel)
 
+The frontend is already deployed at **https://duitduit-umber.vercel.app**, as the Vercel project `duitduit` on the repository owner's account. `VITE_AUTH_MODE` and `VITE_API_URL` are already set.
+
+The only thing still missing is the API's address. **Send the backend's public HTTPS address (no trailing slash) to the repository owner.** They set it as `BACKEND_ORIGIN` and redeploy.
+
 | Setting | Value |
 |---|---|
-| `VITE_AUTH_MODE` | `backend` |
-| `VITE_API_URL` | `/api` |
-| `BACKEND_ORIGIN` | The API's HTTPS address, with no trailing slash |
+| `VITE_AUTH_MODE` | `backend` (set) |
+| `VITE_API_URL` | `/api` (set) |
+| `BACKEND_ORIGIN` | The API's HTTPS address, with no trailing slash (**to set**) |
+
+If the API runs through a tunnel, use an address that stays the same when the tunnel restarts, such as a named Cloudflare tunnel. A quick tunnel gets a new random address on every restart, and the site breaks each time.
 
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are not needed in backend mode, because the browser never talks to Supabase.
 
