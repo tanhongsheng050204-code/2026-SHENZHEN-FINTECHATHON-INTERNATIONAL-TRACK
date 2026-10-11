@@ -27,9 +27,16 @@ passes through one protected pipeline: sensitive values are tokenized and encryp
 any AI model sees them, every answer cites its evidence and adapts to the requester's role,
 and every disclosure and decision lands in a hash-chained audit log.
 
-| Briefing | Customers |
-| --- | --- |
-| ![Briefing dashboard](frontend/public/screenshots/briefing.png) | ![Customer workspace](frontend/public/screenshots/customers.png) |
+| Today | Financial analysis | Financing & Passport |
+| --- | --- | --- |
+| ![Today: the cash gap three weeks ahead](frontend/public/screenshots/today.jpg) | ![Monthly profit and loss with ratios](frontend/public/screenshots/analysis.jpg) | ![Financing matches and credit scorecard](frontend/public/screenshots/financing.jpg) |
+
+All figures shown come from a **synthetic** Malaysian home-goods importer.
+
+**Try it:** on the deployed site, press **Open the demo company**. It signs you in as the
+owner of the synthetic company in one click, with a real password-and-authenticator session
+run by the server. Anything that would leave the company is recorded and never sent. Locally,
+see [Setup](#setup).
 
 ---
 
@@ -63,11 +70,14 @@ analyses the business's finances.
 
 ### Our answer
 
-| Loop | What the SME gets | How it works |
+Each part of the Topic E brief maps to a working feature:
+
+| Topic E asks for | What DuitDuit does | Where |
 | --- | --- | --- |
-| **Operate** | A 30/60/90-day cash-flow forecast with shortfall alerts, and collections that run under review | A deterministic forecast over receivables, payables and bank-statement patterns; the receivables agent drafts reminders that staff approve |
-| **Finance** | Financing options matched to the business, each with the reasons it does or does not qualify | Rule-based eligibility over the company's own records, with an application pack drafted for the owner |
-| **Trust** | A record a lender can rely on, without exposing customer data | The Financing Readiness Passport: hashed, anchored to a public audit trail, and shared with a lender through a consented, expiring grant |
+| **Financing-option matching** | Matches eight Malaysian and four China product types against the company's own records, rule by rule. It names the smallest step that would qualify the business, and drafts an application pack. Six Malaysian products are modelled on public schemes (SJPP, Bank Negara Malaysia funds, the Securities Commission's SARANA, EXIM Bank), each linked to its source. A credit scorecard uses the same facts. | Financing & Passport |
+| **Cash-flow management and alerts** | A 90-day forecast with best and worst cases against the owner's minimum balance, and what-if scenarios. Alert rules are checked every 15 minutes, and a morning briefing goes out in the app, by email or on Telegram. The assistant answers questions such as "Can I pay everyone this month?" | Today, Cash & finance, Ask DuitDuit |
+| **Business financial analysis** | A monthly profit and loss and expense breakdown. Six ratios with their formulas (days to collect and to pay, margin, marketing return, customer concentration, payroll share), "what changed" month on month, and bank-line matching for the month-end close. | Cash & finance → Financial analysis |
+| **Trust, so a lender can act on it** | The Financing Readiness Passport: amounts as bands, shared through an expiring, consented link, and checkable by anyone against the company's hash-chained audit trail. | Financing & Passport, Trust & audit |
 
 Three design rules run through all of it:
 
@@ -90,44 +100,40 @@ a receivable — and not only as a compliance task.
 
 ### Build status
 
-Status as of 2026-10-08. The demo company and its data are synthetic and labelled as such.
+Status as of 2026-10-11. The demo company and its data are synthetic and labelled as such.
 
 | Capability | Status |
 | --- | --- |
-| Protected ingestion, tokenization, encrypted vault, role-aware disclosure, AI Exposure Receipt | **Built and tested** — see [Features](#features) |
-| Cited questions and answers, conversation context, customer intelligence | **Built and tested** |
-| Governed outreach, approvals, overdue reminders, e-invoice readiness and PDFs, receivables aging | **Built and tested** |
-| Dual hash-chained audit logs with daily external anchoring, PDPA access and erasure, vault rotation | **Built and tested** |
-| Topic E API contract served as tested stub endpoints | **Built and tested** — 54 stub endpoints returning labelled synthetic data; contract in [`docs/api/topic-e-contract.json`](docs/api/topic-e-contract.json) |
-| Plan 2 identity, Team, persistent settings and guardrails | **Backend implemented locally** — see [Plan 2](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md); hosted validation pending |
-| Plan 3 mapped business CSV importers and synthetic tenant | **Backend and import UI implemented; automated checks pass** — eight datasets, preview/commit/history, 53 synthetic rows; see [Plan 3](docs/superpowers/plans/2026-10-09-topic-e-importers.md). Hosted validation pending |
-| Cash-flow forecast, scenarios and alerts; financing matching with explanations | Planned — target Oct 16 |
-| Supervisor agent, review inbox, autonomy ladder and earned autonomy | Planned — target Oct 16 |
-| An agent for every SME position — owner, operations, finance, sales, customer service, marketing, purchasing, logistics, HR and compliance — each feeding the cash forecast | Planned — core skills by Oct 16; full skill lists by the November final |
-| Company customization: profile, positions and people, approval limits, alerts, templates, import mapping, financing preferences, industry templates | Backend persistence implemented in Plans 2–3; frontend and hosted validation pending |
-| Financing Readiness Passport, lender and external-auditor access | Planned — target Oct 16 |
-| Email OTP and TOTP sign-in, Team page, agent guardrails, security posture dashboard | Backend and frontend flows implemented; local/CI checks pass. Real email delivery, hosted MFA and production deployment remain pending |
-| Evaluation harness and OWASP Agentic Top 10 control map | Planned — target Oct 16 |
-| Production agent (manufacturing template); SMS one-time passwords; dashboard layout; automated data retention | Designed, not built |
+| Protected ingestion, tokenization, encrypted vault, role-aware disclosure, cited answers, customer intelligence, governed outreach, e-invoice readiness | **Built and tested.** This is the original FinBrain OS base. |
+| Cash-flow forecast, scenarios, alert rules, morning briefing | **Built and tested** |
+| Financing matching with reasons and next steps; credit scorecard; application packs; products modelled on public schemes | **Built and tested** |
+| Monthly profit and loss, ratios, "what changed", bank-line matching | **Built and tested** |
+| Ask DuitDuit assistant: four playbooks, voice input with transcript review, confirmation before every change | **Built and tested** |
+| Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested** |
+| Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
+| Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. Hosted end-to-end testing is pending. |
+| One-click demo company for judges | **Built and tested** with a mocked provider. It switches on with the [production checklist](docs/deployment/production-checklist.md). |
+| Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
+| Hosted deployment reachable from mainland China | **Pending.** Needs the production steps and a custom domain. |
 
 ### How the entry maps to the scoring criteria
 
-| Criterion | Weight | What we will submit as evidence |
+| Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Task completion | 40% | An evaluation harness of scripted financial tasks that runs offline in CI, and the live demonstration |
-| Security & compliance | 30% | The privacy core, multi-factor sign-in, agent guardrails mapped to the OWASP Top 10 for Agentic Applications (2026), a STRIDE threat model, and the security self-assessment |
-| Innovation & interaction | 30% | The review inbox and earned autonomy, the Financing Readiness Passport, and Malaysia and China jurisdiction packs |
+| Task completion | 40% | An offline evaluation harness of 42 tasks, 22 of them functional. The latest run passes all 42. Plus the live demo company and the demo video. |
+| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Also 20 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
+| Innovation & interaction | 30% | An assistant that proposes and never acts on its own; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
 
 ### Submission map
 
 | Deliverable | Where it lives |
 | --- | --- |
-| Technical documentation | This README and the [program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) |
-| Presentation deck | Added by Oct 19 |
-| Demo video | Added by Oct 19, as an MP4 plus a mirror reachable from mainland China |
-| Source code, deployment instructions and tests | This repository — see [Setup](#setup), [Deployment](#deployment) and [Testing](#testing) |
-| Security self-assessment | Added by Oct 18 |
-| Execution evidence | Evaluation report and audit-chain evidence bundle, added by Oct 19 |
+| Technical documentation | This README, the [program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) and the [six documents](FINBRAIN_SIX_DOCUMENTS.md) |
+| Presentation deck | Exported to PDF by Oct 19 |
+| Demo video | By Oct 19: an MP4, plus a mirror reachable from mainland China. Script: [demo-script.md](docs/submission/demo-script.md) |
+| Source code, deployment instructions and tests | This repository: [Setup](#setup), [Deployment](#deployment), [Testing](#testing) and the [production checklist](docs/deployment/production-checklist.md) |
+| Security self-assessment | [security-self-assessment.md](docs/submission/security-self-assessment.md) |
+| Execution evidence | [execution-evidence.md](docs/submission/execution-evidence.md), [accessibility.md](docs/submission/accessibility.md), [ZAP reports](docs/submission/evidence/zap-2026-10-11/) and the CI evaluation report |
 
 ### Program documents
 
@@ -921,7 +927,7 @@ On the backend, add the Vercel domain to `CORS_ORIGINS` (or match it with
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci.yml` | every push / PR | Backend: `ruff check` + full `pytest` (SQLite, no secrets). Frontend: `tsc -b` + `eslint` + production build. Gates merges only. |
+| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 42-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
 | `anchor-audit-chain.yml` | daily 00:00 UTC + manual | Writes each tenant's audit-chain tail to `audit-anchors/<date>.json` and commits it — tamper evidence outside the database trust boundary. Requires the `PRODUCTION_DATABASE_URL` repository secret (read-only). |
 
 ---
@@ -954,6 +960,14 @@ models, or call an AI provider. Coverage spans:
 - outreach and reminder state machines, e-invoice readiness and PDFs;
 - conversation context resolution and query intent planning;
 - RLS / authorization boundaries.
+
+Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 42
+scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
+
+Latest local results (2026-10-11):
+- backend: **628 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
+- evaluation: **42 of 42**;
+- frontend: type-check and build pass, and lint shows 0 errors.
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,
 approval journeys, Supabase SQL checks) is in
@@ -999,18 +1013,19 @@ The `demo/` directory contains synthetic, clearly-labeled fixtures:
 
 ### Suggested demonstration flow
 
-This flow uses features that are built today. The Topic E demonstration — six acts in about
-six minutes — is scripted in section 13 of the
-[program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md)
-and replaces this flow once those features land.
+The full five-minute script is [docs/submission/demo-script.md](docs/submission/demo-script.md):
+one working day at the synthetic importer, across eight scenes. In short:
 
-1. Sign in as finance/operations; sync unread Gmail.
-2. Upload `chat_upload_invoice_register.csv`; inspect the protected preview; confirm.
-3. Ask `Show all email sources` — deterministic citation cards, no model call.
-4. Open a citation; compare the protected evidence with your authorized view.
-5. Ask a cross-source analytical question; inspect the AI Exposure Receipt.
-6. Create a recommendation from the cited result; sign in as owner and approve it.
-7. Open Audit; verify both hash chains.
+1. **Today:** cash falls RM29,440 below the minimum in about three weeks.
+2. **Cash & finance:** the forecast, its best–worst range, and the Financial analysis tab.
+3. **"Prepare me for the bank meeting":** scorecard, financing matches, an L2 inbox approval, then a Passport shared with step-up. The lender view verifies it.
+4. **"Chase the late payers":** reminder drafts the owner confirms. Nothing is sent without approval.
+5. **"Can I pay everyone this month?":** the gap, and a what-if that closes it.
+6. **An employee says "approve all payments":** refused by role.
+7. **"Close the month":** 9 of 10 bank lines matched; the unexplained one waits for a person.
+8. **Compliance:** agents and autonomy, the kill switch, re-verifying the audit chains, and the one-click demo company.
+
+The day number moves one day sooner each day, because the forecast counts from today. Read it from the screen.
 
 ---
 
@@ -1023,6 +1038,10 @@ and replaces this flow once those features land.
 | [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md) | Test-first plan that serves the frozen Topic E API contract as stub endpoints |
 | [Plan 2: Identity and security](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md) | Backend session/MFA protocol, Team, settings persistence and guardrails |
 | [Plan 3: Synthetic tenant and importers](docs/superpowers/plans/2026-10-09-topic-e-importers.md) | Eight mapped CSV schemas, tenant persistence, protected payroll and local synthetic seed |
+| [Demo script](docs/submission/demo-script.md) / [Chinese subtitle draft](docs/submission/subtitles-zh-draft.md) | Five-minute video script, with a draft of Chinese subtitles awaiting review |
+| [Security self-assessment](docs/submission/security-self-assessment.md) / [OWASP agentic mapping](docs/standards/owasp-agentic-mapping.md) / [Threat model](docs/standards/threat-model.md) | Controls, their status and residual risk |
+| [Execution evidence](docs/submission/execution-evidence.md) / [Accessibility](docs/submission/accessibility.md) | Measured results, each with the command that produced it |
+| [Production checklist](docs/deployment/production-checklist.md) / [China reachability](docs/deployment/china-reachability.md) / [Cloud Run and Vercel](docs/deployment/cloud-run-and-vercel.md) | Deploying the judged instance |
 | [SUPABASE_ARCHITECTURE.md](./SUPABASE_ARCHITECTURE.md) | **Required reading for database contributors** — schema contract, RLS boundaries, change rules, emergency procedure |
 | [SUPABASE_SCHEMA_REFERENCE.md](./SUPABASE_SCHEMA_REFERENCE.md) | Column-level disaster-recovery snapshot of the live schema |
 | [AUTH_SETUP.md](./AUTH_SETUP.md) | Supabase Auth, JWT signing, custom token hook, user provisioning |
@@ -1060,11 +1079,13 @@ This is a proof of concept. The following boundaries are deliberate and document
 - **Deferred connectors**: WhatsApp Business, banking APIs, Google Drive/SharePoint.
   Scanned-image OCR runs locally (RapidOCR); cloud OCR providers are deferred.
 - **The web-search control** in the chat UI is visual only.
-- **Reachability from mainland China**: the live frontend is served from `vercel.app`, which
-  is mostly blocked in mainland China; the browser signs in directly against `supabase.co`,
-  which is intermittently disrupted there; and the page loads Google Fonts, which is
-  blocked. Custom domains, self-hosted fonts and backend-mediated sign-in are planned
-  (program spec, section 9).
+- **Reachability from mainland China**:
+  - The app no longer loads third-party fonts or scripts; CI checks this.
+  - With `VITE_AUTH_MODE=backend`, the browser never contacts `supabase.co`.
+  - The deployed site is still on `vercel.app`, which is mostly blocked in mainland China, so a custom domain is needed. See [china-reachability.md](docs/deployment/china-reachability.md).
+- **Shared demo company**: it is not reset automatically. Changes visitors make stay until an operator reverts them.
+- **Assurance**: automated scans and adversarial tests only. There is no independent penetration test and no certification.
+- **Chinese interface**: navigation and page titles are translated, but most screen content and the assistant's sentences are still English.
 - **E-invoice business names**: `einvoice_records` stores supplier and buyer business names
   in clear. A sole proprietor's business name can be a person's name, so this is listed as a
   known risk to tokenize or to document.
