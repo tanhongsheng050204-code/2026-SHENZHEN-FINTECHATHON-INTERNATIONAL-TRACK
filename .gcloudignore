@@ -1,0 +1,20 @@
+# `gcloud builds submit` uploads only what the backend image needs:
+# never secrets, local databases or the frontend.
+*
+!Dockerfile
+!.dockerignore
+!docker/
+!docker/**
+!backend/
+!backend/pyproject.toml
+!backend/uv.lock
+!backend/app/
+!backend/app/**
+!backend/scripts/
+!backend/scripts/**
+!backend/seed/
+!backend/seed/**
+**/.env
+**/.env.*
+**/__pycache__/
+**/*.db
