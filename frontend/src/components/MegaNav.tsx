@@ -63,6 +63,7 @@ export function MegaNav() {
         { title: "Financing & Passport", body: "Matches a lender can verify", go: help("financing") },
         { title: "Data sources", body: "Bank, e-invoices, email, Telegram", go: help("data") },
         { title: "Team chat", body: "Slack and WhatsApp notices", go: help("chat") },
+        { title: "AI connections", body: "Read DuitDuit from Claude over MCP", go: help("mcp") },
       ],
     },
   ];

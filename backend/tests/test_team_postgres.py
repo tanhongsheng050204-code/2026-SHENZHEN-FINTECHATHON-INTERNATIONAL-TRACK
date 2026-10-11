@@ -151,3 +151,46 @@ def test_a_delegated_decision_keeps_the_inbox_locked_until_its_transaction_ends(
         db.rollback()
         assert other.scalar(text("select pg_try_advisory_lock(hashtext(:key))"), key) is True
         other.execute(text("select pg_advisory_unlock(hashtext(:key))"), key)
+
+
+def test_an_mcp_key_reads_its_own_company_under_rls():
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from app.db import get_db
+    from app.routes.mcp import router
+    from app.security import rate_limit
+    from app.services import api_keys
+
+    rate_limit.reset()
+    engine = create_engine(DSN)
+    team = _team()
+    owner = team[UserRole.OWNER_DIRECTOR]
+    tid = str(owner.tenant_id)
+    with Session(engine, expire_on_commit=False) as db:
+        db.execute(text("insert into auth.users(id) values (:id)"), {"id": str(owner.user_id)})
+        db.add(Tenant(id=tid, name="SYNTHETIC mcp review", slug=f"review-{tid}"))
+        db.flush()
+        initialize_settings(db, tid, "SYNTHETIC mcp review")
+        db.commit()
+        _as(db, owner)
+        _, secret = api_keys.create(db, owner)
+
+    app = FastAPI()
+    app.include_router(router)
+
+    def fresh_session():
+        with Session(engine) as session:
+            yield session
+
+    app.dependency_overrides[get_db] = fresh_session
+    client = TestClient(app)
+    headers = {"Authorization": f"Bearer {secret}"}
+    for name in ("get_review_inbox", "get_collections_board", "get_forecast_check"):
+        response = client.post(
+            "/mcp",
+            headers=headers,
+            json={"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": name}},
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["result"]["isError"] is False, name

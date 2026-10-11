@@ -172,3 +172,24 @@ class ChatTestResponse(BaseModel):
     data_mode: DataMode
     channel: ChatChannel
     status: Literal["sent", "simulated", "not_configured", "failed"]
+
+
+# ── API keys for MCP ────────────────────────────────────────────────────────
+
+
+class ApiKeyView(BaseModel):
+    id: str
+    created_at: dt.datetime
+    revoked: bool
+
+
+class ApiKeysResponse(BaseModel):
+    data_mode: DataMode
+    keys: list[ApiKeyView]
+
+
+class ApiKeyCreated(BaseModel):
+    data_mode: DataMode
+    key: ApiKeyView
+    # Shown once; only an HMAC of it is kept.
+    secret: str

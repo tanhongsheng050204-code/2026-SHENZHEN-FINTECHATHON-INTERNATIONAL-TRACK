@@ -188,3 +188,24 @@ export async function testChatChannel(channel: ChatChannel): Promise<"sent" | "s
   const body = await send<{ status: "sent" | "simulated" | "not_configured" | "failed" }>("/notifications/test", "POST", { channel });
   return body.status;
 }
+
+// ── API keys for AI tools (MCP) ─────────────────────────────────────────────
+
+export interface ApiKeyView {
+  id: string;
+  created_at: string;
+  revoked: boolean;
+}
+
+export async function fetchApiKeys(): Promise<ApiKeyView[]> {
+  const body = await parse<{ keys: ApiKeyView[] }>(await authenticatedFetch("/api-keys"));
+  return body.keys;
+}
+
+export function createApiKey(): Promise<{ key: ApiKeyView; secret: string }> {
+  return send("/api-keys", "POST");
+}
+
+export function revokeApiKey(id: string): Promise<void> {
+  return remove(`/api-keys/${encodeURIComponent(id)}`);
+}

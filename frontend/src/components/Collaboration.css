@@ -54,3 +54,6 @@
 .dd-mention-picker button.is-on{background:var(--accent,#086759);border-color:var(--accent,#086759);color:#fff}
 .dd-comment-note{margin:0;font-size:.76rem}
 @media (max-width:640px){.dd-mention-picker button{min-height:44px}}
+
+/* Copyable code (API keys and client set-up) */
+.dd-code{margin:.4rem 0 .8rem;padding:.6rem .75rem;border:1px solid var(--line);border-radius:8px;background:var(--bg-alt,#F6F8F7);font:500 .78rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}

@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import require_roles, require_step_up
 from app.auth.principal import AuthPrincipal
 from app.contracts.collaboration import (
+    ApiKeyCreated,
+    ApiKeysResponse,
+    ApiKeyView,
     Automation,
     AutomationRequest,
     AutomationRunResponse,
@@ -30,7 +33,14 @@ from app.contracts.collaboration import (
 from app.contracts.common import DataMode
 from app.db import get_db
 from app.schemas import UserRole
-from app.services import automations, chat_notify, collections, review_comments, saved_views
+from app.services import (
+    api_keys,
+    automations,
+    chat_notify,
+    collections,
+    review_comments,
+    saved_views,
+)
 
 router = APIRouter(tags=["collaboration"])
 
@@ -206,3 +216,36 @@ def chat_test(
     tenant_id = str(principal.tenant_id)
     status = chat_notify.notify(db, tenant_id, channel, chat_notify.waiting(db, tenant_id))
     return ChatTestResponse(data_mode=DataMode.LIVE, channel=channel, status=status)
+
+
+@router.get("/api-keys", response_model=ApiKeysResponse)
+def list_api_keys(
+    principal: AuthPrincipal = Depends(require_roles(UserRole.OWNER_DIRECTOR)),
+    db: Session = Depends(get_db),
+) -> ApiKeysResponse:
+    rows = api_keys.keys(db, str(principal.tenant_id))
+    return ApiKeysResponse(data_mode=DataMode.LIVE, keys=[ApiKeyView(**vars(k)) for k in rows])
+
+
+@router.post("/api-keys", response_model=ApiKeyCreated)
+def create_api_key(
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
+    db: Session = Depends(get_db),
+) -> ApiKeyCreated:
+    try:
+        key, secret = api_keys.create(db, principal)
+    except api_keys.KeyError_ as error:
+        raise _refuse(error) from error
+    return ApiKeyCreated(data_mode=DataMode.LIVE, key=ApiKeyView(**vars(key)), secret=secret)
+
+
+@router.delete("/api-keys/{key_id}", status_code=204)
+def revoke_api_key(
+    key_id: str,
+    principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
+    db: Session = Depends(get_db),
+) -> None:
+    try:
+        api_keys.revoke(db, principal, key_id)
+    except api_keys.KeyError_ as error:
+        raise _refuse(error) from error

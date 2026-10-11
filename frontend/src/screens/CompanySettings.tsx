@@ -1,3 +1,4 @@
+import { AiConnectionsPanel } from "../components/AiConnectionsPanel";
 import { AutomationsPanel } from "../components/AutomationsPanel";
 import { ChatNotificationsPanel } from "../components/ChatNotificationsPanel";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
@@ -614,7 +615,7 @@ function RulesTab({ isOwner }: { isOwner: boolean }) {
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
-type Tab = "settings" | "history" | "industry" | "messages" | "rules" | "automations" | "chat";
+type Tab = "settings" | "history" | "industry" | "messages" | "rules" | "automations" | "chat" | "ai";
 
 export default function CompanySettings() {
   const { t } = useI18n();
@@ -640,6 +641,7 @@ export default function CompanySettings() {
     { id: "rules", label: "Alert rules", show: true },
     { id: "automations", label: "Automations", show: true },
     { id: "chat", label: "Team chat", show: true },
+    { id: "ai", label: "AI connections", show: true },
   ];
 
   return (
@@ -686,6 +688,7 @@ export default function CompanySettings() {
               {tab === "rules" && <RulesTab isOwner={isOwner} />}
               {tab === "automations" && <AutomationsPanel isOwner={isOwner} canRun={role === "owner_director" || role === "finance_ops"} />}
               {tab === "chat" && <ChatNotificationsPanel isOwner={isOwner} />}
+              {tab === "ai" && <AiConnectionsPanel isOwner={isOwner} />}
             </>
           )}
         </div>

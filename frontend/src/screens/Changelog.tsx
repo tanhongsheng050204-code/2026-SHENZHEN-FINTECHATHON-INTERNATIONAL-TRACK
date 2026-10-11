@@ -9,8 +9,10 @@ import "./PublicPages.css";
 const DAYS: { date: string; title: string; items: string[] }[] = [
   {
     date: "12 Oct 2026",
-    title: "Reminder sequences, and Finance sees the whole inbox",
+    title: "Reminder sequences, AI connections, and Finance sees the whole inbox",
     items: [
+      "Connect Claude or another AI tool over MCP with a read-only company key: it can read the forecast, the inbox, the collections board and financing matches, and change nothing.",
+      "Pricing, Changelog and Help pages, and Attio-style menus on the public site.",
       "Automations can run a reminder sequence: a friendly reminder, a firm one a week later, then a call task for Finance. Each step waits for a person.",
       "Finance and staff now see, and can decide, items that agents and other people prepared, under the database's row-level security.",
     ],

@@ -345,6 +345,19 @@ export const FB_ZH: Record<string, string> = {
   "Not set up on the server yet.": "服务器上尚未设置。",
   "The channel refused the message. Check the settings on the server.": "频道拒绝了消息。请检查服务器上的设置。",
 
+  // ── AI connections ──
+  "AI connections": "AI 连接",
+  "Let Claude or another AI tool answer from DuitDuit through MCP. A key only reads: the forecast, the forecast check, the review inbox, the collections board and financing matches, with masked labels. It cannot approve, send or change anything, and every call is recorded on the audit trail.":
+    "让 Claude 或其他 AI 工具通过 MCP 读取 DuitDuit。密钥只能读取：现金预测、预测核对、审核收件箱、收款看板和融资匹配，标签均已遮蔽。它不能批准、发送或更改任何内容，每次调用都会记录在审计链上。",
+  "Only the owner can create or revoke keys.": "只有负责人可以创建或撤销密钥。",
+  "No keys yet.": "暂无密钥。",
+  "Created {date}": "创建于 {date}",
+  "Create a key": "创建密钥",
+  "Copy this key now. It is shown only once.": "请立即复制此密钥，它只显示一次。",
+  "I have saved it": "我已保存",
+  "Server address": "服务器地址",
+  "A company can have at most 5 active keys. Revoke one first.": "每家公司最多 5 个有效密钥，请先撤销一个。",
+
   // ── Financing ──
   "Malaysia": "马来西亚",
   "China": "中国",
