@@ -10,8 +10,9 @@ import {
   type AuditEntry,
   type WorkflowAuditEntry,
 } from "../api/client";
+import { fetchMentions } from "../api/collaboration";
 
-type NotificationCategory = "invoicing" | "audit" | "approvals";
+type NotificationCategory = "invoicing" | "audit" | "approvals" | "mentions";
 
 interface NotificationItem {
   id: string;
@@ -26,6 +27,7 @@ const CATEGORY_ICON: Record<NotificationCategory, ReactNode> = {
   invoicing: <path d="M6 2h9l3 3v17H6z M9 8h6M9 12h6M9 16h4" />,
   audit: <path d="M12 3 20 6.5v5.3c0 4.7-3.2 8.9-8 10.2-4.8-1.3-8-5.5-8-10.2V6.5z" />,
   approvals: <path d="M9 12l2 2 4-4M12 3l8 4v5c0 4.5-3.2 8.5-8 10-4.8-1.5-8-5.5-8-10V7z" />,
+  mentions: <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0zm0 0v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.5 7.1" />,
 };
 
 function relativeTime(iso: string | null): string {
@@ -75,6 +77,23 @@ export function NotificationBell() {
         });
       } catch {
         // Readiness endpoint unreachable — just don't surface invoicing items this round.
+      }
+
+      try {
+        // Comments that @mention a position this person holds.
+        const mentions = await fetchMentions();
+        mentions.slice(0, 5).forEach((mention) => {
+          collected.push({
+            id: `mention-${mention.comment_id}`,
+            category: "mentions",
+            title: `${humanize(mention.author_role)} mentioned you`,
+            detail: "A comment on a review item. Open it in the review inbox.",
+            time: mention.created_at,
+            onOpen: () => show("inbox"),
+          });
+        });
+      } catch {
+        // Mentions unreachable — skip them this round.
       }
 
       if (capabilities.viewAudit) {

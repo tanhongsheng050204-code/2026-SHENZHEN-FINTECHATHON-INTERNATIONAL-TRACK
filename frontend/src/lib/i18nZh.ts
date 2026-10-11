@@ -254,6 +254,95 @@ export const FB_ZH: Record<string, string> = {
   "After reviewing this proposal, the owner selects a Passport, lender and expiry on Financing & Passport and confirms with an authenticator code. Nothing is sent here.":
     "审核此提案后，负责人在“融资与护照”中选择护照、贷款方和到期时间，并用验证器代码确认。此处不会发送任何内容。",
 
+  // ── Comments and mentions ──
+  "Comments": "评论",
+  "No comments yet. Ask a question or @mention a position.": "暂无评论。可以提问，或 @ 提及某个岗位。",
+  "You": "您",
+  "Team member": "团队成员",
+  "Write a comment": "写评论",
+  "Write a comment…": "写评论……",
+  "Mention a position": "提及岗位",
+  "Posting…": "发布中…",
+  "Comment": "评论",
+  "Names, emails and phone numbers are hidden before the comment is saved.": "评论保存前会隐藏姓名、电子邮件和电话号码。",
+  "That comment reads like an instruction to the AI, so it was blocked. Rephrase it as a note to people.": "这条评论看起来像是给 AI 的指令，已被拦截。请改写成给同事的备注。",
+
+  // ── Collections board ──
+  "Collections board": "收款看板",
+  "Every unpaid invoice in one place. Drag a card to Reminder, or press Ask for a reminder: the Collections agent drafts it and a person approves it before anything is sent.":
+    "所有未付发票集中在一处。把卡片拖到“催款提醒”，或点击“请求催款提醒”：催收智能体起草，经人批准后才会发送。",
+  "Later": "稍后",
+  "Due in 14 days": "14 天内到期",
+  "Overdue": "已逾期",
+  "Reminder waiting for approval": "催款提醒待批准",
+  "Paid (last 30 days)": "已付款（近 30 天）",
+  "Show": "显示",
+  "Show columns": "显示的栏目",
+  "Invoice": "发票",
+  "Paid": "已付款",
+  "Due {date}": "{date} 到期",
+  "{n} days overdue": "逾期 {n} 天",
+  "Ask for a reminder": "请求催款提醒",
+  "Open in review inbox": "在审核收件箱中打开",
+  "Nothing here.": "暂无内容。",
+  "Drop a card here to ask for a reminder.": "把卡片拖到这里即可请求催款提醒。",
+  "A reminder for {label} is waiting for approval in the review inbox. Nothing has been sent.": "{label} 的催款提醒正在审核收件箱中等待批准。尚未发送任何内容。",
+
+  // ── Saved views and filters ──
+  "Saved views": "已保存视图",
+  "Save this view": "保存此视图",
+  "Share with the team": "与团队共享",
+  "Shared with the team": "已与团队共享",
+  "Only you": "仅自己可见",
+  "Clear filters": "清除筛选",
+  "Remove view {name}": "删除视图 {name}",
+  "Everything": "全部",
+  "overdue ≥ {amount}": "逾期 ≥ {amount}",
+  "outstanding ≥ {amount}": "未收 ≥ {amount}",
+  "unconfirmed": "未确认",
+  "Due soon": "即将到期",
+  "Reminder": "催款提醒",
+  "Filter customers": "筛选客户",
+  "Overdue at least RM": "逾期至少 RM",
+  "Identity not confirmed": "身份未确认",
+
+  // ── Automations ──
+  "Automations": "自动化",
+  "When something happens, DuitDuit prepares the next step for a person to approve. Automations are checked every 15 minutes; none sends, pays or changes anything by itself.":
+    "发生特定情况时，DuitDuit 会准备好下一步，交由人批准。自动化每 15 分钟检查一次，不会自行发送、付款或更改任何内容。",
+  "No automations yet.": "暂无自动化。",
+  "When": "当",
+  "Then": "则",
+  "N (days)": "N（天）",
+  "Who reviews": "由谁审核",
+  "Add automation": "添加自动化",
+  "Run now": "立即运行",
+  "Remove": "删除",
+  "An invoice is at least {n} days overdue": "发票逾期至少 {n} 天",
+  "Cash falls below the minimum within {n} days": "现金在 {n} 天内低于最低余额",
+  "A supplier bill falls due within {n} days": "供应商账单在 {n} 天内到期",
+  "Draft a payment reminder (L2, the owner approves)": "起草付款提醒（L2，由负责人批准）",
+  "Ask a position to review it (L1)": "请某个岗位审核（L1）",
+  "draft a payment reminder": "起草付款提醒",
+  "ask {who} to review it": "请{who}审核",
+  "{n} proposals are waiting in the review inbox. Nothing has been sent.": "{n} 项提案正在审核收件箱中等待处理。尚未发送任何内容。",
+  "Nothing new matched right now.": "目前没有新的匹配项。",
+
+  // ── Team chat ──
+  "Team chat notifications": "团队聊天通知",
+  "When the number of items waiting for review changes, DuitDuit posts one line to your team chat, for example: “3 items wait for review (Finance 2, Owner 1)”, with a link to the review inbox. It never includes titles, amounts or names, and decisions still happen in DuitDuit.":
+    "当待审核事项数量变化时，DuitDuit 会在团队聊天中发一行消息，例如：“3 项待审核（财务 2，负责人 1）”，并附上审核收件箱链接。消息不含标题、金额或姓名，决定仍在 DuitDuit 中作出。",
+  "Set up and on": "已设置并开启",
+  "Set up, switched off": "已设置，已关闭",
+  "Not set up": "未设置",
+  "Send a test": "发送测试",
+  "The server operator sets these up: a Slack incoming webhook, or a WhatsApp Business account with an approved message template. WhatsApp has not been tested with a live account yet.":
+    "由服务器管理员设置：Slack 传入 Webhook，或带有已批准消息模板的 WhatsApp Business 账户。WhatsApp 尚未用真实账户测试。",
+  "Sent. Check the channel.": "已发送，请查看频道。",
+  "Recorded as simulated: the demo company never sends.": "已记录为模拟：演示公司从不发送。",
+  "Not set up on the server yet.": "服务器上尚未设置。",
+  "The channel refused the message. Check the settings on the server.": "频道拒绝了消息。请检查服务器上的设置。",
+
   // ── Financing ──
   "Malaysia": "马来西亚",
   "China": "中国",
@@ -446,6 +535,12 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(.+) agent$/, (m, tr) => `${tr(m[1])}智能体`],
   [/^Review one reminder covering (\d+) (.+)\. Verify the recipient, balance and timing before sending\. Nothing has been sent\.$/, (m) =>
     `审核一封涵盖 ${m[1]} 项的催款提醒。发送前请核对收件人、金额和时间。尚未发送任何内容。`],
+  [/^Invoice due (.+)$/, (m) => `${m[1]} 到期的发票`],
+  [/^(.+) is (\d+) days overdue$/, (m, tr) => `${tr(m[1])} 已逾期 ${m[2]} 天`],
+  [/^Cash falls below your minimum in (\d+) days$/, (m) => `${m[1]} 天后现金低于最低余额`],
+  [/^Supplier bill due in (\d+) days: (.+)$/, (m, tr) => `供应商账单 ${m[1]} 天后到期：${tr(m[2])}`],
+  [/^Review one reminder for (.+), (.+)\. Verify the recipient, balance and timing before sending\. Nothing has been sent\.$/, (m, tr) =>
+    `审核一封给 ${tr(m[1])} 的催款提醒（${m[2]}）。发送前请核对收件人、金额和时间。尚未发送任何内容。`],
   [/^Rating ([\d.]+) \(was ([\d.]+) 90 days ago\)$/, (m) => `评分 ${m[1]}（90 天前为 ${m[2]}）`],
   [/^Below (.+) earns no points\.$/, (m, tr) => `低于 ${tr(m[1])} 不得分。`],
   [/^At least (.+) earns (\d+) of (\d+) points\.$/, (m, tr) => `至少 ${tr(m[1])} 可得 ${m[2]}/${m[3]} 分。`],

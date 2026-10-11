@@ -412,6 +412,9 @@ export interface CustomerSummary {
   overdue_total: string;
   invoice_count: number;
   linked_source_count: number;
+  /** One sentence written by fixed rules from the records in risk_sources; money roles only. */
+  risk_note?: string | null;
+  risk_sources?: string[];
 }
 
 export interface CustomerAttentionSignal {

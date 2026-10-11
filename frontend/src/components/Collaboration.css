@@ -36,3 +36,21 @@
 
 /* Links inside fine print take the accent, so they keep contrast in both themes. */
 .fb-root .fb-fine a{color:var(--accent);text-underline-offset:2px}
+
+/* Comments and @mentions on a review item */
+.dd-comments{display:flex;flex-direction:column;gap:.55rem}
+.dd-comment-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem}
+.dd-comment-list li{display:grid;grid-template-columns:22px 1fr;gap:.6rem;align-items:start}
+.dd-comment-head{display:flex;gap:.6rem;align-items:baseline;font-size:.82rem}
+.dd-comment-head time{color:var(--ink-faint,#61716C);font-size:.75rem}
+.dd-comment-list p{margin:.15rem 0 0;font-size:.9rem;line-height:1.45;overflow-wrap:anywhere}
+.dd-mention{display:inline-block;margin-right:.35rem;padding:0 .35rem;border-radius:6px;background:rgba(8,103,89,.1);color:var(--accent,#086759);font-weight:600;font-size:.82rem}
+.dd-comment-form{display:flex;flex-direction:column;gap:.5rem}
+.dd-comment-form textarea{width:100%;min-height:58px;padding:.55rem .7rem;border:1px solid var(--line);border-radius:10px;background:var(--card);color:inherit;font:inherit;font-size:.9rem;resize:vertical}
+.dd-comment-form textarea:focus{outline:none;border-color:var(--accent,#086759);box-shadow:0 0 0 3px rgba(8,103,89,.15)}
+.dd-comment-tools{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
+.dd-mention-picker{display:flex;flex-wrap:wrap;gap:.3rem}
+.dd-mention-picker button{min-height:30px;padding:.15rem .55rem;border:1px solid var(--line);border-radius:999px;background:transparent;color:inherit;font:500 .78rem/1 inherit;cursor:pointer}
+.dd-mention-picker button.is-on{background:var(--accent,#086759);border-color:var(--accent,#086759);color:#fff}
+.dd-comment-note{margin:0;font-size:.76rem}
+@media (max-width:640px){.dd-mention-picker button{min-height:44px}}

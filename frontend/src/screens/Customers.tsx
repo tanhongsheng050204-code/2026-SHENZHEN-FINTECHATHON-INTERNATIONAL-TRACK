@@ -1,4 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { NO_FILTERS, type Priority, type SavedViewFilters } from "../api/collaboration";
+import { SavedViewsBar } from "../components/SavedViewsBar";
+import { useI18n } from "../lib/i18n";
+import "./Collections.css";
 import {
   createCustomerEndpoint,
   createOutreachAction,
@@ -60,6 +64,8 @@ const SOURCE_ICONS: Record<string, ReactNode> = {
   email: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>,
   telegram: <path d="M4 4h13a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H9l-5 3v-3a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" />,
   outreach: <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
+  sales_ledger: <path d="M4 19V9M10 19V5M16 19v-7M22 19H2" />,
+  review_inbox: <path d="M9 12l2 2 4-4M12 3l8 4v5c0 4.5-3.2 8.5-8 10-4.8-1.5-8-5.5-8-10V7z" />,
 };
 const DEFAULT_SOURCE_ICON = <circle cx="12" cy="12" r="4" />;
 
@@ -166,6 +172,12 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
       <div className="fb-kpi-tile"><div className="fb-kpi-label">Invoices</div><div className="fb-kpi-value">{customer.invoice_count}</div></div>
       <div className="fb-kpi-tile"><div className="fb-kpi-label">Linked sources</div><div className="fb-kpi-value">{customer.linked_source_count}</div></div>
     </div>
+    {customer.risk_note && (
+      <div className="fb-callout dd-risk-callout">
+        <strong>Risk note</strong> {customer.risk_note}
+        <div className="fb-fine">Written by fixed rules from: {(customer.risk_sources ?? []).join(", ")}. No AI model writes this note.</div>
+      </div>
+    )}
     <button className="fb-btn fb-btn-solid" type="button" onClick={() => show("agents")}>Ask about this customer</button>
     <h3 style={{ marginTop: "1.5rem" }}>Why this customer needs attention</h3>
     {customer.attention_signals.length ? (
@@ -190,8 +202,8 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{SOURCE_ICONS[item.source_system] ?? DEFAULT_SOURCE_ICON}</svg>
             </span>
             <div className="fb-timeline-content">
-              <strong>{item.source_system.replaceAll("_", " ")}</strong>
-              <span className="fb-fine"> · {item.occurred_at ? new Date(item.occurred_at).toLocaleString() : "Undated"} · {item.identity_status}</span>
+              <strong>{SOURCE_NAMES[item.source_system] ?? item.source_system.replaceAll("_", " ")}</strong>
+              <span className="fb-fine"> · {item.occurred_at ? new Date(item.occurred_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) : "Undated"}{MONEY_SOURCES.has(item.source_system) ? "" : ` · ${item.identity_status}`}</span>
               <p><MaskedText text={item.protected_summary} /></p>
             </div>
           </div>
@@ -249,6 +261,54 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
   </div>;
 }
 
+function matches(row: CustomerSummary, filters: SavedViewFilters): boolean {
+  if (filters.priorities.length && !filters.priorities.includes(row.priority)) return false;
+  if (filters.min_overdue && Number(row.overdue_total) < Number(filters.min_overdue)) return false;
+  if (filters.min_outstanding && Number(row.outstanding_total) < Number(filters.min_outstanding)) return false;
+  if (filters.unconfirmed_only && row.profile_status === "confirmed" && row.identity_review_status === "clear") return false;
+  return true;
+}
+
+const PRIORITIES: Priority[] = ["urgent", "high", "monitoring", "healthy"];
+
+function CustomerFilters({ filters, onChange }: { filters: SavedViewFilters; onChange: (f: SavedViewFilters) => void }) {
+  const { tx } = useI18n();
+  return (
+    <div className="dd-board-filters" role="group" aria-label={tx("Filter customers")}>
+      {PRIORITIES.map((p) => {
+        const on = filters.priorities.includes(p);
+        return (
+          <button key={p} type="button" aria-pressed={on} className={on ? "is-on" : undefined}
+            onClick={() => onChange({ ...filters, priorities: on ? filters.priorities.filter((x) => x !== p) : [...filters.priorities, p] })}>
+            {tx(TIER_LABEL[p])}
+          </button>
+        );
+      })}
+      <label className="dd-filter-amount">
+        {tx("Overdue at least RM")}
+        <input inputMode="numeric" value={filters.min_overdue ?? ""} placeholder="0"
+          onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ""); onChange({ ...filters, min_overdue: v ? v : null }); }} />
+      </label>
+      <button type="button" aria-pressed={filters.unconfirmed_only} className={filters.unconfirmed_only ? "is-on" : undefined}
+        onClick={() => onChange({ ...filters, unconfirmed_only: !filters.unconfirmed_only })}>
+        {tx("Identity not confirmed")}
+      </button>
+    </div>
+  );
+}
+
+// Records the company holds itself: no identity match to show.
+const MONEY_SOURCES = new Set(["sales_ledger", "einvoice", "review_inbox"]);
+
+const SOURCE_NAMES: Record<string, string> = {
+  sales_ledger: "Sales ledger",
+  einvoice: "E-invoice",
+  review_inbox: "Review inbox",
+  email: "Email",
+  telegram: "Telegram",
+  outreach: "Outreach",
+};
+
 export default function Customers() {
   const { currentCustomerKey, showCustomerDetail } = useAppState();
   const initialId = currentCustomerKey?.startsWith("id:") ? Number(currentCustomerKey.slice(3)) : null;
@@ -256,6 +316,7 @@ export default function Customers() {
   const [selected, setSelected] = useState<CustomerDetail | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<SavedViewFilters>(NO_FILTERS);
   useEffect(() => {
     let active = true;
     fetchCustomers().then(async (customers) => {
@@ -271,7 +332,9 @@ export default function Customers() {
     setSelected(await fetchCustomer(id));
   };
   const query = search.trim().toLowerCase();
-  const filteredRows = query ? rows.filter((row) => displayCase(row.name).toLowerCase().includes(query)) : rows;
+  const searched = query ? rows.filter((row) => displayCase(row.name).toLowerCase().includes(query)) : rows;
+  const filteredRows = searched.filter((row) => matches(row, filters));
+  const showRisk = rows.some((row) => row.risk_note);
   return <div className="fb-root fb-shell">
     <Sidebar current="customers" /><AppTopBar current="customers" />
     <header className="fb-app-header"><h1>Customers</h1><p>Confirmed and provisional customer context ranked by deterministic attention signals.</p></header>
@@ -285,19 +348,21 @@ export default function Customers() {
           <input type="text" placeholder="Search customers…" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       </div>
+      <SavedViewsBar screen="customers" filters={filters} onApply={setFilters} />
+      <CustomerFilters filters={filters} onChange={setFilters} />
       <div className="fb-table-wrap">
         <table className="fb-table">
-          <thead><tr><th>Customer</th><th>Attention</th><th>Overdue</th><th>Identity</th><th>Outstanding</th><th>Sources</th><th aria-hidden="true"></th></tr></thead>
+          <thead><tr><th>Customer</th><th>Attention</th>{showRisk && <th>Risk note</th>}<th>Overdue</th><th>Identity</th><th>Outstanding</th><th>Sources</th><th aria-hidden="true"></th></tr></thead>
           <tbody>
             {filteredRows.length === 0 ? (
-              <tr><td colSpan={7}>
+              <tr><td colSpan={showRisk ? 8 : 7}>
                 <EmptyState
                   icon="◎"
-                  title={rows.length === 0 ? "No linked customers yet" : "No customers match your search"}
+                  title={rows.length === 0 ? "No linked customers yet" : "No customers match these filters"}
                   description={rows.length === 0
                     ? "Customers appear after structured buyer identities are linked to protected records."
-                    : "Try a different name, or clear the search to see all customers."}
-                  action={rows.length > 0 && query ? { label: "Clear search", onClick: () => setSearch("") } : undefined}
+                    : "Try a different name or fewer filters."}
+                  action={rows.length > 0 ? { label: "Clear search and filters", onClick: () => { setSearch(""); setFilters(NO_FILTERS); } } : undefined}
                 />
               </td></tr>
             ) : filteredRows.map((row) => (
@@ -314,6 +379,7 @@ export default function Customers() {
                   <span className={"fb-status-pill " + priorityPillClass(row.priority)}><span className="fb-status-dot"></span>{TIER_LABEL[row.priority] ?? row.priority}</span>
                   <span className="fb-fine"> {row.attention_score}/100</span>
                 </td>
+                {showRisk && <td className="dd-risk-cell">{row.risk_note ?? "—"}</td>}
                 <td className={"fb-num-left" + (Number(row.overdue_total) > 0 ? " is-attn" : "")}>{formatRm(Number(row.overdue_total))}</td>
                 <td>{row.profile_status}{row.identity_review_status === "review_required" ? " · review required" : ""}</td>
                 <td className="fb-num-left">{formatRm(Number(row.outstanding_total))}</td>

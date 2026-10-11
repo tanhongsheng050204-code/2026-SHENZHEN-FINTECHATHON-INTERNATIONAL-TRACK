@@ -20,6 +20,7 @@ const SCREEN_ROLES: Partial<Record<Screen, Role[]>> = {
   cashflow: FINANCE_READ,
   finance: FINANCE_READ,
   analysis: FINANCE_READ,
+  collections: FINANCE_READ,
   financing: FINANCE_READ,
   einvoice: FINANCE_READ,
   "einvoice-detail": FINANCE_READ,
@@ -42,6 +43,7 @@ export const PARENT_SCREEN: Partial<Record<Screen, Screen>> = {
   approvals: "inbox",
   finance: "cashflow",
   analysis: "cashflow",
+  collections: "cashflow",
   audit: "trust",
   "einvoice-detail": "einvoice",
 };

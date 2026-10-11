@@ -3,6 +3,7 @@ import { ActivityTimeline, Handoff } from "../components/Collaboration";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { SectionTabs } from "../components/SectionTabs";
 import { EmptyState } from "../components/EmptyState";
+import { ReviewComments } from "../components/ReviewComments";
 import { useAuth } from "../auth/AuthProvider";
 import { canOpen } from "../lib/access";
 import { useAppState } from "../lib/appState";
@@ -228,6 +229,8 @@ export default function ReviewInbox() {
                       <div className="fb-inbox-label">{tx("Activity")}</div>
                       <ActivityTimeline action={selected} />
                     </div>
+
+                    <ReviewComments key={selected.id} actionId={selected.id} />
 
                     {selected.evidence.length > 0 && (
                       <div>
