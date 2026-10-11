@@ -108,6 +108,7 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 | --- | --- |
 | Protected ingestion, tokenization, encrypted vault, role-aware disclosure, cited answers, customer intelligence, governed outreach, e-invoice readiness | **Built and tested.** This is the original FinBrain OS base. |
 | Cash-flow forecast, scenarios, alert rules, morning briefing | **Built and tested** |
+| Forecast check: each day's forecast is kept on the audit chain and scored against the bank balance once a statement covers the day | **Built and tested.** Accuracy is **not measured** yet: no real company's statements have covered a forecast day, and the synthetic demo company is deliberately never scored. |
 | Financing matching with reasons and next steps; credit scorecard; application packs; products modelled on public schemes | **Built and tested** |
 | Monthly profit and loss, ratios, "what changed", bank-line matching | **Built and tested** |
 | Ask DuitDuit assistant: four playbooks, voice input with transcript review, confirmation before every change | **Built and tested** |
@@ -979,7 +980,7 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **629 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
+- backend: **648 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
 - evaluation: **42 of 42**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
@@ -1098,9 +1099,9 @@ This is a proof of concept. The following boundaries are deliberate and document
   - With `VITE_AUTH_MODE=backend`, the browser never contacts `supabase.co`.
   - The deployed site is still on `vercel.app`, which is mostly blocked in mainland China, so a custom domain is needed. See [china-reachability.md](docs/deployment/china-reachability.md).
 - **Hosting**: the API runs on a team member's machine through a temporary tunnel. It is only up while that machine is on, and the address changes on restart. Moving it to Cloud Run is described in [cloud-run-and-vercel.md](docs/deployment/cloud-run-and-vercel.md).
-- **Shared demo company**: it is not reset automatically. Changes visitors make stay until an operator reverts them.
+- **Shared demo company**: it starts clean every day at 03:00 (Malaysia time) while one-click demo is on. Stopped agents restart, settings return to the seeded version, and decided inbox items wait for review again. Nothing is deleted: the reset is an event on the audit chain. Alert rules and shared links are not reset.
 - **Assurance**: automated scans and adversarial tests only. There is no independent penetration test and no certification.
-- **Chinese interface**: navigation and page titles are translated, but most screen content and the assistant's sentences are still English.
+- **Chinese interface**: Today, Cash & finance (forecast), Financing & Passport and the Review inbox read in Chinese, including the server's rule results, alerts and sample inbox items. The translations are machine-assisted and not yet checked by a fluent reader. Financial analysis, the other screens and the assistant's own sentences are still mostly English, and drafts to customers stay in the language they will be sent in.
 - **E-invoice business names**: `einvoice_records` stores supplier and buyer business names
   in clear. A sole proprietor's business name can be a person's name, so this is listed as a
   known risk to tokenize or to document.

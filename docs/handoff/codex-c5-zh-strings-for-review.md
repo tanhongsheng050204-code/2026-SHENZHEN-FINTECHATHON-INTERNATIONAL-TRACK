@@ -5,7 +5,26 @@ Generated from `frontend/src/lib/i18n.tsx` on 2026-10-11. There are 88 strings.
 - None has been checked by a fluent reader of Simplified Chinese yet.
 - Tick a row once it is correct, or write the correction beside it.
 
-## What the Chinese mode covers today (measured)
+## Update, 2026-10-11 evening: four screens now read in Chinese
+
+A second dictionary, `frontend/src/lib/i18nZh.ts`, translates screen text by its English, and the server's sentences with figures in them by their shape (rule results, alerts, cash items, sample inbox items). It covers Today, Cash & finance (forecast), Financing & Passport and the Review inbox. **Those strings need the same fluent review as the table below.**
+
+Measured on a local copy of the demo company in 中文, counting the page body only (sidebar and top bar excluded):
+
+| Screen | Chinese characters | English words |
+|---|---|---|
+| Today | 336 | 13 |
+| Cash forecast | 534 | 85 |
+| Financing & Passport | 1,486 | 37 |
+| Review inbox | 125 | 28 |
+
+What stays English on those screens: month abbreviations in dates ("11 Oct"), currency codes, brand names (Google Maps, Shopee), customer labels, and drafts to customers, which stay in the language they will be sent in.
+
+Still mostly English: Financial analysis, Ask DuitDuit's replies, Company settings, Trust & audit and the other screens.
+
+The recommendation below is now narrower: the four screens above can be shown in 中文 in the video once a fluent reader has checked them; keep the others in English.
+
+## Earlier measurement (before the update)
 
 The 中文 setting translates navigation, page titles, section tabs and some descriptions. Most content is still English:
 - table labels;

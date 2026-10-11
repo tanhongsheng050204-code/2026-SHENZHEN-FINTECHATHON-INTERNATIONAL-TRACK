@@ -70,6 +70,7 @@ Copy the four lines into the API's environment (step 5), then delete `demo-accou
 | Setting | Value | Why |
 |---|---|---|
 | `DEMO_SIGN_IN_ENABLED`, `DEMO_EMAIL`, `DEMO_PASSWORD`, `DEMO_TOTP_SECRET` | From `demo-account.env` | Turns on **Open the demo company** |
+| `DEMO_DAILY_RESET` | `true` (the default) | The demo company starts clean every day at 03:00, so each judge sees the same state |
 | `ALERT_CHECKS_ENABLED` | `true` | Alert rules are checked every 15 minutes |
 | `CUSTOMER_INTELLIGENCE_ENABLED` | `true` | The Customers page reads the sales ledger |
 | `CORS_ORIGINS` | `https://duitduit-umber.vercel.app`, the app's exact address with no trailing slash. Add a custom domain here too once there is one, separated by a comma. | Cookie sign-in only works from listed origins |
@@ -154,9 +155,13 @@ If any step fails, note the step number and the message on screen. Messages neve
 
 - Judging may continue for days after Oct 20. A home tunnel only works while that computer is on.
 - If you can, move the API to Cloud Run (see `cloud-run-and-vercel.md`).
-- The demo company is not reset automatically. To tidy it after many visitors:
-  - turn any stopped agents back on in **Agents & autonomy**;
-  - restore settings in **Company settings**, using version history.
+- The demo company resets itself every day at 03:00 (the API's `APPLICATION_TIMEZONE`) while one-click demo is on:
+  - stopped agents are switched back on;
+  - settings return to the seeded version, as a new version;
+  - decided inbox items wait for review again, and widened autonomy is withdrawn.
+- Nothing is deleted. Each reset is a `demo_reset` event on the company's audit chain, and earlier decisions stay on the chain.
+- To reset it now, for example just before judging starts: `python -m scripts.reset_demo_company` from `backend/`. It refuses any company except `DEMO_TENANT_ID`.
+- Alert rules and lender or auditor links are not reset. Links end on their own when they expire.
 - Run step 3 again if bank lines or bills look wrong.
 
 ## 9. Reachability from mainland China
