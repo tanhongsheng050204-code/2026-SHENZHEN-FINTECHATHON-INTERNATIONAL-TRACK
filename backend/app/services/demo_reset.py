@@ -27,7 +27,7 @@ from app.models import (
     TenantSettingsVersion,
     WorkflowAuditEntry,
 )
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalar, write_workflow_event
 
 RESET_HOUR = 3
 EVENT = "demo_reset"
@@ -40,25 +40,27 @@ class NotDemoTenant(ValueError):
 def reset_mark(db, tenant_id: str) -> int:
     """The chain id of the tenant's latest reset; 0 when it was never reset."""
     return (
-        db.scalar(
+        chain_scalar(
+            db,
             select(WorkflowAuditEntry.id)
             .where(
                 WorkflowAuditEntry.tenant_id == tenant_id,
                 WorkflowAuditEntry.event_type == EVENT,
             )
             .order_by(WorkflowAuditEntry.id.desc())
-            .limit(1)
+            .limit(1),
         )
         or 0
     )
 
 
 def _last_reset_day(db, tenant_id: str) -> str | None:
-    payload = db.scalar(
+    payload = chain_scalar(
+        db,
         select(WorkflowAuditEntry.event_payload)
         .where(WorkflowAuditEntry.tenant_id == tenant_id, WorkflowAuditEntry.event_type == EVENT)
         .order_by(WorkflowAuditEntry.id.desc())
-        .limit(1)
+        .limit(1),
     )
     return None if payload is None else payload.get("day")
 

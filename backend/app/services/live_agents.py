@@ -26,7 +26,7 @@ from app.contracts.positions import CashContribution, PositionWorkspace, SkillRe
 from app.models import WorkflowAuditEntry
 from app.schemas import UserRole
 from app.services import cashflow, cashflow_engine, financing_profile, review_inbox
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalars, write_workflow_event
 from app.stubs import agents as manifests
 from app.stubs import inbox as stub_inbox
 from app.stubs.financing import matches
@@ -71,14 +71,15 @@ def _grants(db, tenant_id: str) -> dict[str, list[ScopedAutonomy]]:
     from app.services.demo_reset import reset_mark
 
     grants: dict[str, dict[str, ScopedAutonomy]] = {}
-    for row in db.scalars(
+    for row in chain_scalars(
+        db,
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
             WorkflowAuditEntry.event_type == "autonomy_granted",
             WorkflowAuditEntry.id > reset_mark(db, tenant_id),
         )
-        .order_by(WorkflowAuditEntry.id)
+        .order_by(WorkflowAuditEntry.id),
     ):
         scoped = ScopedAutonomy.model_validate(row.event_payload["scoped"])
         grants.setdefault(row.resource_id, {})[scoped.action] = scoped

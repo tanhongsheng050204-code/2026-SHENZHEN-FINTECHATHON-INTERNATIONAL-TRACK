@@ -25,7 +25,7 @@ from app.models import TokenizedContent, WorkflowAuditEntry
 from app.schemas import CanonicalIngestionRecord, ProcessingStatus
 from app.security.guardrails import content_risk
 from app.services import job_scope
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalars, write_workflow_event
 
 EVENT = "review_comment_added"
 MENTION_WINDOW = dt.timedelta(days=14)
@@ -71,7 +71,7 @@ def _events(db, tenant_id: str, action_id: str | None = None):
     )
     if action_id is not None:
         query = query.where(WorkflowAuditEntry.resource_id == action_id)
-    return db.scalars(query.order_by(WorkflowAuditEntry.id)).all()
+    return chain_scalars(db, query.order_by(WorkflowAuditEntry.id))
 
 
 def _comment(row: WorkflowAuditEntry, principal: AuthPrincipal, text: str) -> ReviewComment:

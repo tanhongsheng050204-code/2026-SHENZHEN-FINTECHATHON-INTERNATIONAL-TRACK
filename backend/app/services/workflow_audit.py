@@ -19,9 +19,7 @@ def _payload(
     created_at: datetime,
 ) -> dict:
     timestamp = (
-        created_at.replace(tzinfo=UTC)
-        if created_at.tzinfo is None
-        else created_at.astimezone(UTC)
+        created_at.replace(tzinfo=UTC) if created_at.tzinfo is None else created_at.astimezone(UTC)
     )
     return {
         "actor_ref": actor_ref,
@@ -54,6 +52,29 @@ def write_workflow_event(
     genuinely system-level events (e.g. vault key rotation) that aren't owned by any
     one tenant — everything tenant-owned (recommendations, einvoice, etc.) must pass
     its real tenant_id so its chain is verifiable independently of other tenants'."""
+    if _unreadable_by_writer(db, actor_ref):
+        # Row-level security returns an inserted row to its writer, and only the owner,
+        # Compliance and the entry's own actor may read it. Entries written for an
+        # agent, or under a person's user id, by anyone else are appended on a worker
+        # session for the same tenant and committed there.
+        # Commit first: this session may hold the chain's lock from an earlier
+        # entry, which the worker session would otherwise wait for forever.
+        db.commit()
+        trusted = _trusted_session(db)
+        with trusted:
+            row = write_workflow_event(
+                trusted,
+                event_type=event_type,
+                actor_role=actor_role,
+                actor_ref=actor_ref,
+                resource_type=resource_type,
+                resource_id=resource_id,
+                event_payload=event_payload,
+                tenant_id=tenant_id,
+            )
+            trusted.commit()
+            trusted.expunge(row)
+        return row
     lock_key = f"finbrain:workflow-audit:{tenant_id or 'system'}"
     if db.bind is not None and db.bind.dialect.name == "postgresql":
         db.execute(text("select pg_advisory_xact_lock(hashtext(:key))"), {"key": lock_key})
@@ -118,3 +139,58 @@ def verify_workflow_chain(db: Session, tenant_id: str | None = None) -> bool:
             return False
         previous_hash = row.event_hash
     return True
+
+
+# ── Reading a tenant's chain for the people who work in it ─────────────────
+#
+# Row-level security lets the application role read only the chain entries a
+# person wrote, unless they are the owner or Compliance. The review inbox,
+# comments, autonomy grants, automations, saved views and the demo reset are all
+# replayed from entries other people (or agents) wrote, so those reads run on a
+# separate session in the worker role, scoped to the same tenant. Every caller
+# filters by tenant and decides in code what this person may see, as the inbox
+# always has. Writes stay on the person's own session.
+
+
+def _unreadable_by_writer(db: Session, actor_ref: str) -> bool:
+    context = db.info.get("finbrain_rls_context") or {}
+    return (
+        db.bind is not None
+        and db.bind.dialect.name == "postgresql"
+        and context.get("database_role") == "finbrain_app"
+        and context.get("user_role") not in ("owner_director", "compliance")
+        and actor_ref != context.get("actor_ref")
+    )
+
+
+def _trusted_session(db: Session) -> Session | None:
+    context = db.info.get("finbrain_rls_context") or {}
+    if (
+        db.bind is None
+        or db.bind.dialect.name != "postgresql"
+        or context.get("database_role") != "finbrain_app"
+    ):
+        return None
+    from app.db import set_worker_context
+
+    # The same database as the person's session; one read-only transaction.
+    session = Session(bind=db.get_bind(), expire_on_commit=False)
+    set_worker_context(session, actor_ref="chain-reader", tenant_id=context.get("tenant_id"))
+    return session
+
+
+def chain_scalars(db: Session, statement) -> list:
+    """db.scalars(statement).all() for chain reads, visible to every role."""
+    trusted = _trusted_session(db)
+    if trusted is None:
+        return list(db.scalars(statement).all())
+    with trusted:
+        rows = list(trusted.scalars(statement).all())
+        trusted.expunge_all()
+        return rows
+
+
+def chain_scalar(db: Session, statement):
+    """db.scalar(statement) for chain reads, visible to every role."""
+    rows = chain_scalars(db, statement.limit(1) if hasattr(statement, "limit") else statement)
+    return rows[0] if rows else None

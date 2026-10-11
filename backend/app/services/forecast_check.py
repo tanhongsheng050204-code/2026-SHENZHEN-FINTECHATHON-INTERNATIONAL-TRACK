@@ -20,7 +20,7 @@ from sqlalchemy import func, select
 from app.contracts.cashflow import ForecastCheckHorizon, ForecastCheckResponse, ForecastResponse
 from app.contracts.common import DataMode
 from app.models import BankTransaction, WorkflowAuditEntry
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalar, chain_scalars, write_workflow_event
 
 TARGET_DAYS = (7, 14, 30)
 EVENT = "forecast_snapshot"
@@ -28,11 +28,12 @@ _CENT = Decimal("0.01")
 
 
 def _snapshots(db, tenant_id: str) -> list[WorkflowAuditEntry]:
-    return db.scalars(
+    return chain_scalars(
+        db,
         select(WorkflowAuditEntry)
         .where(WorkflowAuditEntry.tenant_id == tenant_id, WorkflowAuditEntry.event_type == EVENT)
-        .order_by(WorkflowAuditEntry.id)
-    ).all()
+        .order_by(WorkflowAuditEntry.id),
+    )
 
 
 def record(db, tenant_id: str, forecast: ForecastResponse) -> None:
@@ -40,14 +41,15 @@ def record(db, tenant_id: str, forecast: ForecastResponse) -> None:
     if forecast.data_mode != DataMode.LIVE:
         return
     day = forecast.as_of.isoformat()
-    exists = db.scalar(
+    exists = chain_scalar(
+        db,
         select(WorkflowAuditEntry.id)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
             WorkflowAuditEntry.event_type == EVENT,
             WorkflowAuditEntry.resource_id == day,
         )
-        .limit(1)
+        .limit(1),
     )
     if exists is not None:
         return

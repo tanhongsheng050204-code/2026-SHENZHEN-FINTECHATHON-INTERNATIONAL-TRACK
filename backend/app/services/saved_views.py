@@ -16,7 +16,7 @@ from app.auth.principal import AuthPrincipal
 from app.contracts.collaboration import SavedView, SavedViewRequest
 from app.models import WorkflowAuditEntry
 from app.schemas import UserRole
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalars, write_workflow_event
 
 SAVED, REMOVED = "saved_view_saved", "saved_view_removed"
 MAX_VIEWS_PER_PERSON = 20
@@ -31,13 +31,14 @@ class ViewError(ValueError):
 
 def _current(db, tenant_id: str) -> dict[str, tuple[WorkflowAuditEntry, dt.datetime]]:
     views: dict[str, tuple[WorkflowAuditEntry, dt.datetime] | None] = {}
-    for row in db.scalars(
+    for row in chain_scalars(
+        db,
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
             WorkflowAuditEntry.event_type.in_((SAVED, REMOVED)),
         )
-        .order_by(WorkflowAuditEntry.id)
+        .order_by(WorkflowAuditEntry.id),
     ):
         if row.event_type == REMOVED:
             views[row.resource_id] = None

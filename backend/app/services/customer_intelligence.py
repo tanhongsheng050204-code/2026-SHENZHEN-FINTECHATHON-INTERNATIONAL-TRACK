@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -35,7 +35,8 @@ def _financials(db: Session, tenant_id: str, customer_id: int) -> tuple[Decimal,
             EInvoiceRecord.buyer_customer_id == customer_id,
         )
     ).all()
-    now = datetime.now(UTC).date()
+    # The same "today" as the cash forecast and the collections board.
+    now = date.today()
     outstanding = [row for row in rows if row.status == "validated" and row.paid_at is None]
     overdue = [row for row in outstanding if row.due_date and row.due_date < now]
     # Invoiced lines from the company's own sales ledger are open receivables too;
@@ -75,7 +76,7 @@ def customer_summary(db: Session, tenant_id: str, customer: Customer) -> Custome
         else None
     )
     note, sources = risk_note(
-        db, tenant_id, customer.id, snapshot.id if snapshot else None, datetime.now(UTC).date()
+        db, tenant_id, customer.id, snapshot.id if snapshot else None, date.today()
     )
     return CustomerSummaryResponse(
         id=customer.id,

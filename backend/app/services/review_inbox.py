@@ -33,7 +33,7 @@ from app.contracts.common import AutonomyLevel, EvidenceRef, JobFunction
 from app.models import TenantSettingsRecord, WorkflowAuditEntry
 from app.schemas import UserRole
 from app.services import job_scope
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalar, chain_scalars, write_workflow_event
 
 PROMOTION_MIN_SAMPLE = 30
 PROMOTION_MIN_UNEDITED_RATE = 0.9
@@ -53,20 +53,22 @@ class _Item:
 
 
 def _events(db, tenant_id: str):
-    return db.scalars(
+    return chain_scalars(
+        db,
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
             WorkflowAuditEntry.resource_type == "agent_action",
         )
-        .order_by(WorkflowAuditEntry.id)
-    ).all()
+        .order_by(WorkflowAuditEntry.id),
+    )
 
 
 def has_item(db, tenant_id: str, action_id: str) -> bool:
     return (
         db is not None
-        and db.scalar(
+        and chain_scalar(
+            db,
             select(WorkflowAuditEntry.id)
             .where(
                 WorkflowAuditEntry.tenant_id == tenant_id,
@@ -74,7 +76,7 @@ def has_item(db, tenant_id: str, action_id: str) -> bool:
                 WorkflowAuditEntry.resource_type == "agent_action",
                 WorkflowAuditEntry.resource_id == action_id,
             )
-            .limit(1)
+            .limit(1),
         )
         is not None
     )
@@ -229,12 +231,14 @@ def inbox(
 
 
 def _lock(db, tenant_id: str) -> None:
-    """Serialise check-then-write with the chain's own lock (PostgreSQL), so two
-    decisions on one item cannot both pass the checks before either is written."""
+    """Serialise check-then-write (PostgreSQL), so two decisions on one item cannot
+    both pass the checks before either is written. Its own key, not the chain's: a
+    decision may be appended on a separate worker session, which takes the chain's
+    lock itself and commits before this transaction ends."""
     if db.bind is not None and db.bind.dialect.name == "postgresql":
         db.execute(
             text("select pg_advisory_xact_lock(hashtext(:key))"),
-            {"key": f"finbrain:workflow-audit:{tenant_id}"},
+            {"key": f"finbrain:review-inbox:{tenant_id}"},
         )
 
 
@@ -303,7 +307,6 @@ def metrics(db, tenant_id: str) -> dict[str, AgentMetrics]:
             approved_edited=edited,
             rejected=rejected,
             unedited_approval_rate=rate,
-            promotion_recommended=decided >= minimum_sample
-            and (exact_rate or 0) >= minimum_rate,
+            promotion_recommended=decided >= minimum_sample and (exact_rate or 0) >= minimum_rate,
         )
     return result

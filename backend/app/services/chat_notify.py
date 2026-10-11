@@ -23,7 +23,7 @@ from app.config import get_settings
 from app.contracts.collaboration import ChatChannelStatus
 from app.models import WorkflowAuditEntry
 from app.services import review_inbox
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalar, write_workflow_event
 
 EVENT = "chat_notified"
 CHANNELS = ("slack", "whatsapp")
@@ -148,7 +148,8 @@ def notify(db, tenant_id: str, channel: str, counts: dict[str, int]) -> str:
 
 
 def _last_counts(db, tenant_id: str, channel: str) -> dict | None:
-    payload = db.scalar(
+    payload = chain_scalar(
+        db,
         select(WorkflowAuditEntry.event_payload)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
@@ -156,7 +157,7 @@ def _last_counts(db, tenant_id: str, channel: str) -> dict | None:
             WorkflowAuditEntry.resource_id == channel,
         )
         .order_by(WorkflowAuditEntry.id.desc())
-        .limit(1)
+        .limit(1),
     )
     return None if payload is None else payload.get("waiting")
 

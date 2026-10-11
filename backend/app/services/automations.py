@@ -29,7 +29,7 @@ from app.contracts.collaboration import Automation, AutomationRequest
 from app.contracts.common import AutonomyLevel, EvidenceRef, JobFunction
 from app.models import WorkflowAuditEntry
 from app.services import cashflow, cashflow_engine, collections, review_inbox
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalars, write_workflow_event
 
 SAVED, REMOVED = "automation_saved", "automation_removed"
 HORIZON_DAYS = 90
@@ -48,13 +48,14 @@ def _ringgit(amount) -> str:
 
 def automations(db, tenant_id: str) -> list[Automation]:
     current: dict[str, Automation | None] = {}
-    for row in db.scalars(
+    for row in chain_scalars(
+        db,
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
             WorkflowAuditEntry.event_type.in_((SAVED, REMOVED)),
         )
-        .order_by(WorkflowAuditEntry.id)
+        .order_by(WorkflowAuditEntry.id),
     ):
         key = row.resource_id
         if row.event_type == REMOVED:
@@ -196,11 +197,12 @@ def run(db, tenant_id: str, as_of: dt.date) -> list[str]:
 
 def run_due(db, now_local: dt.datetime) -> int:
     """Every tenant with an automation; called with the 15-minute alert checks."""
-    tenants = db.scalars(
+    tenants = chain_scalars(
+        db,
         select(WorkflowAuditEntry.tenant_id)
         .where(WorkflowAuditEntry.event_type == SAVED)
-        .distinct()
-    ).all()
+        .distinct(),
+    )
     total = 0
     for tenant_id in tenants:
         if tenant_id is not None:
