@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { zhFor } from "./i18nZh";
 
 export type Lang = "en" | "ms" | "zh";
 
@@ -187,6 +188,9 @@ interface I18nContextValue {
   lang: Lang;
   setLang: (lang: Lang) => void;
   t: (key: string) => string;
+  /** Screen text keyed by its English: Chinese when there is a translation, else the English.
+   *  `{name}` placeholders are filled from `vars` after translating. */
+  tx: (english: string, vars?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -217,6 +221,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       lang,
       setLang,
       t: (key: string) => FB_I18N[key]?.[lang] ?? FB_I18N[key]?.en ?? key,
+      tx: (english: string, vars?: Record<string, string | number>) => {
+        const text = lang === "zh" ? zhFor(english) ?? english : english;
+        return vars ? text.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match)) : text;
+      },
     }),
     [lang],
   );

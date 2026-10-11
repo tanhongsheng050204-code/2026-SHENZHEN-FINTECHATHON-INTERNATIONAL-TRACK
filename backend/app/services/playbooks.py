@@ -53,11 +53,15 @@ _ROLES = {
     "pay_everyone": _READ,
     "month_end": _READ,
 }
+# English phrases, then the Chinese the Today suggestions use (no word boundaries in Chinese).
 _PHRASES = {
-    "bank_meeting": r"\b(prepare (me |us )?for (the |a )?bank meeting|bank pack|loan meeting)\b",
-    "chase_late_payers": r"\b(chase (the )?late payers|chase (the )?overdue|who owes us)\b",
-    "pay_everyone": r"\b(can (i|we) pay everyone this month|can (i|we) make payroll)\b",
-    "month_end": r"\b(close the month|month[ -]end( checklist)?)\b",
+    "bank_meeting": r"\b(prepare (me |us )?for (the |a )?bank meeting|bank pack|loan meeting)\b"
+    r"|银行会谈|银行会议|贷款会谈",
+    "chase_late_payers": r"\b(chase (the )?late payers|chase (the )?overdue|who owes us)\b"
+    r"|催收|催款|谁欠我们",
+    "pay_everyone": r"\b(can (i|we) pay everyone this month|can (i|we) make payroll)\b"
+    r"|付清所有款项|发得出工资|能付工资",
+    "month_end": r"\b(close the month|month[ -]end( checklist)?)\b|月结|月末结账",
 }
 _ZERO = Decimal("0.00")
 _BEFORE_GAP = "invoices due before the cash gap"

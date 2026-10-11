@@ -45,10 +45,11 @@ function isToday(iso: string): boolean {
 }
 
 function RestrictedNote({ label }: { label: string }) {
+  const { tx } = useI18n();
   return (
     <span className="fb-disabled-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
-      {label}
+      {tx(label)}
     </span>
   );
 }
@@ -63,16 +64,17 @@ function CardSkeleton({ twoLines = true }: { twoLines?: boolean }) {
 }
 
 function ErrorWithRetry({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { tx } = useI18n();
   return (
     <div className="fb-card-error">
-      <span className="fb-fine">{message}</span>
+      <span className="fb-fine">{tx(message)}</span>
       <span
         className="fb-card-retry"
         role="button"
         tabIndex={0}
         onClick={(event) => { event.stopPropagation(); onRetry(); }}
       >
-        Retry
+        {tx("Retry")}
       </span>
     </div>
   );
@@ -88,6 +90,7 @@ function CardShell({
   onClick: () => void;
   children: React.ReactNode;
 }) {
+  const { tx } = useI18n();
   return (
     <button
       className={"fb-home-card is-" + tone}
@@ -101,8 +104,8 @@ function CardShell({
         <span className="fb-home-card-arrow" aria-hidden="true">→</span>
       </div>
       <div>
-        <div className="fb-home-card-label">{label}</div>
-        <div className="fb-home-card-desc">{desc}</div>
+        <div className="fb-home-card-label">{tx(label)}</div>
+        <div className="fb-home-card-desc">{tx(desc)}</div>
       </div>
       {children}
     </button>
@@ -114,6 +117,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 function EinvoiceCard() {
   const { show } = useAppState();
+  const { tx } = useI18n();
   const [data, setData] = useState<EinvoiceReadinessResponse | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
@@ -147,7 +151,7 @@ function EinvoiceCard() {
       {state === "loading" && <CardSkeleton />}
       {state === "error" && <ErrorWithRetry message="Couldn't load e-Invoicing data." onRetry={retry} />}
       {state === "loaded" && data && data.total_records === 0 && (
-        <div className="fb-home-card-sub">No invoices yet — readiness will show once you have some.</div>
+        <div className="fb-home-card-sub">{tx("No invoices yet — readiness will show once you have some.")}</div>
       )}
       {state === "loaded" && data && data.total_records > 0 && (
         <div className="fb-home-ring-row">
@@ -164,9 +168,9 @@ function EinvoiceCard() {
             <span className="fb-home-ring-value">{pct}<small>%</small></span>
           </div>
           <div className="fb-home-ring-legend">
-            <span style={{ color: "var(--chart-attn)" }}>{data.critical.count} critical</span>
-            <span>{data.warning.count} warning</span>
-            <span style={{ color: "var(--chart-good)" }}>{data.passing_count} passing</span>
+            <span style={{ color: "var(--chart-attn)" }}>{tx("{n} critical", { n: data.critical.count })}</span>
+            <span>{tx("{n} warning", { n: data.warning.count })}</span>
+            <span style={{ color: "var(--chart-good)" }}>{tx("{n} passing", { n: data.passing_count })}</span>
           </div>
         </div>
       )}
@@ -176,6 +180,7 @@ function EinvoiceCard() {
 
 function AuditCard() {
   const { show, askRole } = useAppState();
+  const { tx } = useI18n();
   const canView = PERSONAS[askRole].capabilities.viewAudit;
   const [state, setState] = useState<LoadState>("loading");
   const [summary, setSummary] = useState<{ total: number; chainValid: boolean; latest: string | null } | null>(null);
@@ -218,10 +223,10 @@ function AuditCard() {
       {canView && state === "error" && <ErrorWithRetry message="Couldn't load audit data." onRetry={retry} />}
       {canView && state === "loaded" && summary && (
         <>
-          <div className="fb-home-card-headline"><span className="num">{summary.total}</span><span className="unit">events logged</span></div>
+          <div className="fb-home-card-headline"><span className="num">{summary.total}</span><span className="unit">{tx("events logged")}</span></div>
           <div className="fb-home-card-foot">
             <span className={"fb-home-dot " + (summary.chainValid ? "good" : "attn")}></span>
-            {summary.chainValid ? "Hash chain healthy" : "Chain verification issue"}
+            {summary.chainValid ? tx("Hash chain healthy") : tx("Chain verification issue")}
             {summary.latest && <> · {relativeTime(summary.latest)}</>}
           </div>
         </>
@@ -232,6 +237,7 @@ function AuditCard() {
 
 function ApprovalsCard() {
   const { show, askRole } = useAppState();
+  const { tx } = useI18n();
   const capabilities = PERSONAS[askRole].capabilities;
   const [state, setState] = useState<LoadState>("loading");
   const [recCount, setRecCount] = useState<number | null>(null);
@@ -283,8 +289,8 @@ function ApprovalsCard() {
       {visible && state === "error" && <ErrorWithRetry message="Couldn't load approvals data." onRetry={retry} />}
       {visible && state === "loaded" && (
         <>
-          <div className="fb-home-card-headline"><span className="num">{total}</span><span className="unit">to review</span></div>
-          <div className="fb-home-card-sub">{total === 0 ? "None waiting" : parts.join(" · ")}</div>
+          <div className="fb-home-card-headline"><span className="num">{total}</span><span className="unit">{tx("to review")}</span></div>
+          <div className="fb-home-card-sub">{total === 0 ? tx("None waiting") : parts.join(" · ")}</div>
         </>
       )}
     </CardShell>
@@ -293,6 +299,7 @@ function ApprovalsCard() {
 
 function CaptureCard() {
   const { show } = useAppState();
+  const { tx } = useI18n();
   const [state, setState] = useState<LoadState>("loading");
   const [emailConfigured, setEmailConfigured] = useState(false);
   const [telegramConfigured, setTelegramConfigured] = useState(false);
@@ -340,15 +347,15 @@ function CaptureCard() {
         <>
           <div className="fb-home-card-headline">
             <span className="num">{totalCount}</span>
-            <span className="unit">protected record{totalCount === 1 ? "" : "s"}</span>
+            <span className="unit">{tx(totalCount === 1 ? "protected record" : "protected records")}</span>
           </div>
           <div className="fb-home-card-foot">
             <span className={"fb-home-delta-badge" + (todayCount > 0 ? " is-active" : "")}>
-              {todayCount > 0 ? `+${todayCount} today` : "No new captures today"}
+              {todayCount > 0 ? tx("+{n} today", { n: todayCount }) : tx("No new captures today")}
             </span>
           </div>
           <div className="fb-home-card-sub">
-            {connected.length ? connected.join(" + ") + " connected" : "Nothing connected yet"}
+            {connected.length ? tx("{sources} connected", { sources: connected.join(" + ") }) : tx("Nothing connected yet")}
           </div>
         </>
       )}
@@ -376,6 +383,7 @@ function MiniSparkline({ points }: { points: { total_amount: string }[] }) {
 
 function FinanceCard() {
   const { show } = useAppState();
+  const { tx } = useI18n();
   const [data, setData] = useState<FinanceSummaryResponse | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
@@ -409,17 +417,17 @@ function FinanceCard() {
       {state === "loaded" && data && (
         <>
           <div className="fb-home-card-headline"><span className="num">{formatRm(Number(data.outstanding_ar) || 0)}</span></div>
-          <div className="fb-home-card-sub">Outstanding receivables</div>
+          <div className="fb-home-card-sub">{tx("Outstanding receivables")}</div>
           {data.revenue_trend.length > 1 && (
             <div className="fb-home-sparkline-row">
-              <span className="fb-home-sparkline-label">Revenue trend</span>
+              <span className="fb-home-sparkline-label">{tx("Revenue trend")}</span>
               <MiniSparkline points={data.revenue_trend} />
             </div>
           )}
           <div className="fb-home-card-foot">
             {data.revenue_change_pct != null && (
               <span className={"fb-home-delta-badge" + (data.revenue_change_pct >= 0 ? " is-active" : "")}>
-                {data.revenue_change_pct >= 0 ? "+" : ""}{data.revenue_change_pct.toFixed(1)}% revenue vs. last period
+                {tx("{pct}% revenue vs. last period", { pct: (data.revenue_change_pct >= 0 ? "+" : "") + data.revenue_change_pct.toFixed(1) })}
               </span>
             )}
           </div>
@@ -437,10 +445,11 @@ function AttentionSection({
   onRetry: () => void;
 }) {
   const { showCustomerDetail } = useAppState();
+  const { tx } = useI18n();
 
   return (
     <section style={{ marginBottom: "1.6rem" }}>
-      <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>Customers to watch</div>
+      <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>{tx("Customers to watch")}</div>
       {state === "loading" && (
         <div className="fb-briefing-list" aria-hidden="true">
           {[0, 1, 2].map((i) => (
@@ -458,7 +467,7 @@ function AttentionSection({
         </div>
       )}
       {state === "loaded" && needsAttention.length === 0 && (
-        <p className="th-quiet">No customer has a warning sign today.</p>
+        <p className="th-quiet">{tx("No customer has a warning sign today.")}</p>
       )}
       {state === "loaded" && needsAttention.length > 0 && (
         <div className="fb-briefing-list">
@@ -466,25 +475,25 @@ function AttentionSection({
             const overdueAmt = Number(c.overdue_total) || 0;
             const outstandingAmt = Number(c.outstanding_total) || 0;
             const reason = overdueAmt > 0
-              ? `${formatRm(overdueAmt)} overdue`
+              ? tx("{amount} overdue", { amount: formatRm(overdueAmt) })
               : outstandingAmt > 0
-                ? `${formatRm(outstandingAmt)} outstanding`
-                : "flagged by cross-source signals";
+                ? tx("{amount} outstanding", { amount: formatRm(outstandingAmt) })
+                : tx("flagged by cross-source signals");
             const unresolved = c.profile_status !== "confirmed" || c.identity_review_status !== "clear";
             return (
               <button key={c.id} className="fb-briefing-row" type="button" onClick={() => showCustomerDetail(`id:${c.id}`)}>
-                <span className={"fb-briefing-tier is-" + c.priority}>{TIER_LABEL[c.priority]}</span>
+                <span className={"fb-briefing-tier is-" + c.priority}>{tx(TIER_LABEL[c.priority])}</span>
                 {isPlaceholderName(c.name) ? (
                   <span className="fb-briefing-name">
                     <span className="fb-mask-badge">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
-                      Protected customer
+                      {tx("Protected customer")}
                     </span>
                   </span>
                 ) : (
                   <span className="fb-briefing-name">
                     <span className="fb-briefing-name-text">{displayCase(c.name)}</span>
-                    {unresolved && <span className="fb-mask-badge" title="Identity not yet confirmed by an owner">Unconfirmed</span>}
+                    {unresolved && <span className="fb-mask-badge" title="Identity not yet confirmed by an owner">{tx("Unconfirmed")}</span>}
                   </span>
                 )}
                 <span className="fb-briefing-foot">
@@ -520,7 +529,7 @@ function greetingLine(t: (key: "home.greeting.morning" | "home.greeting.afternoo
 }
 
 export default function Home() {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const { show, sampleBanner, dismissSampleBanner, displayName, askAbout, approvalsCount } = useAppState();
   const { identity } = useAuth();
   const emailFirstName = identity?.email ? identity.email.split("@")[0] : null;
@@ -556,11 +565,11 @@ export default function Home() {
 
   const askSuggestions: string[] = [];
   if (topAttention) {
-    const topAttentionLabel = isPlaceholderName(topAttention.name) ? "my most urgent customer" : displayCase(topAttention.name);
-    askSuggestions.push(`What's overdue for ${topAttentionLabel}?`);
+    const topAttentionLabel = isPlaceholderName(topAttention.name) ? tx("my most urgent customer") : displayCase(topAttention.name);
+    askSuggestions.push(tx("What's overdue for {name}?", { name: topAttentionLabel }));
   }
-  if (approvalsCount > 0) askSuggestions.push("What's waiting for my approval?");
-  askSuggestions.push("What should I prioritize this week?");
+  if (approvalsCount > 0) askSuggestions.push(tx("What's waiting for my approval?"));
+  askSuggestions.push(tx("What should I prioritize this week?"));
 
   return (
     <div className="fb-root fb-shell">
@@ -569,8 +578,8 @@ export default function Home() {
 
       {sampleBanner && (
         <div className="fb-callout fb-sample-banner">
-          <span>You're exploring DuitDuit with sample data from a demo workspace — connect your own sources anytime.</span>
-          <button className="fb-icon-btn" type="button" onClick={dismissSampleBanner} aria-label="Dismiss">✕</button>
+          <span>{tx("You're exploring DuitDuit with sample data from a demo workspace — connect your own sources anytime.")}</span>
+          <button className="fb-icon-btn" type="button" onClick={dismissSampleBanner} aria-label={tx("Dismiss")}>✕</button>
         </div>
       )}
 
@@ -579,7 +588,7 @@ export default function Home() {
 
         <AttentionSection needsAttention={needsAttention} state={customersState} onRetry={retryCustomers} />
 
-        <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>At a glance</div>
+        <div className="fb-eyebrow" style={{ marginBottom: ".6rem" }}>{tx("At a glance")}</div>
         <div className="fb-home-grid">
           <EinvoiceCard />
           <AuditCard />
@@ -590,8 +599,8 @@ export default function Home() {
 
         <div className="fb-home-ask-cta">
           <div className="fb-home-ask-cta-copy">
-            <h2>Have a question about any of this?</h2>
-            <p>Ask DuitDuit in plain language — it cites every source and never shows a persona more than their role allows.</p>
+            <h2>{tx("Have a question about any of this?")}</h2>
+            <p>{tx("Ask DuitDuit in plain language — it cites every source and never shows a persona more than their role allows.")}</p>
             <div className="fb-home-ask-chips">
               {askSuggestions.map((q) => (
                 <button key={q} className="fb-home-ask-chip" type="button" onClick={() => askAbout(q)}>{q}</button>
@@ -599,7 +608,7 @@ export default function Home() {
             </div>
           </div>
           <button className="fb-btn fb-btn-solid" type="button" onClick={() => show("agents")}>
-            Start a conversation
+            {tx("Start a conversation")}
           </button>
         </div>
       </div>

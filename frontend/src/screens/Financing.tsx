@@ -46,6 +46,7 @@ function errorText(error: unknown): string {
 
 function Matches({ canPrepare }: { canPrepare: boolean }) {
   const { show } = useAppState();
+  const { tx } = useI18n();
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction>("MY");
   const [data, setData] = useState<FinancingMatchesResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,70 +76,70 @@ function Matches({ canPrepare }: { canPrepare: boolean }) {
   return (
     <section className="fb-cash-card">
       <div className="fb-cash-card-head">
-        <h2>Financing matches</h2>
-        <div className="fb-inbox-tabs" role="group" aria-label="Jurisdiction">
+        <h2>{tx("Financing matches")}</h2>
+        <div className="fb-inbox-tabs" role="group" aria-label={tx("Jurisdiction")}>
           {(["MY", "CN"] as Jurisdiction[]).map((j) => (
             <button key={j} type="button" aria-pressed={jurisdiction === j} className={jurisdiction === j ? "is-current" : undefined} onClick={() => setJurisdiction(j)}>
-              {j === "MY" ? "Malaysia" : "China"}
+              {tx(j === "MY" ? "Malaysia" : "China")}
             </button>
           ))}
         </div>
       </div>
-      {data?.shortfall_gap && <p className="fb-fin-gap">Gap to cover: <strong>{ringgit(data.shortfall_gap)}</strong></p>}
+      {data?.shortfall_gap && <p className="fb-fin-gap">{tx("Gap to cover:")} <strong>{ringgit(data.shortfall_gap)}</strong></p>}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}
-      {!data && !error && <p className="fb-inbox-muted">Loading matches…</p>}
+      {!data && !error && <p className="fb-inbox-muted">{tx("Loading matches…")}</p>}
       {data && (
         <>
           <div className="fb-fin-matches">
             {data.matches.map((m, i) => (
               <article key={m.product.id} className={"fb-fin-match" + (i === 0 && m.eligible ? " is-best" : "")}>
                 <div className="fb-fin-match-head">
-                  {i === 0 && m.eligible && <span className="fb-inbox-pill is-can">Best fit</span>}
-                  <span className={"fb-inbox-pill " + (m.eligible ? "is-approved" : m.steps_away === 1 && m.next_screen ? "is-can" : "is-rejected")}>{m.eligible ? "Eligible" : m.steps_away === 1 && m.next_screen ? "One step away" : "Not eligible yet"}</span>
-                  <span className="fb-fin-score" aria-label={`Fit score ${m.fit_score} out of 100`}>{m.fit_score}<small>/100</small></span>
+                  {i === 0 && m.eligible && <span className="fb-inbox-pill is-can">{tx("Best fit")}</span>}
+                  <span className={"fb-inbox-pill " + (m.eligible ? "is-approved" : m.steps_away === 1 && m.next_screen ? "is-can" : "is-rejected")}>{tx(m.eligible ? "Eligible" : m.steps_away === 1 && m.next_screen ? "One step away" : "Not eligible yet")}</span>
+                  <span className="fb-fin-score" aria-label={tx("Fit score {n} out of 100", { n: m.fit_score })}>{m.fit_score}<small>/100</small></span>
                 </div>
-                <h3>{m.product.name}</h3>
-                <p className="fb-inbox-muted">{m.product.illustrative_terms}</p>
+                <h3>{tx(m.product.name)}</h3>
+                <p className="fb-inbox-muted">{tx(m.product.illustrative_terms)}</p>
                 {m.product.source_url && (
                   <p className="fb-fine">
-                    <a href={m.product.source_url} target="_blank" rel="noopener noreferrer">Read the public source</a>
-                    {m.product.last_verified && <>, checked {new Date(m.product.last_verified).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}</>}
-                    . Synthetic demo product; no partnership with the scheme's owner.
+                    <a href={m.product.source_url} target="_blank" rel="noopener noreferrer">{tx("Read the public source")}</a>
+                    {m.product.last_verified && tx(", checked {date}", { date: new Date(m.product.last_verified).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" }) })}
+                    {tx(". Synthetic demo product; no partnership with the scheme's owner.")}
                   </p>
                 )}
                 <ul className="fb-fin-rules">
                   {m.rules.map((r) => (
                     <li key={r.rule} className={r.passed ? "is-pass" : "is-fail"}>
                       <span aria-hidden="true">{r.passed ? "✓" : "✗"}</span>
-                      <span>{r.detail}{r.evidence.length > 0 && <span className="fb-cash-fx"> · {r.evidence.map((e) => e.label).join(", ")}</span>}</span>
+                      <span>{tx(r.detail)}{r.evidence.length > 0 && <span className="fb-cash-fx"> · {r.evidence.map((e) => tx(e.label)).join(", ")}</span>}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="fb-fin-explain">{m.explanation}</p>
+                <p className="fb-fin-explain">{tx(m.explanation)}</p>
                 {m.next_step && (
                   <p className="fb-fin-next">
-                    <strong>Next step:</strong> {m.next_step}{" "}
+                    <strong>{tx("Next step:")}</strong> {tx(m.next_step)}{" "}
                     {m.next_screen && (SCREENS as readonly string[]).includes(m.next_screen) && (
-                      <button type="button" className="fb-cash-more" onClick={() => show(m.next_screen as Screen)}>Go →</button>
+                      <button type="button" className="fb-cash-more" onClick={() => show(m.next_screen as Screen)}>{tx("Go →")}</button>
                     )}
                   </p>
                 )}
                 {prepared[m.product.id] ? (
                   <div className="fb-fin-done">
-                    Application pack drafted and waiting for the owner.{" "}
-                    <button type="button" className="fb-cash-more" onClick={() => show("inbox")}>Open review inbox</button>
+                    {tx("Application pack drafted and waiting for the owner.")}{" "}
+                    <button type="button" className="fb-cash-more" onClick={() => show("inbox")}>{tx("Open review inbox")}</button>
                   </div>
                 ) : (
                   canPrepare && m.eligible && (
                     <button className="fb-btn fb-btn-outline" type="button" disabled={busy !== null} onClick={() => void prepare(m.product.id)}>
-                      {busy === m.product.id ? "Preparing…" : "Prepare application pack"}
+                      {busy === m.product.id ? tx("Preparing…") : tx("Prepare application pack")}
                     </button>
                   )
                 )}
               </article>
             ))}
           </div>
-          <p className="fb-inbox-muted">{data.disclaimer}</p>
+          <p className="fb-inbox-muted">{tx(data.disclaimer)}</p>
         </>
       )}
     </section>
@@ -148,6 +149,7 @@ function Matches({ canPrepare }: { canPrepare: boolean }) {
 // ── Sharing: lender and auditor grants ──────────────────────────────────────
 
 function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
+  const { tx } = useI18n();
   const [grants, setGrants] = useState<ExternalGrant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -155,7 +157,6 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
   const [exact, setExact] = useState(false);
   const [busy, setBusy] = useState(false);
   const [newLink, setNewLink] = useState<string | null>(null);
-  const who = kind === "lender" ? "a lender" : "an external auditor";
 
   useEffect(() => {
     let active = true;
@@ -168,7 +169,7 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
   const share = async (event: FormEvent) => {
     event.preventDefault();
     if (!EMAIL_PATTERN.test(email)) {
-      setError("Enter a valid email address.");
+      setError(tx("Enter a valid email address."));
       return;
     }
     setBusy(true);
@@ -196,37 +197,37 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
 
   return (
     <div className="fb-fin-grants">
-      <div className="fb-inbox-label">Who can see it</div>
-      {grants.length === 0 && <p className="fb-inbox-muted">Not shared with anyone.</p>}
+      <div className="fb-inbox-label">{tx("Who can see it")}</div>
+      {grants.length === 0 && <p className="fb-inbox-muted">{tx("Not shared with anyone.")}</p>}
       {grants.map((g) => (
         <div key={g.id} className="fb-fin-grant">
           <span>
-            <strong>{kind === "lender" ? "Lender" : "Auditor"}</strong> · {kind === "auditor" ? "read-only" : g.allow_exact_values ? "exact values" : "ranges only"}
+            <strong>{tx(kind === "lender" ? "Lender" : "Auditor")}</strong> · {tx(kind === "auditor" ? "read-only" : g.allow_exact_values ? "exact values" : "ranges only")}
             <br />
-            <span className="fb-inbox-muted">{g.status === "active" ? `Ends ${when(g.expires_at)}` : g.status === "revoked" ? "Revoked" : "Expired"}</span>
+            <span className="fb-inbox-muted">{g.status === "active" ? tx("Ends {date}", { date: when(g.expires_at) }) : tx(g.status === "revoked" ? "Revoked" : "Expired")}</span>
           </span>
           {g.status === "active" && (
-            <button className="fb-btn fb-btn-outline fb-fin-revoke" type="button" onClick={() => void revoke(g.id)}>Revoke</button>
+            <button className="fb-btn fb-btn-outline fb-fin-revoke" type="button" onClick={() => void revoke(g.id)}>{tx("Revoke")}</button>
           )}
         </div>
       ))}
       <form className="fb-fin-share" onSubmit={(e) => void share(e)}>
         <label className="fb-cash-field">
-          <span>Share with {who}</span>
+          <span>{tx(kind === "lender" ? "Share with a lender" : "Share with an external auditor")}</span>
           <input type="email" required placeholder="name@bank.example" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label className="fb-cash-field fb-fin-days">
-          <span>For (days)</span>
+          <span>{tx("For (days)")}</span>
           <input type="number" min={1} max={30} value={days} onChange={(e) => setDays(Math.max(1, Math.min(30, Number(e.target.value) || 1)))} />
         </label>
         {kind === "lender" && (
-          <label className="fb-fin-check"><input type="checkbox" checked={exact} onChange={(e) => setExact(e.target.checked)} />Show exact values (otherwise ranges)</label>
+          <label className="fb-fin-check"><input type="checkbox" checked={exact} onChange={(e) => setExact(e.target.checked)} />{tx("Show exact values (otherwise ranges)")}</label>
         )}
-        <button className="fb-btn fb-btn-solid" type="submit" disabled={busy}>{busy ? "Sharing…" : "Share"}</button>
+        <button className="fb-btn fb-btn-solid" type="submit" disabled={busy}>{busy ? tx("Sharing…") : tx("Share")}</button>
       </form>
       {newLink && (
         <div className="fb-fin-done" role="status">
-          Shared. Send {kind === "lender" ? "the lender" : "the auditor"} this link: <a href={newLink} target="_blank" rel="noreferrer"><code>{newLink}</code></a>. Access ends automatically and you can revoke it at any time.
+          {tx("Shared. Send this link:")} <a href={newLink} target="_blank" rel="noreferrer"><code>{newLink}</code></a>. {tx("Access ends automatically and you can revoke it at any time.")}
         </div>
       )}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}
@@ -237,6 +238,7 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
 // ── Passport ────────────────────────────────────────────────────────────────
 
 function PassportCard({ passport, isOwner }: { passport: Passport; isOwner: boolean }) {
+  const { tx } = useI18n();
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -266,30 +268,30 @@ function PassportCard({ passport, isOwner }: { passport: Passport; isOwner: bool
   return (
     <section className="fb-cash-card">
       <div className="fb-cash-card-head">
-        <h2>Financing Readiness Passport · v{passport.version}</h2>
-        {passport.anchor?.anchored_at && <span className="fb-inbox-pill is-approved">Digest anchored</span>}
+        <h2>{tx("Financing Readiness Passport · v{n}", { n: passport.version })}</h2>
+        {passport.anchor?.anchored_at && <span className="fb-inbox-pill is-approved">{tx("Digest anchored")}</span>}
       </div>
-      <p className="fb-inbox-muted">{passport.company_label} · issued {when(passport.issued_at)}</p>
+      <p className="fb-inbox-muted">{passport.company_label} · {tx("issued {date}", { date: when(passport.issued_at) })}</p>
       <dl className="fb-fin-metrics">
         {passport.metrics.map((m) => (
           <div key={m.key}>
-            <dt>{m.label}</dt>
-            <dd>{m.value}<span className="fb-cash-fx">{m.evidence.length > 0 && ` · ${m.evidence.map((e) => e.label).join(", ")}`}</span></dd>
+            <dt>{tx(m.label)}</dt>
+            <dd>{m.value}<span className="fb-cash-fx">{m.evidence.length > 0 && ` · ${m.evidence.map((e) => tx(e.label)).join(", ")}`}</span></dd>
           </div>
         ))}
       </dl>
-      <p className="fb-fin-hash">SHA-256 <code title={passport.sha256}>{shortHash(passport.sha256)}</code>{passport.anchor && <> · anchored in <code>{passport.anchor.repository_path}</code></>}</p>
+      <p className="fb-fin-hash">SHA-256 <code title={passport.sha256}>{shortHash(passport.sha256)}</code>{passport.anchor && <> · {tx("anchored in")} <code>{passport.anchor.repository_path}</code></>}</p>
       <div className="fb-inbox-actions">
         <button className="fb-btn fb-btn-outline" type="button" disabled={checking} onClick={() => void check()}>
-          {checking ? "Checking…" : "Check it like a lender would"}
+          {checking ? tx("Checking…") : tx("Check it like a lender would")}
         </button>
-        <button className="fb-btn fb-btn-outline" type="button" onClick={download}>Download document</button>
+        <button className="fb-btn fb-btn-outline" type="button" onClick={download}>{tx("Download document")}</button>
       </div>
       {result && (
         <div className={"fb-fin-verify is-" + result.status} role="status">
-          {result.status === "verified" && <><strong>Verified.</strong> This document matches what DuitDuit issued, and the audit chain is {result.chain_intact ? "intact" : "broken"}.</>}
-          {result.status === "mismatch" && <><strong>Does not match.</strong> Changed: {result.mismatched_fields.join(", ") || "the document"}.</>}
-          {result.status === "unknown_passport" && <><strong>Unknown Passport.</strong> DuitDuit never issued this document.</>}
+          {result.status === "verified" && <><strong>{tx("Verified.")}</strong> {tx(result.chain_intact ? "This document matches what DuitDuit issued, and the audit chain is intact." : "This document matches what DuitDuit issued, and the audit chain is broken.")}</>}
+          {result.status === "mismatch" && <><strong>{tx("Does not match.")}</strong> {tx("Changed: {fields}.", { fields: result.mismatched_fields.join(", ") || "the document" })}</>}
+          {result.status === "unknown_passport" && <><strong>{tx("Unknown Passport.")}</strong> {tx("DuitDuit never issued this document.")}</>}
         </div>
       )}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}
@@ -299,13 +301,14 @@ function PassportCard({ passport, isOwner }: { passport: Passport; isOwner: bool
 }
 
 function AuditPackCard({ pack, isOwner }: { pack: AuditPack; isOwner: boolean }) {
+  const { tx } = useI18n();
   return (
     <section className="fb-cash-card">
       <div className="fb-cash-card-head">
-        <h2>Audit pack · {pack.period}</h2>
-        <span className="fb-inbox-muted">Prepared {when(pack.created_at)}</span>
+        <h2>{tx("Audit pack · {period}", { period: pack.period })}</h2>
+        <span className="fb-inbox-muted">{tx("Prepared {date}", { date: when(pack.created_at) })}</span>
       </div>
-      <p className="fb-inbox-muted">Read-only evidence for an external auditor. Each item carries its own SHA-256.</p>
+      <p className="fb-inbox-muted">{tx("Read-only evidence for an external auditor. Each item carries its own SHA-256.")}</p>
       <ul className="fb-fin-items">
         {pack.items.map((item) => (
           <li key={item.key}>
@@ -331,6 +334,7 @@ function Issue({ isOwner, hasPassport, onPassport, onPack, onError }: {
   onPack: (p: AuditPack) => void;
   onError: (message: string | null) => void;
 }) {
+  const { tx } = useI18n();
   const [busy, setBusy] = useState<"passport" | "pack" | null>(null);
   const [period, setPeriod] = useState(currentQuarter);
 
@@ -348,21 +352,21 @@ function Issue({ isOwner, hasPassport, onPassport, onPack, onError }: {
   };
 
   return (
-    <section className="fb-cash-card" aria-label="Issue documents">
-      <h2>Documents for lenders and auditors</h2>
-      <p className="fb-inbox-muted">Each one is computed from your records, hashed, and written to your audit chain, so anyone you share it with can check it was not changed.</p>
+    <section className="fb-cash-card" aria-label={tx("Issue documents")}>
+      <h2>{tx("Documents for lenders and auditors")}</h2>
+      <p className="fb-inbox-muted">{tx("Each one is computed from your records, hashed, and written to your audit chain, so anyone you share it with can check it was not changed.")}</p>
       <div className="fb-cash-whatif">
         {isOwner && (
           <button className="fb-btn fb-btn-solid" type="button" disabled={busy !== null} onClick={() => void act("passport")}>
-            {busy === "passport" ? "Issuing…" : hasPassport ? "Issue a new Passport version" : "Issue a Passport"}
+            {busy === "passport" ? tx("Issuing…") : tx(hasPassport ? "Issue a new Passport version" : "Issue a Passport")}
           </button>
         )}
         <label className="fb-cash-field">
-          <span>Audit period</span>
-          <input value={period} maxLength={7} onChange={(e) => setPeriod(e.target.value.toUpperCase())} aria-label="Audit period, for example 2026-Q3" />
+          <span>{tx("Audit period")}</span>
+          <input value={period} maxLength={7} onChange={(e) => setPeriod(e.target.value.toUpperCase())} aria-label={tx("Audit period, for example 2026-Q3")} />
         </label>
         <button className="fb-btn fb-btn-outline" type="button" disabled={busy !== null || !/^\d{4}(-Q[1-4])?$/.test(period)} onClick={() => void act("pack")}>
-          {busy === "pack" ? "Preparing…" : "Prepare audit pack"}
+          {busy === "pack" ? tx("Preparing…") : tx("Prepare audit pack")}
         </button>
       </div>
     </section>
@@ -372,7 +376,7 @@ function Issue({ isOwner, hasPassport, onPassport, onPack, onError }: {
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function Financing() {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const { identity } = useAuth();
   const role = identity?.role ?? "";
   const isOwner = role === "owner_director";
@@ -411,7 +415,7 @@ export default function Financing() {
           )}
           {passport && <PassportCard key={passport.id} passport={passport} isOwner={isOwner} />}
           {pack && <AuditPackCard key={pack.id} pack={pack} isOwner={isOwner} />}
-          {!isOwner && (passport || pack) && <p className="fb-inbox-muted">Only the owner can share these with a lender or auditor.</p>}
+          {!isOwner && (passport || pack) && <p className="fb-inbox-muted">{tx("Only the owner can share these with a lender or auditor.")}</p>}
         </div>
       </div>
     </div>

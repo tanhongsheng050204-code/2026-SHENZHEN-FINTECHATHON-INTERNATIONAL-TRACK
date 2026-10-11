@@ -136,6 +136,11 @@ def test_month_end_never_invents_a_reconciliation_or_no_data_tick(db):
         ("close the month", "month_end"),
         ("month end", "month_end"),
         ("month-end checklist", "month_end"),
+        # The Today suggestions in Chinese ask for the same playbooks.
+        ("帮我准备银行会谈", "bank_meeting"),
+        ("催收逾期客户", "chase_late_payers"),
+        ("这个月我能付清所有款项吗？", "pay_everyone"),
+        ("完成月结", "month_end"),
     ],
 )
 def test_rules_select_playbooks_before_goals_without_creating_proposals(db, phrase, name):

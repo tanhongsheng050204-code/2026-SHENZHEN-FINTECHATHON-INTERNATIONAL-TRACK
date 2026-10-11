@@ -8,10 +8,12 @@ import { ApiError, friendlyLoadError } from "../api/client";
 import {
   fetchCashSignals,
   fetchForecast,
+  fetchForecastCheck,
   ringgit,
   runScenario,
   type CashSignal,
   type CashSignalsResponse,
+  type ForecastCheckResponse,
   type ForecastHorizon,
   type ForecastPoint,
   type ForecastResponse,
@@ -46,6 +48,7 @@ const H = 260;
 const PAD = { left: 56, right: 12, top: 14, bottom: 28 };
 
 function ForecastChart({ forecast, scenario }: { forecast: ForecastResponse; scenario: ForecastResponse | null }) {
+  const { tx } = useI18n();
   const minimum = Number(forecast.minimum_balance);
   const all = [...forecast.points, ...(scenario?.points ?? [])];
   const top = Math.max(...all.map((p) => Number(p.best)), minimum) * 1.08;
@@ -79,20 +82,20 @@ function ForecastChart({ forecast, scenario }: { forecast: ForecastResponse; sce
       ))}
       {ticksX.map((d, i) => (
         <text key={d} x={x(d)} y={H - 8} textAnchor={i === 0 ? "start" : i === ticksX.length - 1 ? "end" : "middle"} className="fb-cash-axis">
-          {d === 0 ? "Today" : `Day ${d}`}
+          {d === 0 ? tx("Today") : tx("Day {n}", { n: d })}
         </text>
       ))}
       {bottom < 0 && <line x1={PAD.left} x2={W - PAD.right} y1={y(0)} y2={y(0)} className="fb-cash-zero" />}
       <path d={band} className="fb-cash-band" />
       <line x1={PAD.left} x2={W - PAD.right} y1={y(minimum)} y2={y(minimum)} className="fb-cash-minimum" />
-      <text x={W - PAD.right - 4} y={y(minimum) - 6} textAnchor="end" className="fb-cash-minimum-label">Minimum {ringgit(minimum)}</text>
+      <text x={W - PAD.right - 4} y={y(minimum) - 6} textAnchor="end" className="fb-cash-minimum-label">{tx("Minimum {amount}", { amount: ringgit(minimum) })}</text>
       <path d={line(forecast.points, "likely")} className="fb-cash-likely" />
       {scenario && <path d={line(scenario.points, "likely")} className="fb-cash-scenario" />}
       {shortfall && (
         <g>
           <circle cx={x(shortfall.day)} cy={y(Number(shortfall.likely_balance))} r={6} className="fb-cash-dot" />
           <text x={x(shortfall.day) + 10} y={y(Number(shortfall.likely_balance)) + 18} className="fb-cash-dot-label">
-            Day {shortfall.day} · {ringgit(shortfall.likely_balance)}
+            {tx("Day {n}", { n: shortfall.day })} · {ringgit(shortfall.likely_balance)}
           </text>
         </g>
       )}
@@ -107,7 +110,8 @@ function signalDay(s: CashSignal): number {
 }
 
 function DriverAmount({ signal }: { signal: CashSignal }) {
-  if (signal.kind === "risk") return <span className="fb-cash-kind is-risk">Note only</span>;
+  const { tx } = useI18n();
+  if (signal.kind === "risk") return <span className="fb-cash-kind is-risk">{tx("Note only")}</span>;
   const sign = signal.kind === "inflow" ? "+" : "−";
   return <span className={"fb-cash-amount is-" + signal.kind}>{sign}{ringgit(signal.amount_myr)}</span>;
 }
@@ -125,11 +129,51 @@ function byPosition(signals: CashSignalsResponse) {
   return [...rows.entries()].sort((a, b) => b[1].count - a[1].count);
 }
 
+// ── Forecast check ──────────────────────────────────────────────────────────
+
+/** How earlier forecasts compared with the bank balance on the days they forecast. */
+function ForecastCheck({ check }: { check: ForecastCheckResponse }) {
+  const { tx } = useI18n();
+  return (
+    <section className="fb-cash-card" aria-labelledby="fb-forecast-check">
+      <h2 id="fb-forecast-check">{tx("Forecast check")}</h2>
+      {check.status === "not_measured" ? (
+        <p className="fb-inbox-muted">
+          <strong>{tx("Not measured yet.")}</strong>{" "}
+          {check.reason === "synthetic_company"
+            ? tx("This is the synthetic demo company, so its forecast is not scored: any accuracy figure would be made up too.")
+            : check.reason === "no_forecasts_kept"
+              ? tx("No forecast has been kept yet. Today's will be the first.")
+              : tx("Forecasts kept: {n}.", { n: check.forecasts_kept }) + (check.first_comparison_on ? " " + tx("First comparison: {date}.", { date: shortDate(check.first_comparison_on) }) : "")}
+        </p>
+      ) : (
+        <div className="fb-cash-scroll">
+          <table className="fb-cash-table">
+            <thead><tr><th>{tx("Ahead")}</th><th className="is-num">{tx("Compared")}</th><th className="is-num">{tx("Off by, on average")}</th><th className="is-num">{tx("Inside the range")}</th></tr></thead>
+            <tbody>
+              {check.by_horizon.map((h) => (
+                <tr key={h.horizon_days}>
+                  <td>{tx("{n} days ahead", { n: h.horizon_days })}</td>
+                  <td className="is-num">{h.compared}</td>
+                  <td className="is-num">{h.mean_abs_error_myr === null ? "—" : ringgit(h.mean_abs_error_myr)}</td>
+                  <td className="is-num">{h.compared ? tx("{inside} of {n}", { inside: h.within_range, n: h.compared }) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="fb-inbox-muted">{tx("Each day's forecast is saved on your audit chain and compared with your bank balance once a statement covering that day is imported.")}</p>
+    </section>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 export default function CashFlow() {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const { identity } = useAuth();
+  const [check, setCheck] = useState<ForecastCheckResponse | null>(null);
   const [horizon, setHorizon] = useState<ForecastHorizon>(90);
   const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [signals, setSignals] = useState<CashSignalsResponse | null>(null);
@@ -156,6 +200,12 @@ export default function CashFlow() {
     return () => { active = false; };
   }, [horizon]);
 
+  useEffect(() => {
+    let active = true;
+    fetchForecastCheck().then((c) => active && setCheck(c)).catch(() => undefined);
+    return () => { active = false; };
+  }, []);
+
   const drivers = useMemo(
     () => [...(forecast?.drivers ?? [])].sort((a, b) => signalDay(a) - signalDay(b)),
     [forecast],
@@ -171,7 +221,7 @@ export default function CashFlow() {
       setScenario(await runScenario(horizon, [{ event_id: eventId, shift_days: shiftDays }]));
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
-      setScenarioError(code.startsWith("unknown_event") ? "That event is no longer in the forecast." : friendlyLoadError(code));
+      setScenarioError(code.startsWith("unknown_event") ? tx("That event is no longer in the forecast.") : friendlyLoadError(code));
     } finally {
       setRunning(false);
     }
@@ -192,59 +242,59 @@ export default function CashFlow() {
       <div className="fb-page-body">
         {forecast?.data_mode === "stub" && <div className="fb-callout">{t("cash.stub")}</div>}
         {loadError && <div className="fb-callout" role="alert">{loadError}</div>}
-        {!forecast && !loadError && <div className="fb-callout">Loading the forecast…</div>}
+        {!forecast && !loadError && <div className="fb-callout">{tx("Loading the forecast…")}</div>}
 
         {forecast && (
           <div className="fb-cash">
-            <div className="fb-inbox-tabs" role="group" aria-label="Forecast horizon">
+            <div className="fb-inbox-tabs" role="group" aria-label={tx("Forecast horizon")}>
               {HORIZONS.map((h) => (
                 <button key={h} type="button" aria-pressed={horizon === h} className={horizon === h ? "is-current" : undefined} onClick={() => { setHorizon(h); setScenario(null); }}>
-                  {h} days
+                  {tx("{n} days", { n: h })}
                 </button>
               ))}
             </div>
 
             <div className="fb-cash-kpis">
               <div className="fb-cash-kpi is-good">
-                <span className="fb-cash-kpi-label">Opening balance</span>
+                <span className="fb-cash-kpi-label">{tx("Opening balance")}</span>
                 <span className="fb-cash-kpi-value">{ringgit(forecast.opening_balance)}</span>
-                <span className="fb-cash-kpi-sub">As of {shortDate(forecast.as_of)}</span>
+                <span className="fb-cash-kpi-sub">{tx("As of {date}", { date: shortDate(forecast.as_of) })}</span>
               </div>
               <div className="fb-cash-kpi is-attn">
-                <span className="fb-cash-kpi-label">Lowest likely point</span>
+                <span className="fb-cash-kpi-label">{tx("Lowest likely point")}</span>
                 <span className="fb-cash-kpi-value">{low ? ringgit(low.likely) : "—"}</span>
-                <span className="fb-cash-kpi-sub">{low ? `Day ${low.day} · ${shortDate(low.date)}` : ""}</span>
+                <span className="fb-cash-kpi-sub">{low ? tx("Day {n} · {date}", { n: low.day, date: shortDate(low.date) }) : ""}</span>
               </div>
               <div className={"fb-cash-kpi " + (forecast.shortfall ? "is-danger" : "is-good")}>
-                <span className="fb-cash-kpi-label">Gap to your minimum</span>
-                <span className="fb-cash-kpi-value">{forecast.shortfall ? ringgit(forecast.shortfall.gap) : "None"}</span>
-                <span className="fb-cash-kpi-sub">Minimum {ringgit(forecast.minimum_balance)}</span>
+                <span className="fb-cash-kpi-label">{tx("Gap to your minimum")}</span>
+                <span className="fb-cash-kpi-value">{forecast.shortfall ? ringgit(forecast.shortfall.gap) : tx("None")}</span>
+                <span className="fb-cash-kpi-sub">{tx("Minimum {amount}", { amount: ringgit(forecast.minimum_balance) })}</span>
               </div>
             </div>
 
             {forecast.alerts.map((alert) => (
               <div key={alert.id} className={"fb-cash-alert is-" + alert.severity} role={alert.severity === "critical" ? "alert" : undefined}>
-                <strong>{alert.title}</strong>
-                <span>{alert.detail}</span>
+                <strong>{tx(alert.title)}</strong>
+                <span>{tx(alert.detail)}</span>
               </div>
             ))}
 
             <section className="fb-cash-card">
               <div className="fb-cash-card-head">
-                <h2>{horizon}-day forecast</h2>
+                <h2>{tx("{n}-day forecast", { n: horizon })}</h2>
                 <div className="fb-cash-legend">
-                  <span><i className="is-likely" />Likely</span>
-                  <span><i className="is-band" />Best–worst range</span>
-                  <span><i className="is-min" />Your minimum</span>
-                  {scenario && <span><i className="is-scenario" />What-if</span>}
+                  <span><i className="is-likely" />{tx("Likely")}</span>
+                  <span><i className="is-band" />{tx("Best–worst range")}</span>
+                  <span><i className="is-min" />{tx("Your minimum")}</span>
+                  {scenario && <span><i className="is-scenario" />{tx("What-if")}</span>}
                 </div>
               </div>
               <ForecastChart forecast={forecast} scenario={scenario} />
               <details className="fb-cash-table-toggle">
-                <summary>Show as a table</summary>
+                <summary>{tx("Show as a table")}</summary>
                 <div className="fb-cash-scroll">
                   <table className="fb-cash-table">
-                    <thead><tr><th>Day</th><th>Date</th><th>Worst</th><th>Likely</th><th>Best</th></tr></thead>
+                    <thead><tr><th>{tx("Day")}</th><th>{tx("Date")}</th><th>{tx("Worst")}</th><th>{tx("Likely")}</th><th>{tx("Best")}</th></tr></thead>
                     <tbody>
                       {forecast.points.filter((p) => p.day % 7 === 0 || p.day === forecast.shortfall?.day).map((p) => (
                         <tr key={p.day}><td>{p.day}</td><td>{shortDate(p.date)}</td><td>{ringgit(p.worst)}</td><td>{ringgit(p.likely)}</td><td>{ringgit(p.best)}</td></tr>
@@ -255,47 +305,48 @@ export default function CashFlow() {
               </details>
             </section>
 
+            {check && <ForecastCheck check={check} />}
+
             {canRunScenarios && (
               <section className="fb-cash-card">
-                <h2>What if…</h2>
+                <h2>{tx("What if…")}</h2>
                 <div className="fb-cash-whatif">
                   <label className="fb-cash-field">
-                    <span>Event</span>
+                    <span>{tx("Event")}</span>
                     <select value={eventId} onChange={(e) => setEventId(e.target.value)}>
-                      {movable.map((d) => <option key={d.id} value={d.id}>Day {signalDay(d)} · {d.label} · {d.kind === "inflow" ? "+" : "−"}{ringgit(d.amount_myr)}</option>)}
+                      {movable.map((d) => <option key={d.id} value={d.id}>{tx("Day {n}", { n: signalDay(d) })} · {tx(d.label)} · {d.kind === "inflow" ? "+" : "−"}{ringgit(d.amount_myr)}</option>)}
                     </select>
                   </label>
                   <label className="fb-cash-field">
-                    <span>Move by (days)</span>
+                    <span>{tx("Move by (days)")}</span>
                     <input type="number" min={-90} max={180} value={shiftDays} onChange={(e) => setShiftDays(Math.max(-90, Math.min(180, Number(e.target.value) || 0)))} />
                   </label>
                   <button className="fb-btn fb-btn-solid" type="button" disabled={running || !eventId} onClick={() => void run()}>
-                    {running ? "Running…" : "Run scenario"}
+                    {running ? tx("Running…") : tx("Run scenario")}
                   </button>
-                  {scenario && <button className="fb-btn fb-btn-outline" type="button" onClick={() => setScenario(null)}>Clear</button>}
+                  {scenario && <button className="fb-btn fb-btn-outline" type="button" onClick={() => setScenario(null)}>{tx("Clear")}</button>}
                 </div>
                 {scenarioError && <div className="fb-inbox-error" role="alert">{scenarioError}</div>}
                 {scenario && scenarioLow && low && (
                   <p className="fb-cash-compare" aria-live="polite">
-                    Lowest likely point moves from <strong>{ringgit(low.likely)}</strong> (day {low.day}) to{" "}
-                    <strong>{ringgit(scenarioLow.likely)}</strong> (day {scenarioLow.day}).{" "}
-                    {scenario.shortfall ? `Still ${ringgit(scenario.shortfall.gap)} below your minimum.` : "No shortfall in this scenario."}
+                    {tx("Lowest likely point moves from {from} (day {fromDay}) to {to} (day {toDay}).", { from: ringgit(low.likely), fromDay: low.day, to: ringgit(scenarioLow.likely), toDay: scenarioLow.day })}{" "}
+                    {scenario.shortfall ? tx("Still {gap} below your minimum.", { gap: ringgit(scenario.shortfall.gap) }) : tx("No shortfall in this scenario.")}
                   </p>
                 )}
-                <p className="fb-inbox-muted">Scenarios never change your books; they only show how the low point moves.</p>
+                <p className="fb-inbox-muted">{tx("Scenarios never change your books; they only show how the low point moves.")}</p>
               </section>
             )}
 
             {signals && (
               <section className="fb-cash-card">
-                <h2>By position</h2>
+                <h2>{tx("By position")}</h2>
                 <div className="fb-cash-scroll">
                   <table className="fb-cash-table">
-                    <thead><tr><th>Position</th><th className="is-num">In</th><th className="is-num">Out</th><th className="is-num">At risk</th></tr></thead>
+                    <thead><tr><th>{tx("Position")}</th><th className="is-num">{tx("In")}</th><th className="is-num">{tx("Out")}</th><th className="is-num">{tx("At risk")}</th></tr></thead>
                     <tbody>
                       {byPosition(signals).map(([job, row]) => (
                         <tr key={job}>
-                          <td>{JOB_LABELS[job]} <span className="fb-cash-fx">· {row.count}</span></td>
+                          <td>{tx(JOB_LABELS[job])} <span className="fb-cash-fx">· {row.count}</span></td>
                           <td className="is-num">{row.inflow ? ringgit(row.inflow) : "—"}</td>
                           <td className="is-num">{row.outflow ? ringgit(row.outflow) : "—"}</td>
                           <td className="is-num">{row.risk ? ringgit(row.risk) : "—"}</td>
@@ -308,15 +359,15 @@ export default function CashFlow() {
             )}
 
             <section className="fb-cash-card">
-              <h2>What moves the balance</h2>
+              <h2>{tx("What moves the balance")}</h2>
               <div className="fb-cash-scroll">
                 <table className="fb-cash-table">
-                  <thead><tr><th>Item</th><th>Position</th><th>Likely day</th><th className="is-num">Amount</th></tr></thead>
+                  <thead><tr><th>{tx("Item")}</th><th>{tx("Position")}</th><th>{tx("Likely day")}</th><th className="is-num">{tx("Amount")}</th></tr></thead>
                   <tbody>
                     {(showAllDrivers ? drivers : drivers.slice(0, DRIVER_PREVIEW)).map((d) => (
                       <tr key={d.id}>
-                        <td className="is-label">{d.label}</td>
-                        <td>{JOB_LABELS[d.job_function]}</td>
+                        <td className="is-label">{tx(d.label)}</td>
+                        <td>{tx(JOB_LABELS[d.job_function])}</td>
                         <td>{signalDay(d)}</td>
                         <td className="is-num"><DriverAmount signal={d} /></td>
                       </tr>
@@ -326,10 +377,10 @@ export default function CashFlow() {
               </div>
               {drivers.length > DRIVER_PREVIEW && (
                 <button className="fb-cash-more" type="button" aria-expanded={showAllDrivers} onClick={() => setShowAllDrivers((v) => !v)}>
-                  {showAllDrivers ? "Show fewer" : `Show all ${drivers.length} items`}
+                  {showAllDrivers ? tx("Show fewer") : tx("Show all {n} items", { n: drivers.length })}
                 </button>
               )}
-              <p className="fb-inbox-muted">Risk notes (like a complaint on an unpaid invoice) annotate the forecast; they never move the balance by themselves.</p>
+              <p className="fb-inbox-muted">{tx("Risk notes (like a complaint on an unpaid invoice) annotate the forecast; they never move the balance by themselves.")}</p>
             </section>
           </div>
         )}

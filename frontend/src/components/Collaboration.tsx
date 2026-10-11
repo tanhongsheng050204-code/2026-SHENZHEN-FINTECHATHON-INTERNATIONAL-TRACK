@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { JobFunction, ReviewAction } from "../api/topicE";
+import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import "./Collaboration.css";
 
@@ -53,6 +54,7 @@ function when(iso: string): string {
 
 /** What has happened to an item so far, oldest first, and who it is waiting for. */
 export function ActivityTimeline({ action }: { action: ReviewAction }) {
+  const { tx } = useI18n();
   const reviewer = JOB_LABELS[action.reviewer_job_function];
   const money = action.autonomy_level === "L3";
   const entries: { key: string; avatar: ReactNode; text: string; at?: string; tone?: string }[] = [
@@ -76,11 +78,11 @@ export function ActivityTimeline({ action }: { action: ReviewAction }) {
   }
 
   return (
-    <ol className="dd-timeline" aria-label="Activity">
+    <ol className="dd-timeline" aria-label={tx("Activity")}>
       {entries.map((e) => (
         <li key={e.key} className={e.tone}>
           {e.avatar}
-          <span className="dd-timeline-text">{e.text}</span>
+          <span className="dd-timeline-text">{tx(e.text)}</span>
           {e.at && <time dateTime={e.at}>{when(e.at)}</time>}
         </li>
       ))}

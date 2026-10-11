@@ -3,6 +3,7 @@ import "./TodayHero.css";
 import { useAuth } from "../auth/AuthProvider";
 import { canOpen } from "../lib/access";
 import { useAppState } from "../lib/appState";
+import { useI18n } from "../lib/i18n";
 import {
   fetchAnalysis,
   fetchBriefing,
@@ -49,6 +50,7 @@ function Runway({ forecast }: { forecast: ForecastResponse }) {
  */
 export function TodayHero({ greeting }: { greeting: string }) {
   const { show, askAbout, askRole } = useAppState();
+  const { tx } = useI18n();
   const { identity } = useAuth();
   const role = identity?.role ?? askRole;
   const seesCash = canOpen("cashflow", role);
@@ -83,22 +85,22 @@ export function TodayHero({ greeting }: { greeting: string }) {
   let headline: string;
   let detail: string;
   if (shortfall) {
-    headline = `Cash falls ${ringgit(shortfall.gap)} below your minimum in ${shortfall.day} days.`;
-    detail = `On ${longDate(shortfall.date)} the likely balance is ${ringgit(shortfall.likely_balance)}, under your ${ringgit(shortfall.minimum_balance)} minimum.`;
+    headline = tx("Cash falls {gap} below your minimum in {n} days.", { gap: ringgit(shortfall.gap), n: shortfall.day });
+    detail = tx("On {date} the likely balance is {balance}, under your {minimum} minimum.", { date: longDate(shortfall.date), balance: ringgit(shortfall.likely_balance), minimum: ringgit(shortfall.minimum_balance) });
   } else if (forecast) {
-    headline = "Cash stays above your minimum for the next 90 days.";
-    detail = `Lowest likely point: ${ringgit(String(Math.min(...forecast.points.map((p) => Number(p.likely)))))}.`;
+    headline = tx("Cash stays above your minimum for the next 90 days.");
+    detail = tx("Lowest likely point: {amount}.", { amount: ringgit(String(Math.min(...forecast.points.map((p) => Number(p.likely))))) });
   } else if (count > 0) {
-    headline = `${count} thing${count === 1 ? " is" : "s are"} waiting for your decision.`;
-    detail = "Drafts and proposals your role can approve or reject.";
+    headline = count === 1 ? tx("1 thing is waiting for your decision.") : tx("{n} things are waiting for your decision.", { n: count });
+    detail = tx("Drafts and proposals your role can approve or reject.");
   } else {
-    headline = "Nothing needs your decision right now.";
-    detail = "New proposals from the agents will appear in your review inbox.";
+    headline = tx("Nothing needs your decision right now.");
+    detail = tx("New proposals from the agents will appear in your review inbox.");
   }
 
   const suggestions = seesCash
-    ? ["Can I pay everyone this month?", "Prepare me for the bank meeting", "Chase the late payers", "Close the month"]
-    : ["What needs me today?", "Show my customers"];
+    ? ["Can I pay everyone this month?", "Prepare me for the bank meeting", "Chase the late payers", "Close the month"].map((s) => tx(s))
+    : ["What needs me today?", "Show my customers"].map((s) => tx(s));
 
   const ask = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -114,15 +116,15 @@ export function TodayHero({ greeting }: { greeting: string }) {
           <input
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask DuitDuit, or tell it what to prepare"
-            aria-label="Ask DuitDuit, or tell it what to prepare"
+            placeholder={tx("Ask DuitDuit, or tell it what to prepare")}
+            aria-label={tx("Ask DuitDuit, or tell it what to prepare")}
             maxLength={500}
           />
-          <button type="submit" aria-label="Ask" disabled={!question.trim()}>
+          <button type="submit" aria-label={tx("Ask")} disabled={!question.trim()}>
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
         </form>
-        <div className="th-suggest" aria-label="Suggestions">
+        <div className="th-suggest" aria-label={tx("Suggestions")}>
           {suggestions.map((text) => (
             <button key={text} type="button" onClick={() => askAbout(text)}>{text}</button>
           ))}
@@ -131,17 +133,17 @@ export function TodayHero({ greeting }: { greeting: string }) {
 
       <div className={"th-lead" + (shortfall ? " is-risk" : "")}>
         <div className="th-lead-copy">
-          <p className={"th-status" + (shortfall ? " is-risk" : "")}><i aria-hidden="true" />{shortfall ? `Below your minimum in ${shortfall.day} days` : "Cash outlook"}</p>
+          <p className={"th-status" + (shortfall ? " is-risk" : "")}><i aria-hidden="true" />{shortfall ? tx("Below your minimum in {n} days", { n: shortfall.day }) : tx("Cash outlook")}</p>
           <h2 className="th-headline">{headline}</h2>
           <p className="th-detail">{detail}</p>
           <div className="th-actions">
             {seesCash ? (
               <>
-                <button type="button" className="fb-btn fb-btn-solid" onClick={() => show("cashflow")}>See the forecast</button>
-                <button type="button" className="fb-btn fb-btn-outline" onClick={() => askAbout("Can I pay everyone this month?")}>Ask what to do</button>
+                <button type="button" className="fb-btn fb-btn-solid" onClick={() => show("cashflow")}>{tx("See the forecast")}</button>
+                <button type="button" className="fb-btn fb-btn-outline" onClick={() => askAbout(tx("Can I pay everyone this month?"))}>{tx("Ask what to do")}</button>
               </>
             ) : (
-              <button type="button" className="fb-btn fb-btn-solid" onClick={() => show("inbox")}>Open review inbox</button>
+              <button type="button" className="fb-btn fb-btn-solid" onClick={() => show("inbox")}>{tx("Open review inbox")}</button>
             )}
           </div>
         </div>
@@ -150,23 +152,23 @@ export function TodayHero({ greeting }: { greeting: string }) {
 
       <div className="th-tiles">
         <button type="button" className="th-tile" onClick={() => show("inbox")}>
-          <span className="th-tile-label">Waiting for you</span>
-          <span className="th-tile-value">{waiting === null ? "…" : count === 0 ? "All clear" : count}</span>
+          <span className="th-tile-label">{tx("Waiting for you")}</span>
+          <span className="th-tile-value">{waiting === null ? "…" : count === 0 ? tx("All clear") : count}</span>
           <span className="th-tile-sub">
-            {waiting && waiting.length > 0 ? waiting.slice(0, 2).map((a) => a.title).join("; ") : "Nothing to approve"}
+            {waiting && waiting.length > 0 ? waiting.slice(0, 2).map((a) => tx(a.title)).join("; ") : tx("Nothing to approve")}
           </span>
         </button>
         {seesAnalysis && (
           <button type="button" className="th-tile" onClick={() => show("analysis")}>
-            <span className="th-tile-label">{last ? `Net result, ${last.label}` : "Last month"}</span>
+            <span className="th-tile-label">{last ? tx("Net result, {month}", { month: last.label }) : tx("Last month")}</span>
             <span className={"th-tile-value" + (last && Number(last.net_result) < 0 ? " is-down" : "")}>{last ? ringgit(last.net_result) : "…"}</span>
-            <span className="th-tile-sub">{last ? `${last.net_margin ?? "—"}% of ${ringgit(last.revenue)} revenue` : "Profit and loss from your records"}</span>
+            <span className="th-tile-sub">{last ? tx("{margin}% of {revenue} revenue", { margin: last.net_margin ?? "—", revenue: ringgit(last.revenue) }) : tx("Profit and loss from your records")}</span>
           </button>
         )}
         <button type="button" className="th-tile" onClick={() => show(seesCash ? "cashflow" : "inbox")}>
-          <span className="th-tile-label">Alerts today</span>
-          <span className={"th-tile-value" + (alertCount ? " is-attn" : "")}>{alerts === null ? "…" : alertCount === 0 ? "None" : alertCount}</span>
-          <span className="th-tile-sub">{alertText ?? "Rules you set in Company settings"}</span>
+          <span className="th-tile-label">{tx("Alerts today")}</span>
+          <span className={"th-tile-value" + (alertCount ? " is-attn" : "")}>{alerts === null ? "…" : alertCount === 0 ? tx("None") : alertCount}</span>
+          <span className="th-tile-sub">{alertText ?? tx("Rules you set in Company settings")}</span>
         </button>
       </div>
     </section>

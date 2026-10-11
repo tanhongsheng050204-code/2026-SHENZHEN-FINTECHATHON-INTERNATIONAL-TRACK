@@ -43,10 +43,10 @@ function isOpen(action: ReviewAction): boolean {
 }
 
 function StatusPill({ action }: { action: ReviewAction }) {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   if (!isOpen(action)) {
     const label = { approved: "Approved", edited: "Edited and approved", rejected: "Rejected" }[action.status as "approved" | "edited" | "rejected"];
-    return <span className={"fb-inbox-pill is-" + action.status}>{label}</span>;
+    return <span className={"fb-inbox-pill is-" + action.status}>{tx(label)}</span>;
   }
   if (action.can_decide) return <span className="fb-inbox-pill is-can">{t("inbox.canApprove")}</span>;
   if (action.status === "awaiting_second_approval") return <span className="fb-inbox-pill is-muted">{t("inbox.waitingOwner")}</span>;
@@ -80,7 +80,7 @@ function evidenceScreen(source: string): Screen | null {
 }
 
 export default function ReviewInbox() {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const { setReviewInboxCount, show, askRole } = useAppState();
   const { identity } = useAuth();
   const role = identity?.role ?? askRole;
@@ -141,7 +141,7 @@ export default function ReviewInbox() {
       setEditing(false);
     } catch (error) {
       const code = error instanceof ApiError ? error.code : "";
-      setDecisionError(DECISION_ERRORS[code] ?? friendlyLoadError(code));
+      setDecisionError(DECISION_ERRORS[code] ? tx(DECISION_ERRORS[code]) : friendlyLoadError(code));
     } finally {
       setBusy(false);
     }
@@ -166,7 +166,7 @@ export default function ReviewInbox() {
       <div className="fb-page-body">
         {dataMode === "stub" && <div className="fb-callout">{t("inbox.stub")}</div>}
 
-        {loading && <div className="fb-callout">Loading your inbox…</div>}
+        {loading && <div className="fb-callout">{tx("Loading your inbox…")}</div>}
         {loadError && <div className="fb-callout" role="alert">{loadError}</div>}
 
         {!loading && !loadError && actions.length === 0 && (
@@ -175,19 +175,19 @@ export default function ReviewInbox() {
 
         {!loading && !loadError && actions.length > 0 && (
           <>
-            <div className="fb-inbox-tabs" role="tablist" aria-label="Filter by position">
+            <div className="fb-inbox-tabs" role="tablist" aria-label={tx("Filter by position")}>
               <button type="button" role="tab" aria-selected={filter === "all"} className={filter === "all" ? "is-current" : undefined} onClick={() => setFilter("all")}>
                 {t("inbox.all")} · {actions.length}
               </button>
               {tabs.map(([job, count]) => (
                 <button key={job} type="button" role="tab" aria-selected={filter === job} className={filter === job ? "is-current" : undefined} onClick={() => setFilter(job)}>
-                  {JOB_LABELS[job]} · {count}
+                  {tx(JOB_LABELS[job])} · {count}
                 </button>
               ))}
             </div>
 
             <div className="fb-inbox-layout">
-              <section className="fb-inbox-list" aria-label="Items">
+              <section className="fb-inbox-list" aria-label={tx("Items")}>
                 {visible.map((action) => (
                   <button
                     key={action.id}
@@ -198,9 +198,9 @@ export default function ReviewInbox() {
                   >
                     <LevelPill level={action.autonomy_level} />
                     <span className="fb-inbox-row-main">
-                      <span className="fb-inbox-row-title">{action.title}</span>
+                      <span className="fb-inbox-row-title">{tx(action.title)}</span>
                       <span className="fb-inbox-row-sub">
-                        {JOB_LABELS[action.reviewer_job_function]}
+                        {tx(JOB_LABELS[action.reviewer_job_function])}
                         {action.amount !== null && <> · <strong>{ringgit(action.amount)}</strong></>}
                       </span>
                     </span>
@@ -211,21 +211,21 @@ export default function ReviewInbox() {
                 {overseesOthers && <div className="fb-inbox-note">{t("inbox.compliance")}</div>}
               </section>
 
-              <section className="fb-inbox-detail" aria-label="Item detail" aria-live="polite">
+              <section className="fb-inbox-detail" aria-label={tx("Item detail")} aria-live="polite">
                 {!selected && <p className="fb-inbox-muted">{t("inbox.select")}</p>}
                 {selected && (
                   <>
                     <div className="fb-inbox-detail-tags">
                       <span className={"fb-inbox-level is-" + selected.autonomy_level.toLowerCase()}>
-                        {selected.autonomy_level} · {LEVEL_HINT[selected.autonomy_level]}
+                        {selected.autonomy_level} · {tx(LEVEL_HINT[selected.autonomy_level])}
                       </span>
                       <StatusPill action={selected} />
                     </div>
-                    <h2>{selected.title}</h2>
-                    <p className="fb-inbox-summary">{selected.summary}</p>
+                    <h2>{tx(selected.title)}</h2>
+                    <p className="fb-inbox-summary">{tx(selected.summary)}</p>
 
                     <div>
-                      <div className="fb-inbox-label">Activity</div>
+                      <div className="fb-inbox-label">{tx("Activity")}</div>
                       <ActivityTimeline action={selected} />
                     </div>
 
@@ -236,9 +236,9 @@ export default function ReviewInbox() {
                           {selected.evidence.map((e) => {
                             const target = evidenceScreen(e.source);
                             return target && canOpen(target, role) ? (
-                              <button key={e.source} type="button" className="fb-inbox-chip fb-inbox-chip-link" title={e.source} onClick={() => show(target)}>{e.label} →</button>
+                              <button key={e.source} type="button" className="fb-inbox-chip fb-inbox-chip-link" title={e.source} onClick={() => show(target)}>{tx(e.label)} →</button>
                             ) : (
-                              <span key={e.source} className="fb-inbox-chip" title={e.source}>{e.label}</span>
+                              <span key={e.source} className="fb-inbox-chip" title={e.source}>{tx(e.label)}</span>
                             );
                           })}
                         </div>
