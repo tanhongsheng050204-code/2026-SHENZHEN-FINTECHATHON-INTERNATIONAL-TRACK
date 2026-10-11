@@ -234,7 +234,7 @@ def _lock(db, tenant_id: str) -> None:
     """Serialise check-then-write (PostgreSQL), so two decisions on one item cannot
     both pass the checks before either is written. Its own key, not the chain's: a
     decision may be appended on a separate worker session, which takes the chain's
-    lock itself and commits before this transaction ends."""
+    lock itself, while this transaction (and so this lock) stays open."""
     if db.bind is not None and db.bind.dialect.name == "postgresql":
         db.execute(
             text("select pg_advisory_xact_lock(hashtext(:key))"),

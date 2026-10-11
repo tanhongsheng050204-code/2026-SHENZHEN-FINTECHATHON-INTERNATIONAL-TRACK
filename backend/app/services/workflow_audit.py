@@ -2,7 +2,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 
-from sqlalchemy import select, text
+from sqlalchemy import event, select, text
 from sqlalchemy.orm import Session
 
 from app.models import WorkflowAuditEntry, utcnow
@@ -57,9 +57,11 @@ def write_workflow_event(
         # Compliance and the entry's own actor may read it. Entries written for an
         # agent, or under a person's user id, by anyone else are appended on a worker
         # session for the same tenant and committed there.
-        # Commit first: this session may hold the chain's lock from an earlier
-        # entry, which the worker session would otherwise wait for forever.
-        db.commit()
+        # If this transaction already holds the chain's lock (it appended an entry
+        # earlier), the worker session would wait for it forever: commit first.
+        # Otherwise stay in one transaction, so locks such as the inbox's still hold.
+        if db.info.get(_CHAIN_LOCKED):
+            db.commit()
         trusted = _trusted_session(db)
         with trusted:
             row = write_workflow_event(
@@ -78,6 +80,7 @@ def write_workflow_event(
     lock_key = f"finbrain:workflow-audit:{tenant_id or 'system'}"
     if db.bind is not None and db.bind.dialect.name == "postgresql":
         db.execute(text("select pg_advisory_xact_lock(hashtext(:key))"), {"key": lock_key})
+        db.info[_CHAIN_LOCKED] = True
         previous_hash = db.scalar(
             text("select public.finbrain_audit_tail('workflow', cast(:tenant_id as uuid))"),
             {"tenant_id": tenant_id},
@@ -152,6 +155,15 @@ def verify_workflow_chain(db: Session, tenant_id: str | None = None) -> bool:
 # always has. Writes stay on the person's own session.
 
 
+_CHAIN_LOCKED = "finbrain_chain_locked"
+
+
+@event.listens_for(Session, "after_commit")
+@event.listens_for(Session, "after_rollback")
+def _chain_lock_released(session: Session) -> None:
+    session.info.pop(_CHAIN_LOCKED, None)
+
+
 def _unreadable_by_writer(db: Session, actor_ref: str) -> bool:
     context = db.info.get("finbrain_rls_context") or {}
     return (
@@ -184,8 +196,16 @@ def chain_scalars(db: Session, statement) -> list:
     trusted = _trusted_session(db)
     if trusted is None:
         return list(db.scalars(statement).all())
+    # The worker role may read every tenant's chain; this read is held to the
+    # person's own tenant here, whatever the caller's statement says.
+    tenant_id = (db.info.get("finbrain_rls_context") or {}).get("tenant_id")
+    if not tenant_id:
+        trusted.close()
+        return []
     with trusted:
-        rows = list(trusted.scalars(statement).all())
+        rows = list(
+            trusted.scalars(statement.where(WorkflowAuditEntry.tenant_id == tenant_id)).all()
+        )
         trusted.expunge_all()
         return rows
 

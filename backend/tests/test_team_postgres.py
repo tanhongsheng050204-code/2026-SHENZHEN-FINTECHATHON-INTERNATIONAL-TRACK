@@ -24,6 +24,7 @@ from app.schemas import UserRole
 from app.security.keyring import ensure_active_key
 from app.services import automations, review_comments, review_inbox, saved_views
 from app.services.tenant_settings import initialize_settings
+from app.services.workflow_audit import write_workflow_event
 from tests.auth_support import principal
 
 DSN = os.environ.get("FINBRAIN_REVIEW_POSTGRES_URL")
@@ -122,3 +123,31 @@ def test_finance_and_staff_see_the_work_others_wrote():
         _, staff_actions = review_inbox.inbox(db, staff, None)
         assert staff_actions == []
         db.rollback()
+
+
+def test_a_delegated_decision_keeps_the_inbox_locked_until_its_transaction_ends():
+    engine = create_engine(DSN)
+    team = _team()
+    owner, finance = team[UserRole.OWNER_DIRECTOR], team[UserRole.FINANCE_OPS]
+    tid = str(owner.tenant_id)
+    key = {"key": f"finbrain:review-inbox:{tid}"}
+    with Session(engine, expire_on_commit=False) as db, Session(engine) as other:
+        db.add(Tenant(id=tid, name="SYNTHETIC lock review", slug=f"review-{tid}"))
+        db.commit()
+        _as(db, finance)
+        review_inbox._lock(db, tid)
+        # An agent's entry: Finance cannot read it back, so it goes via the worker.
+        write_workflow_event(
+            db,
+            event_type="review_decision",
+            actor_role="finance_ops",
+            actor_ref=str(finance.user_id),
+            resource_type="agent_action",
+            resource_id="act_lock_review",
+            event_payload={"decision": "approve"},
+            tenant_id=tid,
+        )
+        assert other.scalar(text("select pg_try_advisory_lock(hashtext(:key))"), key) is False
+        db.rollback()
+        assert other.scalar(text("select pg_try_advisory_lock(hashtext(:key))"), key) is True
+        other.execute(text("select pg_advisory_unlock(hashtext(:key))"), key)
