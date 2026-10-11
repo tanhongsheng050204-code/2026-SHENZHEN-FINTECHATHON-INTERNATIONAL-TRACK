@@ -114,11 +114,11 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 | Ask DuitDuit assistant: four playbooks, voice input with transcript review, confirmation before every change | **Built and tested** |
 | Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested** |
 | Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
-| Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. Hosted end-to-end testing is pending. |
+| Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. **On the live site (2026-10-11):** a new company's owner received the 6-digit email code and reached the authenticator step. A full live run through authenticator setup and into the app has not been recorded yet. |
 | One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
 | Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
-| Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Sign-in reaches the server. The API currently runs through a temporary tunnel, whose address changes when it restarts. Email codes need the Supabase settings in step 6b of the [production checklist](docs/deployment/production-checklist.md). |
+| Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Supabase Auth is configured: codes in every email template, sending through a dedicated Gmail account. The API still runs through a temporary tunnel, whose address changes when it restarts, and some requests time out. |
 | Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
 
 ### How the entry maps to the scoring criteria
@@ -933,7 +933,12 @@ first-party and the strict content security policy holds.
 On the backend:
 - `CORS_ORIGINS` must list the site's exact address;
 - `SUPABASE_URL` and `SUPABASE_ANON_KEY` must both be set, or sign-in answers "Supabase Auth is not configured";
-- in the Supabase dashboard, the Site URL, redirect URLs and email templates must be set so emails carry a 6-digit code instead of a `localhost` link.
+- in the Supabase dashboard:
+  - the Site URL and redirect URLs must point at the site;
+  - every email template must contain `{{ .Token }}`, so emails carry a 6-digit code instead of a link;
+  - emails must go through custom SMTP, such as a Gmail account with an app password. Supabase's built-in sender sends only a few emails an hour. Without custom SMTP, sign-up fails with "That didn't work", and Supabase's Auth log shows the reason (for example `535 Username and Password not accepted` for a wrong Gmail app password).
+
+A click-by-click version, with a troubleshooting table, is in the [backend owner's setup guide](docs/deployment/backend-owner-setup-guide.md).
 
 The full list, with checks for each step, is in the
 [production checklist](docs/deployment/production-checklist.md).
@@ -1054,9 +1059,10 @@ The day number moves one day sooner each day, because the forecast counts from t
 | [Plan 2: Identity and security](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md) | Backend session/MFA protocol, Team, settings persistence and guardrails |
 | [Plan 3: Synthetic tenant and importers](docs/superpowers/plans/2026-10-09-topic-e-importers.md) | Eight mapped CSV schemas, tenant persistence, protected payroll and local synthetic seed |
 | [Demo script](docs/submission/demo-script.md) / [Chinese subtitle draft](docs/submission/subtitles-zh-draft.md) | Five-minute video script, with a draft of Chinese subtitles awaiting review |
+| [Deck additions](docs/submission/deck-additions.md) | Draft slides: fit with open financial infrastructure, a proposed business model (untested), and what is not done yet |
 | [Security self-assessment](docs/submission/security-self-assessment.md) / [OWASP agentic mapping](docs/standards/owasp-agentic-mapping.md) / [Threat model](docs/standards/threat-model.md) | Controls, their status and residual risk |
 | [Execution evidence](docs/submission/execution-evidence.md) / [Accessibility](docs/submission/accessibility.md) | Measured results, each with the command that produced it |
-| [Production checklist](docs/deployment/production-checklist.md) / [China reachability](docs/deployment/china-reachability.md) / [Cloud Run and Vercel](docs/deployment/cloud-run-and-vercel.md) | Deploying the judged instance |
+| [Production checklist](docs/deployment/production-checklist.md) / [Backend owner's setup guide](docs/deployment/backend-owner-setup-guide.md) / [China reachability](docs/deployment/china-reachability.md) / [Cloud Run and Vercel](docs/deployment/cloud-run-and-vercel.md) | Deploying the judged instance: sign-in codes, email sending, the demo company and a fixed API address |
 | [SUPABASE_ARCHITECTURE.md](./SUPABASE_ARCHITECTURE.md) | **Required reading for database contributors** — schema contract, RLS boundaries, change rules, emergency procedure |
 | [SUPABASE_SCHEMA_REFERENCE.md](./SUPABASE_SCHEMA_REFERENCE.md) | Column-level disaster-recovery snapshot of the live schema |
 | [AUTH_SETUP.md](./AUTH_SETUP.md) | Supabase Auth, JWT signing, custom token hook, user provisioning |
