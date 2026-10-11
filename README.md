@@ -117,6 +117,7 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 | Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. **On the live site (2026-10-11):** a new company's owner signed up end to end: password, 6-digit email code, authenticator setup, then into the app. One run, done by hand by the team; not yet repeated by an automated test. |
 | One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
 | Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. |
+| Team features: comments and @mentions on review items, a collections board, automations, saved views, customer risk notes and money timeline, Slack and WhatsApp notices | **Built and tested** offline (2026-10-11). Each ends in a proposal for a person to approve, or only shows information. Not yet deployed to the hosted API. WhatsApp is not tested against a live account. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
 | Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Supabase Auth is configured: codes in every email template, sending through a dedicated Gmail account. The API still runs through a temporary tunnel, whose address changes when it restarts, and some requests time out. |
 | Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
@@ -269,6 +270,12 @@ finance-copilot capabilities and their status are listed under
 | Governed outreach | Email and Telegram responses through `draft → pending_approval → approved → sending → sent → replied` | Nothing reaches a customer without explicit owner approval |
 | Reply correlation | Inbound `In-Reply-To`/`References` matched by HMAC to outbound actions; sender identity must match | Replies attach to the right customer — mismatches are quarantined, never guessed |
 | Overdue payment reminders | Deterministic Telegram planner per tenant policy (grace, interval, cap, approval) | Collections follow-up is consistent, capped, and idempotent |
+| Collections board | Every receivable in Later, Due in 14 days, Overdue, Reminder waiting for approval, or Paid. Dragging a card to Reminder (or pressing Ask for a reminder) prepares an L2 reminder proposal | Who owes what, at a glance; nothing is sent from the board |
+| Automations | "When an invoice is N days overdue / cash falls short within N days / a bill is due within N days, then draft a reminder or ask a position to review", checked every 15 minutes | Routine follow-up is prepared on time, and still approved by a person |
+| Comments and @mentions | A thread on every review item. Words are tokenized like any record; instructions to the AI are refused; the audit chain records ids and kinds only | Discussion before approval stays with the item and on the record |
+| Saved views | Filters on customers or the board, private or shared; filters only, no free text | Each person keeps the lists they check every day |
+| Customer risk note and money timeline | One sentence per customer written by fixed rules from its receivables, naming its sources; invoices, payments and reminder proposals on the customer's timeline. Money roles only | The state of a customer, explained without an AI model |
+| Team chat notices | Slack (incoming webhook) or WhatsApp Business: "3 items wait for review (Finance 2, Owner 1)" and a link. No titles, amounts or names; simulated in the demo company | People know when to open DuitDuit |
 | E-invoice readiness | MyInvois-oriented scoring, LHDN-style invoice PDF, official payment receipt, owner UIN issuance | Submission blockers surface before LHDN rejects them |
 | PDPA subject rights | Token-level access export and crypto-shredding erasure, both audited | Data-subject requests are one audited operation |
 
@@ -985,7 +992,7 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **648 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
+- backend: **686 passed, 5 skipped** (the skipped tests need PostgreSQL, which CI provides);
 - evaluation: **42 of 42**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 

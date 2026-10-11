@@ -73,6 +73,10 @@ Copy the four lines into the API's environment (step 5), then delete `demo-accou
 |---|---|---|
 | `DEMO_SIGN_IN_ENABLED`, `DEMO_EMAIL`, `DEMO_PASSWORD`, `DEMO_TOTP_SECRET` | From `demo-account.env` | Turns on **Open the demo company** |
 | `DEMO_DAILY_RESET` | `true` (the default) | The demo company starts clean every day at 03:00, so each judge sees the same state |
+| `AUTOMATIONS_ENABLED` | `true` (the default) | Automations set in Company settings are checked every 15 minutes |
+| `CHAT_NOTIFICATIONS_ENABLED`, `CHAT_NOTIFY_TENANT_ID` | `true`, and the one company whose team chat gets the notices | Optional. Posts "N items wait for review" to Slack or WhatsApp |
+| `SLACK_WEBHOOK_URL` | A Slack incoming-webhook address | Optional, for Slack |
+| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_RECIPIENT`, `WHATSAPP_TEMPLATE` | From a WhatsApp Business (Cloud API) account, with an approved template that has one body variable | Optional, for WhatsApp. Not tested against a live account |
 | `ALERT_CHECKS_ENABLED` | `true` | Alert rules are checked every 15 minutes |
 | `CUSTOMER_INTELLIGENCE_ENABLED` | `true` | The Customers page reads the sales ledger |
 | `CORS_ORIGINS` | `https://duitduit-umber.vercel.app`, the app's exact address with no trailing slash. Add a custom domain here too once there is one, separated by a comma. | Cookie sign-in only works from listed origins |
