@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { onServerReachability, serverReachable, trackedFetch } from "../lib/connectivity";
+import { useAppState } from "../lib/appState";
 import "./ServerStatusBanner.css";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+// Pages that never need the server: a visitor reading them is not affected by an outage.
+const STATIC_SCREENS = new Set(["landing", "security", "legal"]);
 
 /** One sentence when the API can't be reached, with a way to try again. */
 export function ServerStatusBanner() {
   const [reachable, setReachable] = useState(serverReachable());
   const [checking, setChecking] = useState(false);
 
+  const { screen } = useAppState();
+
   useEffect(() => onServerReachability(setReachable), []);
 
-  if (reachable) return null;
+  if (reachable || STATIC_SCREENS.has(screen)) return null;
 
   const retry = async () => {
     setChecking(true);
