@@ -18,7 +18,7 @@ Claude finished M1–M3 overnight and is now working through C1–C5 **in order*
 | C2 Accessibility | Claude: done (axe 0 violations on 20 pages x 2 themes; Lighthouse 100 on 8 screens; see docs/submission/accessibility.md) |
 | C3 Screen states | Claude: done (app-wide "can't reach its server" banner with Try again; network failures get that sentence on every screen; checked on 12 screens with the API stopped; an earlier pass on all 18 found no raw errors) |
 | C4 Sourced financing | Claude: done (6 Malaysian products cite a public page checked 11 Oct 2026; revolving credit, supply chain and China stay unsourced) |
-| C5 中文 strings | Claude: in progress |
+| C5 中文 strings | Claude: done. All 88 interface strings already have 中文; most screen content is still English, so we recommend no 中文 switch in the video. Review list: docs/handoff/codex-c5-zh-strings-for-review.md |
 
 ## Setup
 
