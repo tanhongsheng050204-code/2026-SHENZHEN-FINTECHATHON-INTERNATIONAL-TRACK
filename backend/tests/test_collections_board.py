@@ -140,3 +140,10 @@ def test_the_demo_company_shows_its_sample_receivables():
     assert body.data_mode == DataMode.STUB
     labels = [card.label for column in body.columns for card in column.cards]
     assert "INV-1041" in labels and len(labels) == 10
+
+
+def test_a_ledger_line_with_only_a_hash_is_named_by_its_due_date():
+    due = dt.date(2026, 11, 8)
+
+    assert collections.invoice_label("t1:" + "ab" * 32, due) == "Invoice due 08 Nov"
+    assert collections.invoice_label("t1:INV-1041", due) == "INV-1041"

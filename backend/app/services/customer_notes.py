@@ -89,6 +89,7 @@ def risk_note(
 
 def money_timeline(db, tenant_id: str, customer_id: int) -> list[CustomerTimelineItemResponse]:
     from app.services import review_inbox
+    from app.services.collections import invoice_label
 
     items = []
 
@@ -101,14 +102,18 @@ def money_timeline(db, tenant_id: str, customer_id: int) -> list[CustomerTimelin
             SalesPipeline.tenant_id == tenant_id, SalesPipeline.customer_id == customer_id
         )
     ):
-        label = row.source_record_id.rsplit(":", 1)[-1]
+        label = invoice_label(row.source_record_id, row.expected_payment_date)
+        # A ledger line without a reference is already named by its due date.
+        named = "" if label.startswith("Invoice due") else f" {label}"
         refs.add(f"pipeline:{row.id}")
         if row.stage == "paid":
-            event, text = "payment_received", f"Payment received: {label}, {_money(row.amount)}"
+            event = "payment_received"
+            text = f"Payment received for invoice{named}, {_money(row.amount)}"
         elif row.stage == "invoiced":
             event = "invoice_open"
             text = (
-                f"Invoice {label}, {_money(row.amount)}, due {row.expected_payment_date:%d %b %Y}"
+                f"Invoice{named} open, {_money(row.amount)}, "
+                f"due {row.expected_payment_date:%d %b %Y}"
             )
         else:
             continue

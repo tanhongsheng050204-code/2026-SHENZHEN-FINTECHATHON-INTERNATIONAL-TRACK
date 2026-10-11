@@ -14,6 +14,7 @@ The synthetic demo company, which has no ledger, shows its sample receivables.
 """
 
 import datetime as dt
+import re
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -73,8 +74,15 @@ def _stage(due: dt.date | None, paid: bool, as_of: dt.date) -> str | None:
     return "due_soon" if (due - as_of).days <= DUE_SOON_DAYS else "later"
 
 
-def _label(source_record_id: str) -> str:
-    return source_record_id.rsplit(":", 1)[-1]
+_HASH = re.compile(r"^[0-9a-f]{32,}$")
+
+
+def invoice_label(source_record_id: str, due: dt.date | None) -> str:
+    """The ledger's own reference, or "Invoice due 8 Nov" when it only has a hash."""
+    reference = source_record_id.rsplit(":", 1)[-1]
+    if _HASH.match(reference):
+        return f"Invoice due {due:%d %b}" if due else "Invoice"
+    return reference
 
 
 def _live_cards(db, tenant_id: str, as_of: dt.date) -> list[BoardCard]:
@@ -91,7 +99,7 @@ def _live_cards(db, tenant_id: str, as_of: dt.date) -> list[BoardCard]:
         raw.append(
             (
                 f"pipeline:{row.id}",
-                _label(row.source_record_id),
+                invoice_label(row.source_record_id, row.expected_payment_date),
                 row.customer_id,
                 Decimal(row.amount),
                 row.expected_payment_date,
