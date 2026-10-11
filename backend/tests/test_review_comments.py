@@ -165,3 +165,27 @@ def test_compliance_can_comment_even_though_it_decides_nothing(db):
 
     assert response.status_code == 200
     assert [m["action_id"] for m in _client(db).get("/mentions").json()["mentions"]] == [action_id]
+
+
+def test_comments_stay_out_of_answers_and_customer_records(db, monkeypatch):
+    from app.config import get_settings
+    from app.services import entity_resolution
+    from app.services.query_filters import QueryFilters, eligible_statement
+
+    def never(*args, **kwargs):
+        raise AssertionError("a comment must not be linked to a customer")
+
+    monkeypatch.setattr(get_settings(), "customer_intelligence_enabled", True)
+    monkeypatch.setattr(entity_resolution, "link_record_from_known_aliases", never)
+    action_id = _item(db)
+    assert (
+        _client(db)
+        .post(f"/review-inbox/{action_id}/comments", json={"text": "Kedai A paid late again."})
+        .status_code
+        == 200
+    )
+
+    row = db.scalar(select(TokenizedContent))
+    row.processing_status = "ready"  # even if comments were ever enriched
+    db.commit()
+    assert db.scalars(eligible_statement(QueryFilters(tenant_id=str(TENANT_A)))).all() == []

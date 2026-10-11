@@ -196,7 +196,9 @@ def protect_canonical_record(
         )
     db.commit()
 
-    if not risk and get_settings().customer_intelligence_enabled:
+    # Review comments belong to the review item, never to a customer's record.
+    linkable = record.record_type != "review_comment"
+    if not risk and linkable and get_settings().customer_intelligence_enabled:
         try:
             from app.services.entity_resolution import link_record_from_known_aliases
 

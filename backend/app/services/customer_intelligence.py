@@ -59,13 +59,16 @@ def _financials(db: Session, tenant_id: str, customer_id: int) -> tuple[Decimal,
 def customer_summary(db: Session, tenant_id: str, customer: Customer) -> CustomerSummaryResponse:
     snapshot = latest_attention(db, tenant_id, customer.id)
     outstanding, overdue, invoice_count = _financials(db, tenant_id, customer.id)
-    linked = db.scalar(
-        select(func.count(func.distinct(CustomerRecordLink.tokenized_content_id))).where(
-            CustomerRecordLink.tenant_id == tenant_id,
-            CustomerRecordLink.customer_id == customer.id,
-            CustomerRecordLink.match_status == "verified",
+    linked = (
+        db.scalar(
+            select(func.count(func.distinct(CustomerRecordLink.tokenized_content_id))).where(
+                CustomerRecordLink.tenant_id == tenant_id,
+                CustomerRecordLink.customer_id == customer.id,
+                CustomerRecordLink.match_status == "verified",
+            )
         )
-    ) or 0
+        or 0
+    )
     registry = (
         db.get(ProtectedTokenRegistry, customer.primary_name_token)
         if customer.primary_name_token
@@ -75,15 +78,19 @@ def customer_summary(db: Session, tenant_id: str, customer: Customer) -> Custome
         db, tenant_id, customer.id, snapshot.id if snapshot else None, datetime.now(UTC).date()
     )
     return CustomerSummaryResponse(
-        id=customer.id, name=registry.masked_value if registry else customer.canonical_name,
+        id=customer.id,
+        name=registry.masked_value if registry else customer.canonical_name,
         profile_status=customer.profile_status,
         identity_review_status=customer.identity_review_status,
         profile_origin=customer.profile_origin,
         attention_score=snapshot.score if snapshot else 0,
         priority=snapshot.priority if snapshot else "healthy",
-        outstanding_total=outstanding, overdue_total=overdue,
-        invoice_count=invoice_count, linked_source_count=linked,
-        risk_note=note, risk_sources=sources,
+        outstanding_total=outstanding,
+        overdue_total=overdue,
+        invoice_count=invoice_count,
+        linked_source_count=linked,
+        risk_note=note,
+        risk_sources=sources,
     )
 
 
@@ -104,12 +111,17 @@ def customer_detail(db: Session, tenant_id: str, customer_id: int) -> CustomerDe
     signals = []
     if snapshot:
         signals = [
-            CustomerAttentionSignalResponse.model_validate({
-                "signal_type": row.signal_type, "points": row.points, "label": row.label,
-                "freshness": row.freshness, "confidence": row.confidence,
-                "tokenized_content_id": row.tokenized_content_id,
-                "einvoice_record_id": row.einvoice_record_id,
-            })
+            CustomerAttentionSignalResponse.model_validate(
+                {
+                    "signal_type": row.signal_type,
+                    "points": row.points,
+                    "label": row.label,
+                    "freshness": row.freshness,
+                    "confidence": row.confidence,
+                    "tokenized_content_id": row.tokenized_content_id,
+                    "einvoice_record_id": row.einvoice_record_id,
+                }
+            )
             for row in db.scalars(
                 select(CustomerAttentionSignal)
                 .where(CustomerAttentionSignal.snapshot_id == snapshot.id)
@@ -118,9 +130,12 @@ def customer_detail(db: Session, tenant_id: str, customer_id: int) -> CustomerDe
         ]
     timeline = [
         CustomerTimelineItemResponse(
-            event_id=f"content:{row.id}", event_type="protected_record",
-            source_system=row.source_system, occurred_at=row.occurred_at,
-            protected_summary=row.summary or row.content_text[:500], tokenized_content_id=row.id,
+            event_id=f"content:{row.id}",
+            event_type="protected_record",
+            source_system=row.source_system,
+            occurred_at=row.occurred_at,
+            protected_summary=row.summary or row.content_text[:500],
+            tokenized_content_id=row.id,
             identity_status=link.match_status,
         )
         for link, row in db.execute(
@@ -130,6 +145,7 @@ def customer_detail(db: Session, tenant_id: str, customer_id: int) -> CustomerDe
                 CustomerRecordLink.tenant_id == tenant_id,
                 CustomerRecordLink.customer_id == customer_id,
                 CustomerRecordLink.match_status == "verified",
+                TokenizedContent.source_system != "duitduit",
             )
         ).all()
     ]

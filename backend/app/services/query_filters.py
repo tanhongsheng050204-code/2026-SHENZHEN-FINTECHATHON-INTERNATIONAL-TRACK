@@ -41,6 +41,9 @@ class QueryFilters:
         return replace(self, content_ids=tuple(sorted(selected)) or (-1,))
 
 
+REVIEW_COMMENT_SOURCE = "duitduit"
+
+
 def apply_content_filters(
     statement: Select[tuple[TokenizedContent]], filters: QueryFilters
 ) -> Select[tuple[TokenizedContent]]:
@@ -53,6 +56,9 @@ def apply_content_filters(
     statement = statement.where(
         TokenizedContent.processing_status == "ready",
         TokenizedContent.tenant_id == filters.tenant_id,
+        # Review comments are never enriched, so never "ready"; this keeps them out
+        # of answers even if that changes. They are read only on their review item.
+        TokenizedContent.source_system != REVIEW_COMMENT_SOURCE,
     )
     if filters.source_systems:
         statement = statement.where(TokenizedContent.source_system.in_(filters.source_systems))
