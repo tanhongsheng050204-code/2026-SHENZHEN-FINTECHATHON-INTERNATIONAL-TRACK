@@ -59,6 +59,10 @@ const MESSAGES: Record<string, string> = {
   session_expired: "Your session has ended. Please sign in again.",
   session_idle_timeout: "You were signed out after a period of inactivity.",
   session_revoked: "You were signed out. Please sign in again.",
+  network_unreachable: "DuitDuit can't reach its server right now. Check your connection, then try again in a moment.",
+  request_failed_502: "DuitDuit can't reach its server right now. Try again in a moment.",
+  request_failed_503: "DuitDuit can't reach its server right now. Try again in a moment.",
+  request_failed_504: "The server took too long to answer. Try again in a moment.",
   demo_not_available: "The demo company is not open on this server.",
   demo_not_provisioned: "The demo company is not set up on this server yet.",
   demo_account_locked: "The shared demo account can't change this. Every judge uses the same account.",
@@ -85,11 +89,17 @@ export async function sessionFetch(path: string, init: RequestInit = {}): Promis
 }
 
 async function call<T>(path: string, method: "GET" | "POST", body?: unknown): Promise<T> {
-  const response = await sessionFetch(path, {
-    method,
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await sessionFetch(path, {
+      method,
+      headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    // The browser could not reach the server at all ("Failed to fetch").
+    throw new SessionError("network_unreachable", 0);
+  }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const detail = Array.isArray(data.detail) ? (data.detail[0]?.msg ?? "invalid_request") : data.detail;
