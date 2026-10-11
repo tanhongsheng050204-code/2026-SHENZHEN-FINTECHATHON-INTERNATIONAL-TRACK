@@ -10,6 +10,8 @@ import { SourcesGrid } from "../components/landing/SourcesGrid";
 import { DayRail } from "../components/landing/DayRail";
 import { Desks } from "../components/landing/Desks";
 import { ChainProof } from "../components/landing/ChainProof";
+import { FeatureGrid } from "../components/landing/FeatureGrid";
+import { PlatformTabs } from "../components/landing/PlatformTabs";
 import "./Landing.css";
 import { CookieConsentBanner, SupportWidget } from "../components/MarketingWidgets";
 
@@ -153,6 +155,16 @@ export default function Landing() {
       <section className="lv-frame" id="landing-product" aria-labelledby="lx-product-title">
         <h2 id="lx-product-title" className="lv-two-tone"><span>One day at a small importer.</span> Cash flow, financing and analysis, all from the same records, so the numbers agree from page to page.</h2>
         <DayRail />
+      </section>
+
+      <section className="lv-frame" id="landing-platform" aria-labelledby="lv-platform-title">
+        <h2 id="lv-platform-title" className="lv-two-tone"><span>Work together on the money.</span> Collections, approvals, automations and your own AI tool, all on the same records.</h2>
+        <PlatformTabs />
+      </section>
+
+      <section className="lv-frame" aria-labelledby="lv-grid-title">
+        <h2 id="lv-grid-title" className="lv-two-tone"><span>The small things, done properly.</span> Views, notes and notices that respect who may see what.</h2>
+        <FeatureGrid />
       </section>
 
       <section className="lv-frame" aria-labelledby="lv-desks-title">

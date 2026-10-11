@@ -37,7 +37,8 @@ TOOLS = [
     {
         "name": "get_cash_forecast",
         "description": "The company's cash forecast: opening balance, minimum, lowest likely "
-        "point, any shortfall and today's alerts. Figures in ringgit.",
+        "point, any shortfall and today's alerts. Figures in ringgit."
+        " 公司现金预测：期初余额、最低余额、预计最低点、资金缺口和今日预警，单位为马币（RM）。",
         "inputSchema": {
             "type": "object",
             "properties": {"horizon_days": {"type": "integer", "enum": [30, 60, 90]}},
@@ -46,25 +47,29 @@ TOOLS = [
     {
         "name": "get_forecast_check",
         "description": "How past forecasts compared with the bank balance; says when this "
-        "is not measured yet.",
+        "is not measured yet."
+        " 过往预测与银行实际余额的比较；尚未测量时会说明。",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "get_review_inbox",
         "description": "Items waiting for a person's decision: title, approval level, "
-        "position and amount. Read-only: decisions are made in DuitDuit.",
+        "position and amount. Read-only: decisions are made in DuitDuit."
+        " 等待人工决定的事项：标题、审批级别、岗位和金额。只读，决定须在 DuitDuit 中作出。",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "get_collections_board",
         "description": "Unpaid invoices by column (later, due soon, overdue, reminder, paid) "
-        "with counts and totals.",
+        "with counts and totals."
+        " 按栏目（稍后、即将到期、已逾期、催款提醒、已付款）列出的未付发票数量和总额。",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "get_financing_matches",
         "description": "Financing products checked against the company's records: "
-        "eligibility, fit score and the next step. Not offers of credit.",
+        "eligibility, fit score and the next step. Not offers of credit."
+        " 根据公司记录检查的融资产品：是否符合条件、匹配分和下一步。并非授信要约。",
         "inputSchema": {
             "type": "object",
             "properties": {"jurisdiction": {"type": "string", "enum": ["MY", "CN"]}},
@@ -190,7 +195,9 @@ def _answer(db, principal, key_id: str, message: dict) -> dict | None:
                 "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": {"name": "duitduit", "version": "1.0"},
                 "instructions": "Read-only access to one company's DuitDuit figures. "
-                "Nothing here can send, pay or change anything.",
+                "Nothing here can send, pay or change anything. Amounts are in ringgit (RM). "
+                "只读访问一家公司的 DuitDuit 数据，不能发送、付款或更改任何内容。金额单位为马币。"
+                "Answer in the user's language.",
             },
         }
     if method == "ping":

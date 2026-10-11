@@ -113,6 +113,7 @@ const ARTICLES: Article[] = [
     title: "Connect Claude or another AI tool (MCP)",
     body: [
       "In Company settings → AI connections, the owner creates a key. It is shown once; DuitDuit keeps only a fingerprint of it, and the owner can revoke it at any time.",
+      "Chinese AI tools work too: any client that supports MCP over Streamable HTTP, such as Cherry Studio with DeepSeek, Qwen or Kimi models, or Trae. The tools describe themselves in English and Chinese. We have not yet tested each client.",
       "An AI tool that speaks MCP, such as Claude Code or Claude Desktop, can then read the cash forecast, the forecast check, the review inbox, the collections board and financing matches. It sees figures and masked labels, never contact details, and it cannot approve, send or change anything. Every call is recorded.",
     ],
   },

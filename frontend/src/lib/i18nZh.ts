@@ -357,6 +357,11 @@ export const FB_ZH: Record<string, string> = {
   "I have saved it": "我已保存",
   "Server address": "服务器地址",
   "A company can have at most 5 active keys. Revoke one first.": "每家公司最多 5 个有效密钥，请先撤销一个。",
+  "Chinese AI tools and other MCP clients": "国内 AI 工具及其他 MCP 客户端",
+  "Works with Chinese AI tools": "支持国内 AI 工具",
+  "Any client that supports MCP over Streamable HTTP can connect: for example Cherry Studio with DeepSeek, Qwen (通义千问) or Kimi models, ByteDance's Trae, or an agent built on Alibaba Cloud Model Studio (百炼). Add a server with transport Streamable HTTP, the server address above, and the header Authorization: Bearer <your key>. The tools describe themselves in English and Chinese, so the model can answer in Chinese. We have not yet tested each of these clients.":
+    "任何支持 Streamable HTTP 方式 MCP 的客户端都可以连接，例如使用 DeepSeek、通义千问或 Kimi 模型的 Cherry Studio、字节跳动的 Trae，或基于阿里云百炼构建的智能体。添加服务器时选择 Streamable HTTP，填入上方服务器地址，并添加请求头 Authorization: Bearer <您的密钥>。工具说明同时提供中英文，模型可以用中文回答。我们尚未逐一测试这些客户端。",
+  "From mainland China, the server address must use a domain reachable there; vercel.app often is not.": "在中国大陆使用时，服务器地址须使用可访问的域名；vercel.app 通常无法访问。",
 
   // ── Financing ──
   "Malaysia": "马来西亚",

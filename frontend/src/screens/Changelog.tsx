@@ -12,7 +12,8 @@ const DAYS: { date: string; title: string; items: string[] }[] = [
     title: "Reminder sequences, AI connections, and Finance sees the whole inbox",
     items: [
       "Connect Claude or another AI tool over MCP with a read-only company key: it can read the forecast, the inbox, the collections board and financing matches, and change nothing.",
-      "Pricing, Changelog and Help pages, and Attio-style menus on the public site.",
+      "Chinese AI tools can connect too: the MCP tools describe themselves in English and Chinese, and the set-up works with any client that speaks MCP over Streamable HTTP.",
+      "Pricing, Changelog and Help pages, Attio-style menus, and a product tour and feature grid on the landing page.",
       "Automations can run a reminder sequence: a friendly reminder, a firm one a week later, then a call task for Finance. Each step waits for a person.",
       "Finance and staff now see, and can decide, items that agents and other people prepared, under the database's row-level security.",
     ],

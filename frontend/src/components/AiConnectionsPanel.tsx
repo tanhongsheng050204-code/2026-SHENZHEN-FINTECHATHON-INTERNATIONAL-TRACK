@@ -49,6 +49,7 @@ export function AiConnectionsPanel({ isOwner }: { isOwner: boolean }) {
   };
 
   const claudeCode = `claude mcp add --transport http duitduit ${endpoint} --header "Authorization: Bearer ${secret ?? "<your key>"}"`;
+  const generic = JSON.stringify({ mcpServers: { duitduit: { type: "streamableHttp", url: endpoint, headers: { Authorization: `Bearer ${secret ?? "<your key>"}` } } } }, null, 2);
   const desktop = JSON.stringify({ mcpServers: { duitduit: { command: "npx", args: ["mcp-remote", endpoint, "--header", `Authorization: Bearer ${secret ?? "<your key>"}`] } } }, null, 2);
 
   return (
@@ -76,10 +77,17 @@ export function AiConnectionsPanel({ isOwner }: { isOwner: boolean }) {
               <pre className="dd-code">{claudeCode}</pre>
               <div className="fb-inbox-label">{tx("Claude Desktop (claude_desktop_config.json)")}</div>
               <pre className="dd-code">{desktop}</pre>
+              <div className="fb-inbox-label">{tx("Chinese AI tools and other MCP clients")}</div>
+              <pre className="dd-code">{generic}</pre>
               <button type="button" className="fb-btn fb-btn-outline" onClick={() => setSecret(null)}>{tx("I have saved it")}</button>
             </div>
           )}
           <p className="fb-inbox-muted">{tx("Server address")}: <code>{endpoint}</code></p>
+          <div className="dd-ai-clients">
+            <div className="fb-inbox-label">{tx("Works with Chinese AI tools")}</div>
+            <p className="fb-inbox-muted">{tx("Any client that supports MCP over Streamable HTTP can connect: for example Cherry Studio with DeepSeek, Qwen (通义千问) or Kimi models, ByteDance's Trae, or an agent built on Alibaba Cloud Model Studio (百炼). Add a server with transport Streamable HTTP, the server address above, and the header Authorization: Bearer <your key>. The tools describe themselves in English and Chinese, so the model can answer in Chinese. We have not yet tested each of these clients.")}</p>
+            <p className="fb-inbox-muted">{tx("From mainland China, the server address must use a domain reachable there; vercel.app often is not.")}</p>
+          </div>
         </>
       )}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}
