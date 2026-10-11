@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useAuth } from "../auth/AuthProvider";
+import { qrImageSource } from "../lib/qr";
 import {
   challengeTotp,
   enrollTotp,
@@ -173,7 +174,7 @@ export function AuthFlow({ mode, onModeChange }: { mode: AuthFlowMode; onModeCha
             <p className="fb-mkt-fine">Owners, finance and compliance must use an authenticator app such as Google Authenticator or Microsoft Authenticator. Scan this code, then enter the 6-digit code it shows.</p>
             {enrollment ? (
               <div className="fb-auth-qr">
-                <img src={enrollment.qr_code} alt="QR code to add DuitDuit to your authenticator app" width={180} height={180} />
+                <img src={qrImageSource(enrollment.qr_code)} alt="QR code to add DuitDuit to your authenticator app" width={180} height={180} />
                 <span className="fb-mkt-fine">Can't scan? Enter this key: <code>{enrollment.secret}</code></span>
               </div>
             ) : (

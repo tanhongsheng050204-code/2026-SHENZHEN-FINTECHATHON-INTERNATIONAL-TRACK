@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Modal } from "./Modal";
+import { qrImageSource } from "../lib/qr";
 import {
   authMode,
   challengeTotp,
@@ -118,7 +119,7 @@ export function StepUpPrompt() {
         </div>}
         {enrollment && <div>
           <p>Scan this QR code in your authenticator app, then enter its code below.</p>
-          <img width="190" height="190" alt="DuitDuit authenticator setup QR code" src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.qr_code)}`} />
+          <img width="190" height="190" alt="DuitDuit authenticator setup QR code" src={qrImageSource(enrollment.qr_code)} />
           <label className="fb-cash-field"><span>Or enter this setup key in your authenticator app</span><input readOnly value={enrollment.secret} /></label>
         </div>}
         <label className="fb-cash-field">
