@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ActivityTimeline, Handoff } from "../components/Collaboration";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { SectionTabs } from "../components/SectionTabs";
 import { EmptyState } from "../components/EmptyState";
@@ -54,24 +55,6 @@ function StatusPill({ action }: { action: ReviewAction }) {
 
 function LevelPill({ level }: { level: ReviewAction["autonomy_level"] }) {
   return <span className={"fb-inbox-level is-" + level.toLowerCase()}>{level}</span>;
-}
-
-function ApprovalSteps({ action }: { action: ReviewAction }) {
-  const makerDone = action.approvals.length >= 1;
-  const checkerDone = action.approvals.length >= 2;
-  const step = (n: number, label: string, detail: string, state: "done" | "current" | "todo") => (
-    <li className={"fb-inbox-step is-" + state}>
-      <span className="fb-inbox-step-label">{n} · {label}</span>
-      <span>{detail}</span>
-    </li>
-  );
-  return (
-    <ol className="fb-inbox-steps" aria-label="Approvals">
-      {step(1, "Agent", "Flagged and drafted", "done")}
-      {step(2, "Maker", makerDone ? "Approved" : "Position holder approves", makerDone ? "done" : "current")}
-      {step(3, "Checker", checkerDone ? "Approved" : "Owner, a different person", checkerDone ? "done" : makerDone ? "current" : "todo")}
-    </ol>
-  );
 }
 
 // Where a piece of evidence lives, from the prefix of its source reference.
@@ -221,6 +204,7 @@ export default function ReviewInbox() {
                         {action.amount !== null && <> · <strong>{ringgit(action.amount)}</strong></>}
                       </span>
                     </span>
+                    <Handoff action={action} />
                     <StatusPill action={action} />
                   </button>
                 ))}
@@ -240,7 +224,10 @@ export default function ReviewInbox() {
                     <h2>{selected.title}</h2>
                     <p className="fb-inbox-summary">{selected.summary}</p>
 
-                    {selected.autonomy_level === "L3" && <ApprovalSteps action={selected} />}
+                    <div>
+                      <div className="fb-inbox-label">Activity</div>
+                      <ActivityTimeline action={selected} />
+                    </div>
 
                     {selected.evidence.length > 0 && (
                       <div>

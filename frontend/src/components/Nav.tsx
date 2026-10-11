@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { PARENT_SCREEN, canOpen } from "../lib/access";
 import { useI18n } from "../lib/i18n";
 import { PERSONAS } from "../lib/personas";
+import "./Collaboration.css";
 import { useActiveSection, useScrollY } from "../lib/interactivity";
 import { useUiChrome } from "../lib/uiChrome";
 import { LogoMark, Wordmark } from "./Logo";
@@ -198,6 +199,15 @@ export function Sidebar({ current, backTo, backLabel }: { current?: Screen; back
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
+        {identity?.company_name && (
+          <div className="fb-workspace" title={identity.company_name}>
+            <span className="fb-workspace-mark" aria-hidden="true">{identity.company_name.replace(/^SYNTHETIC\s+/i, "").charAt(0)}</span>
+            <span className="fb-workspace-text">
+              <span className="fb-workspace-name">{identity.company_name}</span>
+              <span className="fb-workspace-role">{PERSONAS[identity.role].label}</span>
+            </span>
+          </div>
+        )}
 
         {backTo ? (
           <button className="fb-sidebar-back" type="button" onClick={backTo}>

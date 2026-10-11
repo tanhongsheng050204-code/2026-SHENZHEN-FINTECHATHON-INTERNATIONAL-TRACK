@@ -17,6 +17,8 @@ interface AuthIdentity {
   user_id: string;
   email: string | null;
   role: Role;
+  /** The company this session belongs to, for the sidebar's workspace header. */
+  company_name?: string | null;
 }
 
 interface AuthContextValue {
@@ -201,12 +203,15 @@ function BackendAuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     let email: string | null = null;
+    let companyName: string | null = null;
     try {
-      email = (await fetchMe()).email;
+      const me = await fetchMe();
+      email = me.email;
+      companyName = me.company_name ?? null;
     } catch {
       // The session is valid; a missing display email is not worth failing sign-in.
     }
-    setIdentity({ user_id: next.user_id, email, role: next.role });
+    setIdentity({ user_id: next.user_id, email, role: next.role, company_name: companyName });
     setAuthError(null);
   }, []);
 

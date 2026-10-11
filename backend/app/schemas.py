@@ -19,6 +19,7 @@ class AuthMeResponse(BaseModel):
     user_id: str
     email: str | None
     role: UserRole
+    company_name: str | None = None
 
 
 class ProcessingStatus(StrEnum):

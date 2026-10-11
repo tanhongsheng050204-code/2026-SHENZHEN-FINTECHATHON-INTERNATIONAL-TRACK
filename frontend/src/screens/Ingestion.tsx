@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { ConnectionsBoard } from "../components/ConnectionsBoard";
 import { useI18n } from "../lib/i18n";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { ImportMappingsCard } from "../components/ImportMappingsCard";
@@ -503,6 +504,7 @@ export default function Ingestion() {
       </header>
 
       <div className="fb-page-body">
+        <ConnectionsBoard />
         <TelegramCapturePanel />
         <EmailCapturePanel />
         <div className="fb-callout">
@@ -514,7 +516,7 @@ export default function Ingestion() {
 
         <ProtectedFilePanel />
 
-        <BusinessCsvImportCard />
+        <div id="dd-business-files" style={{ scrollMarginTop: "90px" }}><BusinessCsvImportCard /></div>
         {(role === "owner_director" || role === "finance_ops") && <ImportMappingsCard />}
 
         <button className="fb-link-toggle" type="button" onClick={() => setManualOpen((v) => !v)} aria-expanded={manualOpen} style={{ marginBottom: manualOpen ? "1rem" : "2rem" }}>

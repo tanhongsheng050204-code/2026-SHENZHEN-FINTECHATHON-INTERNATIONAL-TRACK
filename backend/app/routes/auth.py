@@ -112,11 +112,15 @@ def _recent_mfa(row: BackendAuthSession) -> bool:
 
 
 @router.get("/me", response_model=AuthMeResponse)
-def me(principal: CurrentUser) -> AuthMeResponse:
+def me(principal: CurrentUser, db: Session = Depends(get_db)) -> AuthMeResponse:
     from app.services.identity import mask_email
 
+    company = db.get(Tenant, str(principal.tenant_id))
     return AuthMeResponse(
-        user_id=str(principal.user_id), email=mask_email(principal.email or ""), role=principal.role
+        user_id=str(principal.user_id),
+        email=mask_email(principal.email or ""),
+        role=principal.role,
+        company_name=company.name if company else None,
     )
 
 

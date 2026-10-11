@@ -390,3 +390,16 @@ def test_provisioning_writes_secrets_only_to_a_new_private_file(db, monkeypatch,
     assert member.user_role == "owner_director" and member.active
     with pytest.raises(SystemExit):
         script.main()
+
+
+def test_me_names_the_company_for_the_workspace_header(db):
+    from app.auth.dependencies import get_current_user
+
+    app = FastAPI()
+    app.include_router(auth_router)
+    app.dependency_overrides[get_db] = lambda: db
+    app.dependency_overrides[get_current_user] = lambda: principal(UserRole.OWNER_DIRECTOR)
+    with TestClient(app) as me_client:
+        body = me_client.get("/auth/me").json()
+    assert body["company_name"] == "Synthetic demo company"
+    assert body["role"] == "owner_director"

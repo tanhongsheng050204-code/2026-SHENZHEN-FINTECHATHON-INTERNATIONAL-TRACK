@@ -143,7 +143,8 @@ export async function fetchDemoCode(): Promise<{ code: string; seconds_left: num
     return null;
   }
 }
-export const fetchMe = () => call<{ user_id: string; email: string | null; role: SessionResponse["role"] }>("/auth/me", "GET");
+export const fetchMe = () =>
+  call<{ user_id: string; email: string | null; role: SessionResponse["role"]; company_name?: string | null }>("/auth/me", "GET");
 
 export async function signOutSession(): Promise<void> {
   await sessionFetch("/auth/sign-out", { method: "POST" }).catch(() => undefined);
