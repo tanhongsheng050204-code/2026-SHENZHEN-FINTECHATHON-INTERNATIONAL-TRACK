@@ -1,6 +1,6 @@
 # DuitDuit evaluation report
 
-48 passed, 0 failed, 0 skipped of 48 tasks. Offline: no network and no model provider.
+52 passed, 0 failed, 0 skipped of 52 tasks. Offline: no network and no model provider.
 
 | Task | Kind | Standard | Result | Detail |
 | --- | --- | --- | --- | --- |
@@ -51,4 +51,8 @@
 | ADV-18 Finance cannot create or list AI keys | adversarial | ASI03 | pass | Finance is refused both creating (403) and listing (403) AI keys |
 | ADV-19 One company cannot put a hold on another company's invoice | adversarial | ASI03 | pass | company B's hold on company A's invoice is refused (404); A's board is unchanged |
 | ADV-20 An automation never chases a disputed invoice | adversarial | ASI08 | pass | a disputed invoice 40 days overdue gets no reminder; the run says 1 on hold |
-| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "e04b2c6af8666df7", "method": "password", "new_device": false} |
+| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "13131c0bd5d515b0", "method": "password", "new_device": false} |
+| F23 Unusual and duplicate supplier bills are flagged; ordinary ones are not | functional |  | pass | BIG-1 flagged as unusual, the second INV-77 as a duplicate, OK-1 not flagged |
+| ADV-22 The checker agent fails a reminder for a disputed invoice | adversarial | ASI09 | pass | the checker fails the reminder: The invoice is disputed: do not send a reminder. |
+| ADV-23 No cross-company benchmark is released below five companies | adversarial | ASI03 | pass | nothing released for 4 companies; for 5, a noisy average with Laplace scale 18 days |
+| ADV-24 An answer with a figure no source holds is reported as not grounded | adversarial | ASI06 | pass | the sentence with 98000, which no source holds, is reported unsupported |

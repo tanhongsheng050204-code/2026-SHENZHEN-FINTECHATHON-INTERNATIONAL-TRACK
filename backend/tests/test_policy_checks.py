@@ -85,8 +85,13 @@ def test_a_proposal_without_evidence_is_a_warning(live_db):  # noqa: F811
     assert _checks(live_db, action_id)["evidence"]["status"] == "warn"
 
 
-def test_only_people_who_can_see_the_item_get_its_checks(live_db):  # noqa: F811
+def test_only_money_roles_that_can_see_the_item_get_its_checks(live_db):  # noqa: F811
     action_id = _propose(live_db)
+    # The checks name amounts, holds and flagged bills: money roles only.
     staff = _client(live_db, UserRole.GENERAL_EMPLOYEE).get(f"/insights/checks/{action_id}")
-    assert staff.status_code == 404
+    assert staff.status_code == 403
+    assert (
+        _client(live_db, UserRole.COMPLIANCE).get(f"/insights/checks/{action_id}").status_code
+        == 200
+    )
     assert _client(live_db).get("/insights/checks/act_missing").status_code == 404

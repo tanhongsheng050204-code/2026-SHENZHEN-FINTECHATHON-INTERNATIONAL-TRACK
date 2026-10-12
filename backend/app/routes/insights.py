@@ -52,10 +52,13 @@ def send_anomaly_for_review(
 @router.get("/insights/checks/{action_id}", response_model=PolicyChecksResponse)
 def review_item_checks(
     action_id: str,
-    principal: AuthPrincipal = Depends(require_roles(*UserRole)),
+    principal: AuthPrincipal = Depends(require_roles(*_MONEY_READ)),
     db: Session = Depends(get_db),
 ) -> PolicyChecksResponse:
-    """The checker agent's findings on one review item the person can see."""
+    """The checker agent's findings on one review item the person can see.
+
+    The findings name amounts, holds and flagged bills, so only the money roles get them.
+    """
     try:
         checks = policy_checks.check(db, principal, action_id)
     except policy_checks.CheckError as error:

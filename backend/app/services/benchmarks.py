@@ -8,9 +8,12 @@ company's own figure being revealed or worked out:
   at most CLIP_DAYS / n (the sensitivity).
 - The released average gets Laplace noise with scale sensitivity / EPSILON: the
   Laplace mechanism, epsilon-differentially private for that release.
-- The noise is fixed for a day (seeded from the server secret and the date), so
-  asking again the same day does not average it away. Each day is a new release,
-  so the privacy cost adds up over days; the epsilon shown is per metric per day.
+- The noise is seeded from the server secret, the date and a digest of the exact
+  values released. Asking again with the same data gives the same answer, so it
+  cannot be averaged away; any change (a company joins, a figure moves) gets fresh
+  noise, so the difference between two answers does not cancel the noise and
+  reveal one company's figure. Each distinct release costs epsilon, and the cost
+  adds up across releases (sequential composition).
 - Nothing is released below MIN_COMPANIES contributing companies.
 
 The company's own value is shown exactly, to itself only. Reading other companies'
@@ -77,7 +80,9 @@ def report(db: Session, tenant_id: str, today: dt.date | None = None) -> Benchma
     scale = (CLIP_DAYS / n) / EPSILON if n else None
     peer = None
     if enough:
-        noisy = statistics.fmean(values.values()) + laplace(scale, f"days_late:{today}")
+        released = ",".join(f"{t}={v}" for t, v in sorted(values.items()))
+        data = hashlib.sha256(released.encode()).hexdigest()
+        noisy = statistics.fmean(values.values()) + laplace(scale, f"days_late:{today}:{data}")
         peer = round(min(CLIP_DAYS, max(0.0, noisy)), 1)
     return BenchmarksResponse(
         status="measured" if enough else "not_enough_companies",

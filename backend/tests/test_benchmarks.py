@@ -91,3 +91,24 @@ def test_a_company_without_paid_invoices_is_not_counted(db):
     report = benchmarks.report(db, str(TENANT_A), TODAY)
     assert report.status == "not_enough_companies"
     assert report.metrics[0].your_value is None
+
+
+def test_a_changed_cohort_gets_fresh_noise_so_differences_reveal_nothing(db, monkeypatch):
+    seeds = []
+    real = benchmarks.laplace
+
+    def recording(scale, seed):
+        seeds.append(seed)
+        return real(scale, seed)
+
+    monkeypatch.setattr(benchmarks, "laplace", recording)
+    _company(db, [10, 10], str(TENANT_A))
+    for late in (5, 15, 20, 25):
+        _company(db, [late])
+    benchmarks.report(db, str(TENANT_A), TODAY)
+    benchmarks.report(db, str(TENANT_A), TODAY)  # same data: same noise
+    _company(db, [30])  # a company joins the same day
+    benchmarks.report(db, str(TENANT_A), TODAY)
+
+    assert seeds[0] == seeds[1]
+    assert seeds[2] != seeds[0]
