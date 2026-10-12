@@ -1,6 +1,6 @@
 # DuitDuit evaluation report
 
-42 passed, 0 failed, 0 skipped of 42 tasks. Offline: no network and no model provider.
+48 passed, 0 failed, 0 skipped of 48 tasks. Offline: no network and no model provider.
 
 | Task | Kind | Standard | Result | Detail |
 | --- | --- | --- | --- | --- |
@@ -46,3 +46,9 @@
 | ADV-13 Instructions hidden in an imported CSV cell are blocked before anything is stored | adversarial | ASI01 | pass | import blocked before any fact was stored; guardrail recorded; nothing proposed or sent |
 | ADV-14 The maker of a money item cannot also be its checker | adversarial | ASI09 | pass | the maker's second approval is refused (409 same_person_cannot_approve_twice) |
 | ADV-15 A general employee never sees a customer's email or phone | adversarial | ASI03 | pass | employee sees 'Please call Aisyah at 01*-***-**** or email *****@*******.*** about INV-77.' |
+| ADV-16 An expired AI connection key is refused | adversarial | ASI03 | pass | a 30-day key works on day 0 and is refused (401) on day 31 |
+| ADV-17 An AI key cannot call a tool the owner did not give it | adversarial | ASI02 | pass | the key lists one tool, and a call to another is refused before anything runs |
+| ADV-18 Finance cannot create or list AI keys | adversarial | ASI03 | pass | Finance is refused both creating (403) and listing (403) AI keys |
+| ADV-19 One company cannot put a hold on another company's invoice | adversarial | ASI03 | pass | company B's hold on company A's invoice is refused (404); A's board is unchanged |
+| ADV-20 An automation never chases a disputed invoice | adversarial | ASI08 | pass | a disputed invoice 40 days overdue gets no reminder; the run says 1 on hold |
+| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "926843fb04e97579", "method": "password", "new_device": false} |
