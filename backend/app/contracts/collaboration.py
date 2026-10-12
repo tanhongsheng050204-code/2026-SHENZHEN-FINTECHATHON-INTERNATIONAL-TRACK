@@ -74,7 +74,9 @@ class HoldInfo(BaseModel):
 
 
 class Hold(HoldInfo):
+    # The invoice's label, or the customer's (masked) name for a paused customer.
     label: str
+    customer_label: str
     set_at: dt.datetime
     set_by_role: str
 

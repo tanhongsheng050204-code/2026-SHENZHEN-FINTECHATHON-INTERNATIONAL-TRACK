@@ -415,6 +415,8 @@ export interface CustomerSummary {
   /** One sentence written by fixed rules from the records in risk_sources; money roles only. */
   risk_note?: string | null;
   risk_sources?: string[];
+  /** low, medium or high by fixed rules; money roles only. */
+  risk_band?: "low" | "medium" | "high" | null;
 }
 
 export interface CustomerAttentionSignal {

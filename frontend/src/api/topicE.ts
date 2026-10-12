@@ -1070,6 +1070,20 @@ export interface ForecastCheckHorizon {
   compared: number;
   within_range: number;
   mean_abs_error_myr: string | null;
+  /** Mean of 1 - |likely - actual| / |actual|, as a percentage. */
+  accuracy_pct: string | null;
+}
+
+export interface ForecastDifference {
+  date: string;
+  horizon_days: number;
+  likely_myr: string;
+  actual_myr: string;
+  /** actual - likely: positive means more cash than forecast. */
+  difference_myr: string;
+  within_range: boolean;
+  expected_in_myr: string | null;
+  expected_out_myr: string | null;
 }
 
 /** Past forecasts against the bank balance on the days they forecast. */
@@ -1082,6 +1096,7 @@ export interface ForecastCheckResponse {
   within_range: number;
   first_comparison_on: string | null;
   by_horizon: ForecastCheckHorizon[];
+  largest_differences: ForecastDifference[];
 }
 
 export async function fetchForecastCheck(): Promise<ForecastCheckResponse> {

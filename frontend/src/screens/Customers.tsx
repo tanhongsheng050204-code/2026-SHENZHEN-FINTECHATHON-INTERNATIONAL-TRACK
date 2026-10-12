@@ -3,6 +3,7 @@ import { NO_FILTERS, type Priority, type SavedViewFilters } from "../api/collabo
 import { SavedViewsBar } from "../components/SavedViewsBar";
 import { useI18n } from "../lib/i18n";
 import "./Collections.css";
+import "../components/records.css";
 import {
   createCustomerEndpoint,
   createOutreachAction,
@@ -174,7 +175,7 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
     </div>
     {customer.risk_note && (
       <div className="fb-callout dd-risk-callout">
-        <strong>Risk note</strong> {customer.risk_note}
+        {customer.risk_band && <RiskBand band={customer.risk_band} />} <strong>Risk note</strong> {customer.risk_note}
         <div className="fb-fine">Written by fixed rules from: {(customer.risk_sources ?? []).join(", ")}. No AI model writes this note.</div>
       </div>
     )}
@@ -309,6 +310,15 @@ const SOURCE_NAMES: Record<string, string> = {
   outreach: "Outreach",
 };
 
+const BAND_TONE = { low: "is-green", medium: "is-amber", high: "is-red" } as const;
+const BAND_LABEL = { low: "Low risk", medium: "Medium risk", high: "High risk" } as const;
+
+/** The band from the fixed rules, as a chip. */
+function RiskBand({ band }: { band: "low" | "medium" | "high" }) {
+  const { tx } = useI18n();
+  return <span className={"rc-chip " + BAND_TONE[band]}>{tx(BAND_LABEL[band])}</span>;
+}
+
 export default function Customers() {
   const { currentCustomerKey, showCustomerDetail } = useAppState();
   const initialId = currentCustomerKey?.startsWith("id:") ? Number(currentCustomerKey.slice(3)) : null;
@@ -379,7 +389,7 @@ export default function Customers() {
                   <span className={"fb-status-pill " + priorityPillClass(row.priority)}><span className="fb-status-dot"></span>{TIER_LABEL[row.priority] ?? row.priority}</span>
                   <span className="fb-fine"> {row.attention_score}/100</span>
                 </td>
-                {showRisk && <td className="dd-risk-cell">{row.risk_note ?? "—"}</td>}
+                {showRisk && <td className="dd-risk-cell">{row.risk_band && <RiskBand band={row.risk_band} />}<div>{row.risk_note ?? "—"}</div></td>}
                 <td className={"fb-num-left" + (Number(row.overdue_total) > 0 ? " is-attn" : "")}>{formatRm(Number(row.overdue_total))}</td>
                 <td>{row.profile_status}{row.identity_review_status === "review_required" ? " · review required" : ""}</td>
                 <td className="fb-num-left">{formatRm(Number(row.outstanding_total))}</td>

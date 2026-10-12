@@ -1,0 +1,117 @@
+/* Record-style UI shared by the collections board, automations and AI keys:
+   status chips, the side panel a record opens in, and compact attribute lists.
+   Quiet neutrals and colour only where it carries meaning (late, on hold, paid). */
+:root{
+  --rc-surface:#FAFBFB; --rc-line:#E7EBEA; --rc-muted:#66726E; --rc-hover:#F3F5F4;
+  --rc-red:#B4372B; --rc-red-bg:#FCEDEA; --rc-amber:#8A5300; --rc-amber-bg:#FFF3DC;
+  --rc-blue:#2F55C4; --rc-blue-bg:#EBF0FF; --rc-green:#11704A; --rc-green-bg:#E4F5EC;
+  --rc-grey:#4B5552; --rc-grey-bg:#EEF1F0;
+}
+:root[data-theme="dark"]{
+  --rc-surface:#101C18; --rc-line:#24352F; --rc-muted:#9DB0AA; --rc-hover:#17261F;
+  --rc-red:#FF8A7A; --rc-red-bg:rgba(255,138,122,.12); --rc-amber:#F2C065; --rc-amber-bg:rgba(242,192,101,.12);
+  --rc-blue:#93AEFF; --rc-blue-bg:rgba(147,174,255,.12); --rc-green:#5FD69E; --rc-green-bg:rgba(95,214,158,.12);
+  --rc-grey:#C3D0CC; --rc-grey-bg:rgba(195,208,204,.12);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --rc-surface:#101C18; --rc-line:#24352F; --rc-muted:#9DB0AA; --rc-hover:#17261F;
+    --rc-red:#FF8A7A; --rc-red-bg:rgba(255,138,122,.12); --rc-amber:#F2C065; --rc-amber-bg:rgba(242,192,101,.12);
+    --rc-blue:#93AEFF; --rc-blue-bg:rgba(147,174,255,.12); --rc-green:#5FD69E; --rc-green-bg:rgba(95,214,158,.12);
+    --rc-grey:#C3D0CC; --rc-grey-bg:rgba(195,208,204,.12);
+  }
+}
+
+/* Chips */
+.rc-chip{display:inline-flex;align-items:center;gap:.3rem;max-width:100%;padding:.12rem .45rem;border-radius:6px;font:500 .74rem/1.35 inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--rc-grey-bg);color:var(--rc-grey)}
+.rc-chip::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:currentColor}
+.rc-chip.is-plain::before{display:none}
+.rc-chip.is-red{background:var(--rc-red-bg);color:var(--rc-red)}
+.rc-chip.is-amber{background:var(--rc-amber-bg);color:var(--rc-amber)}
+.rc-chip.is-blue{background:var(--rc-blue-bg);color:var(--rc-blue)}
+.rc-chip.is-green{background:var(--rc-green-bg);color:var(--rc-green)}
+.rc-chip.is-outline{background:transparent;box-shadow:inset 0 0 0 1px currentColor}
+.rc-chips{display:flex;flex-wrap:wrap;gap:.3rem}
+
+/* A person or company shown as an initial and a name. */
+.rc-who{display:inline-flex;align-items:center;gap:.4rem;min-width:0;font-size:.8rem;color:var(--ink)}
+.rc-who i{flex:none;width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font:700 .62rem/1 inherit;font-style:normal;color:#fff;background:var(--accent)}
+.rc-who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Side panel */
+.rc-scrim{position:fixed;inset:0;z-index:60;background:rgba(16,36,31,.18)}
+.rc-panel{position:fixed;top:0;right:0;bottom:0;z-index:61;width:min(420px,100vw);display:flex;flex-direction:column;background:var(--card);border-left:1px solid var(--rc-line);box-shadow:-24px 0 48px -32px rgba(16,36,31,.45)}
+.rc-panel-head{display:flex;align-items:flex-start;gap:.6rem;padding:1rem 1.1rem .8rem;border-bottom:1px solid var(--rc-line)}
+.rc-panel-head > div{flex:1;min-width:0}
+.rc-panel-kicker{margin:0 0 .15rem;font-size:.74rem;color:var(--rc-muted)}
+.rc-panel-head h2{margin:0;font-size:1.05rem;font-weight:650;letter-spacing:-.01em;overflow-wrap:anywhere}
+.rc-close{flex:none;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--rc-muted);font-size:1.1rem;cursor:pointer}
+.rc-close:hover{background:var(--rc-hover);color:var(--ink)}
+.rc-panel-body{flex:1;overflow:auto;padding:1rem 1.1rem 1.4rem;display:flex;flex-direction:column;gap:1.2rem}
+.rc-section h3{margin:0 0 .5rem;font-size:.74rem;font-weight:600;color:var(--rc-muted)}
+@media (prefers-reduced-motion:no-preference){
+  .rc-panel{animation:rc-slide .18s ease-out}
+  @keyframes rc-slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+}
+
+/* Attribute list: label on the left, value on the right. */
+.rc-attrs{display:grid;grid-template-columns:minmax(96px,34%) 1fr;margin:0;border:1px solid var(--rc-line);border-radius:10px;overflow:hidden}
+.rc-attrs dt,.rc-attrs dd{margin:0;padding:.5rem .7rem;font-size:.82rem;border-bottom:1px solid var(--rc-line);min-width:0}
+.rc-attrs dt{color:var(--rc-muted);background:var(--rc-surface)}
+.rc-attrs dd{overflow-wrap:anywhere}
+.rc-attrs dt:nth-last-child(2),.rc-attrs dd:last-child{border-bottom:0}
+
+/* Action list inside a panel */
+.rc-actions{display:flex;flex-direction:column;gap:.4rem}
+.rc-action{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-height:40px;padding:.45rem .7rem;border:1px solid var(--rc-line);border-radius:9px;background:var(--card);color:var(--ink);font:500 .84rem/1.3 inherit;text-align:left;cursor:pointer}
+.rc-action:hover:not(:disabled){background:var(--rc-hover)}
+.rc-action:disabled{opacity:.55;cursor:default}
+.rc-action small{color:var(--rc-muted);font-size:.74rem;font-weight:400}
+.rc-action.is-primary{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-text)}
+.rc-action.is-primary small{color:inherit;opacity:.8}
+.rc-inline{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.6rem .7rem;border:1px dashed var(--rc-line);border-radius:9px}
+.rc-inline label{display:flex;flex-direction:column;gap:.2rem;font-size:.76rem;color:var(--rc-muted)}
+.rc-inline input,.rc-inline select{min-height:36px;padding:.25rem .5rem;border:1px solid var(--rc-line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.rc-note{margin:0;font-size:.78rem;line-height:1.45;color:var(--rc-muted)}
+
+/* A plain list of records (holds, keys, runs). */
+.rc-list{list-style:none;margin:0;padding:0;border:1px solid var(--rc-line);border-radius:10px;overflow:hidden}
+.rc-list > li{display:flex;align-items:center;gap:.7rem;padding:.6rem .75rem;border-bottom:1px solid var(--rc-line);min-width:0}
+.rc-list > li:last-child{border-bottom:0}
+.rc-list-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:.2rem}
+.rc-list-main strong{font-size:.86rem;font-weight:600;overflow-wrap:anywhere}
+.rc-list-main span{font-size:.76rem;color:var(--rc-muted)}
+.rc-list-empty{padding:.9rem .75rem;font-size:.82rem;color:var(--rc-muted)}
+.rc-mini{flex:none;min-height:32px;padding:.2rem .6rem;border:1px solid var(--rc-line);border-radius:8px;background:var(--card);color:var(--ink);font:500 .78rem/1 inherit;cursor:pointer}
+.rc-mini:hover{background:var(--rc-hover)}
+
+/* Run history timeline */
+.rc-timeline{list-style:none;margin:0;padding:0 0 0 .9rem;border-left:2px solid var(--rc-line);display:flex;flex-direction:column;gap:.7rem}
+.rc-timeline li{position:relative;font-size:.8rem;line-height:1.4}
+.rc-timeline li::before{content:"";position:absolute;left:calc(-.9rem - 6px);top:.35rem;width:10px;height:10px;border-radius:50%;background:var(--card);border:2px solid var(--rc-muted)}
+.rc-timeline li.is-proposed::before{border-color:var(--accent);background:var(--accent)}
+.rc-timeline time{display:block;font-size:.72rem;color:var(--rc-muted)}
+
+/* Forecast check: largest differences */
+.fb-cash-subhead{margin:.3rem 0 0;font-size:.86rem;font-weight:600}
+.dd-diff-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}
+.dd-diff-list li{display:flex;flex-direction:column;gap:.15rem;padding:.6rem .75rem;border:1px solid var(--rc-line);border-radius:10px}
+.dd-diff-when{font-size:.76rem;color:var(--rc-muted)}
+.dd-diff-list strong{font-size:.88rem}
+.dd-diff-list strong.is-up{color:var(--rc-green)}
+.dd-diff-list strong.is-down{color:var(--rc-red)}
+
+@media (max-width:640px){
+  .rc-action,.rc-mini,.rc-close{min-height:44px}
+  .rc-close{width:44px;height:44px}
+}
+
+/* New AI key: choose tools as toggles, then a lifetime. */
+.dd-key-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.7rem;margin:0;padding:.8rem .9rem;border:1px dashed var(--rc-line);border-radius:10px}
+.dd-key-form legend{padding:0 .3rem;font-size:.76rem;color:var(--rc-muted)}
+.dd-key-form > .rc-chips{flex-basis:100%}
+.dd-key-tool{display:inline-flex;align-items:center;gap:.35rem;min-height:32px;padding:.2rem .6rem;border:1px solid var(--rc-line);border-radius:8px;font-size:.8rem;cursor:pointer}
+.dd-key-tool.is-on{border-color:var(--accent);background:var(--accent-soft)}
+.dd-key-tool input{accent-color:var(--accent)}
+@media (max-width:640px){.dd-key-tool{min-height:44px}}
+.dd-key-form .fb-cash-field{flex:0 1 220px}

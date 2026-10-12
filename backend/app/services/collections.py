@@ -291,12 +291,12 @@ def holds(db, principal: AuthPrincipal, as_of: dt.date) -> list[Hold]:
         if not receivable_holds.active(hold, as_of):
             continue
         if target.startswith("customer:"):
-            label = _customer_label(db, tenant_id, target)
+            label = customer = _customer_label(db, tenant_id, target)
         else:
             card = cards.get(target)
-            label = (
-                f"{card.label} · {card.customer_label}" if card and card.stage != "paid" else None
-            )
+            open_card = card is not None and card.stage != "paid"
+            label = card.label if open_card else None
+            customer = card.customer_label if open_card else None
         if label is None:
             continue  # paid since, or no longer on the board
         found.append(
@@ -305,6 +305,7 @@ def holds(db, principal: AuthPrincipal, as_of: dt.date) -> list[Hold]:
                 kind=hold.kind,
                 until=hold.until,
                 label=label,
+                customer_label=customer,
                 set_at=hold.set_at,
                 set_by_role=hold.set_by_role,
             )

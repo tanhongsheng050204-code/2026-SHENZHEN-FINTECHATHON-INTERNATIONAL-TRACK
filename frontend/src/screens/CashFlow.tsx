@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import { ApiError, friendlyLoadError } from "../api/client";
+import "../components/records.css";
 import {
   fetchCashSignals,
   fetchForecast,
@@ -149,12 +150,13 @@ function ForecastCheck({ check }: { check: ForecastCheckResponse }) {
       ) : (
         <div className="fb-cash-scroll">
           <table className="fb-cash-table">
-            <thead><tr><th>{tx("Ahead")}</th><th className="is-num">{tx("Compared")}</th><th className="is-num">{tx("Off by, on average")}</th><th className="is-num">{tx("Inside the range")}</th></tr></thead>
+            <thead><tr><th>{tx("Ahead")}</th><th className="is-num">{tx("Compared")}</th><th className="is-num">{tx("Accuracy")}</th><th className="is-num">{tx("Off by, on average")}</th><th className="is-num">{tx("Inside the range")}</th></tr></thead>
             <tbody>
               {check.by_horizon.map((h) => (
                 <tr key={h.horizon_days}>
                   <td>{tx("{n} days ahead", { n: h.horizon_days })}</td>
                   <td className="is-num">{h.compared}</td>
+                  <td className="is-num">{h.accuracy_pct === null ? "—" : `${h.accuracy_pct}%`}</td>
                   <td className="is-num">{h.mean_abs_error_myr === null ? "—" : ringgit(h.mean_abs_error_myr)}</td>
                   <td className="is-num">{h.compared ? tx("{inside} of {n}", { inside: h.within_range, n: h.compared }) : "—"}</td>
                 </tr>
@@ -163,7 +165,28 @@ function ForecastCheck({ check }: { check: ForecastCheckResponse }) {
           </table>
         </div>
       )}
-      <p className="fb-inbox-muted">{tx("Each day's forecast is saved on your audit chain and compared with your bank balance once a statement covering that day is imported.")}</p>
+      {check.largest_differences.length > 0 && (
+        <>
+          <h3 className="fb-cash-subhead">{tx("Largest differences")}</h3>
+          <ul className="dd-diff-list">
+            {check.largest_differences.map((d) => {
+              const more = Number(d.difference_myr) >= 0;
+              return (
+                <li key={`${d.date}-${d.horizon_days}`}>
+                  <span className="dd-diff-when">{shortDate(d.date)} · {tx("{n} days ahead", { n: d.horizon_days })}</span>
+                  <strong className={more ? "is-up" : "is-down"}>
+                    {more ? tx("{amount} more cash than forecast", { amount: ringgit(d.difference_myr) }) : tx("{amount} less cash than forecast", { amount: ringgit(String(Math.abs(Number(d.difference_myr)))) })}
+                  </strong>
+                  {d.expected_in_myr !== null && d.expected_out_myr !== null && (
+                    <span className="fb-inbox-muted">{tx("By then the forecast expected {in} in and {out} out. Check which of these came early, late or not at all.", { in: ringgit(d.expected_in_myr), out: ringgit(d.expected_out_myr) })}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+      <p className="fb-inbox-muted">{tx("Each day's forecast is saved on your audit chain and compared with your bank balance once a statement covering that day is imported. Accuracy is 1 minus the difference divided by the actual balance.")}</p>
     </section>
   );
 }

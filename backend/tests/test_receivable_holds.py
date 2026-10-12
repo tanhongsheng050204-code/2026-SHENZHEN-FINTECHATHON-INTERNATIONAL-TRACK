@@ -68,6 +68,14 @@ def test_clearing_a_hold_puts_the_invoice_back(live_db):  # noqa: F811
     assert finance.delete("/collections/holds/pipeline:1").status_code == 404
 
 
+def test_the_hold_list_names_the_invoice_and_its_customer_apart(live_db):  # noqa: F811
+    finance = _client(live_db)
+    finance.put("/collections/holds/pipeline:1", json={"kind": "disputed"})
+
+    [hold] = finance.get("/collections/holds").json()["holds"]
+    assert (hold["label"], hold["customer_label"]) == ("INV-1", "Kedai A")
+
+
 def test_holds_are_checked_before_they_are_kept(live_db):  # noqa: F811
     finance = _client(live_db)
     past = (TODAY - dt.timedelta(days=1)).isoformat()

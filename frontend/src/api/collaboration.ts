@@ -60,7 +60,23 @@ export async function fetchMentions(): Promise<Mention[]> {
 
 // ── Collections board ───────────────────────────────────────────────────────
 
-export type BoardStage = "later" | "due_soon" | "overdue" | "reminder" | "paid";
+export type BoardStage = "later" | "due_soon" | "overdue" | "on_hold" | "reminder" | "paid";
+export type HoldKind = "disputed" | "promised" | "paused";
+
+export interface HoldInfo {
+  kind: HoldKind;
+  until: string | null;
+  /** "customer:7" when the customer is paused, else the invoice's own ref. */
+  target: string;
+}
+
+export interface Hold extends HoldInfo {
+  /** The invoice's label, or the customer's masked name for a paused customer. */
+  label: string;
+  customer_label: string;
+  set_at: string;
+  set_by_role: string;
+}
 
 export interface BoardCard {
   ref: string;
@@ -72,6 +88,8 @@ export interface BoardCard {
   days_overdue: number;
   stage: BoardStage;
   reminder_action_id: string | null;
+  hold: HoldInfo | null;
+  promise_broken_on: string | null;
 }
 
 export interface BoardColumn {
@@ -95,9 +113,23 @@ export async function askForReminder(ref: string): Promise<string> {
   return body.action_id;
 }
 
+export async function fetchHolds(): Promise<Hold[]> {
+  const body = await parse<{ holds: Hold[] }>(await authenticatedFetch("/collections/holds"));
+  return body.holds;
+}
+
+/** Dispute or promise for one invoice ref, or pause a "customer:<id>". */
+export function setHold(target: string, kind: HoldKind, until: string | null = null): Promise<{ target: string }> {
+  return send(`/collections/holds/${encodeURIComponent(target)}`, "PUT", { kind, until });
+}
+
+export function clearHold(target: string): Promise<void> {
+  return remove(`/collections/holds/${encodeURIComponent(target)}`);
+}
+
 // ── Automations ─────────────────────────────────────────────────────────────
 
-export type AutomationTrigger = "invoice_overdue_days" | "cash_shortfall_within_days" | "bill_due_within_days";
+export type AutomationTrigger = "invoice_overdue_days" | "invoice_due_within_days" | "cash_shortfall_within_days" | "bill_due_within_days";
 export type AutomationAction = "draft_reminder" | "reminder_sequence" | "ask_review";
 
 export interface AutomationRequest {
@@ -130,6 +162,19 @@ export function removeAutomation(id: string): Promise<void> {
 export async function runAutomations(): Promise<string[]> {
   const body = await send<{ proposals: string[] }>("/automations/run", "POST");
   return body.proposals;
+}
+
+export type SkipReason = "on_hold" | "waiting_for_decision" | "stopped_after_rejection";
+
+export interface AutomationRun {
+  at: string;
+  proposed: string[];
+  skipped: Partial<Record<SkipReason, number>>;
+}
+
+export async function fetchAutomationRuns(id: string): Promise<AutomationRun[]> {
+  const body = await parse<{ runs: AutomationRun[] }>(await authenticatedFetch(`/automations/${encodeURIComponent(id)}/runs`));
+  return body.runs;
 }
 
 // ── Saved views ─────────────────────────────────────────────────────────────
@@ -191,10 +236,25 @@ export async function testChatChannel(channel: ChatChannel): Promise<"sent" | "s
 
 // ── API keys for AI tools (MCP) ─────────────────────────────────────────────
 
+export const MCP_TOOLS = [
+  "get_cash_forecast",
+  "get_forecast_check",
+  "get_review_inbox",
+  "get_collections_board",
+  "get_financing_matches",
+] as const;
+export type McpTool = (typeof MCP_TOOLS)[number];
+export type KeyLifetime = 30 | 90 | 180 | 365;
+
 export interface ApiKeyView {
   id: string;
   created_at: string;
   revoked: boolean;
+  tools: McpTool[];
+  expires_at: string;
+  expired: boolean;
+  last_used_at: string | null;
+  recent_calls: { tool: McpTool; at: string }[];
 }
 
 export async function fetchApiKeys(): Promise<ApiKeyView[]> {
@@ -202,8 +262,8 @@ export async function fetchApiKeys(): Promise<ApiKeyView[]> {
   return body.keys;
 }
 
-export function createApiKey(): Promise<{ key: ApiKeyView; secret: string }> {
-  return send("/api-keys", "POST");
+export function createApiKey(tools: McpTool[], expiresInDays: KeyLifetime): Promise<{ key: ApiKeyView; secret: string }> {
+  return send("/api-keys", "POST", { tools, expires_in_days: expiresInDays });
 }
 
 export function revokeApiKey(id: string): Promise<void> {
