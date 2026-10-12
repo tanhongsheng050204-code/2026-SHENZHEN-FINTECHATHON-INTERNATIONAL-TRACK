@@ -102,7 +102,7 @@ a receivable — and not only as a compliance task.
 
 ### Build status
 
-Status as of 2026-10-11. The demo company and its data are synthetic and labelled as such.
+Status as of 2026-10-12. The demo company and its data are synthetic and labelled as such.
 
 | Capability | Status |
 | --- | --- |
@@ -116,10 +116,11 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 | Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
 | Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. **On the live site (2026-10-11):** a new company's owner signed up end to end: password, 6-digit email code, authenticator setup, then into the app. One run, done by hand by the team; not yet repeated by an automated test. |
 | One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
-| Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. |
-| Team features: comments and @mentions on review items, a collections board, automations and reminder sequences, saved views, customer risk notes and money timeline, Slack and WhatsApp notices | **Built and tested**, including as Finance and staff under PostgreSQL row-level security. Each ends in a proposal for a person to approve, or only shows information. WhatsApp is not tested against a live account. |
+| Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. Records (an invoice, an incident, an automation, an AI key) open in a side panel with their details and the actions a person can take, in the Attio style. |
+| Team features: comments and @mentions on review items, a collections board with disputes, promises to pay and paused customers, automations and reminder sequences with run history, saved views, customer risk notes with bands, Slack and WhatsApp notices | **Built and tested**, including as Finance and staff under PostgreSQL row-level security. Each ends in a proposal for a person to approve, or only shows information. WhatsApp is not tested against a live account. |
 | Finance and staff on the live database | **Fixed 2026-10-12.** Row-level security let only the owner and Compliance read other people's audit-chain entries, so Finance saw an empty review inbox and could not record decisions. Chain reads and such writes now use a worker session scoped to the same company; a PostgreSQL test runs these paths as Finance and staff. |
 | AI connections (MCP) | **Built and tested.** Claude Code, Claude Desktop or any MCP client with a company key can read the forecast, forecast check, review inbox, collections board and financing matches. Each key reads only the tools the owner chose and expires (90 days by default); the owner sees when it was last used and for what. Read-only, masked labels, every call recorded, keys revocable. Not yet tried with ChatGPT, and keys are not OAuth tokens yet. |
+| Security activity and PDPA: sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, portability exports | **Built and tested.** New-device warnings show in the app; they are not emailed yet. Notices are drafted for a person to send; DuitDuit does not decide the legal thresholds. Sign-in recording is tested on SQLite and with a mocked provider, not yet on the hosted database. |
 | Public site | **Built.** Attio-style Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
 | Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Supabase Auth is configured: codes in every email template, sending through a dedicated Gmail account. The API still runs through a temporary tunnel, whose address changes when it restarts, and some requests time out. |
@@ -961,7 +962,7 @@ The full list, with checks for each step, is in the
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 42-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
+| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 48-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
 | `anchor-audit-chain.yml` | daily 00:00 UTC + manual | Writes each tenant's audit-chain tail to `audit-anchors/<date>.json` and commits it — tamper evidence outside the database trust boundary. Requires the `PRODUCTION_DATABASE_URL` repository secret (read-only). |
 
 ---
@@ -995,12 +996,12 @@ models, or call an AI provider. Coverage spans:
 - conversation context resolution and query intent planning;
 - RLS / authorization boundaries.
 
-Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 42
-scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
+Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 48
+scripted tasks (22 functional, 26 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
 - backend: **749 passed, 9 skipped** (the skipped tests need PostgreSQL, which CI provides; the 8 PostgreSQL tests also pass against a local migrated database);
-- evaluation: **42 of 42**;
+- evaluation: **48 of 48**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,
