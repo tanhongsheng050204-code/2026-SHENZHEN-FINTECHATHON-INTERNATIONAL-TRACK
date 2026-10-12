@@ -8,6 +8,9 @@ export const SCREENS = [
 
 export type Screen = (typeof SCREENS)[number];
 
+// Pages anyone can open without signing in.
+export const PUBLIC_SCREENS: readonly Screen[] = ["landing", "login", "signup", "security", "legal", "pricing", "changelog", "help"];
+
 // The browser-tab title for each screen; signed-in pages match the sidebar labels.
 export const PAGE_TITLES: Record<Screen, string> = {
   landing: "SME Finance Copilot",

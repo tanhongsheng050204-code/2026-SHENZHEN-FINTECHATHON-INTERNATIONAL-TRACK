@@ -16,7 +16,7 @@ import {
 import { PERSONAS } from "./personas";
 import { fetchEinvoiceOutreachDrafts, fetchOutreachActions, fetchRecommendations } from "../api/client";
 import { decidableCount, fetchReviewInbox } from "../api/topicE";
-import { SCREENS, type Screen } from "./screens";
+import { PUBLIC_SCREENS, SCREENS, type Screen } from "./screens";
 
 export type { Screen };
 
@@ -107,11 +107,10 @@ function writeLocalPref(key: string, value: string) {
 
 // A link or a refresh on a public page opens that page; signed-in screens still
 // start from the landing page and are reached after sign-in.
-const DIRECT_SCREENS: readonly Screen[] = ["login", "signup", "security", "legal", "pricing", "changelog", "help"];
 
 function screenFromPath(): Screen {
   const pathname = window.location.pathname.replace(/^\/|\/$/g, "");
-  return (DIRECT_SCREENS as readonly string[]).includes(pathname) ? (pathname as Screen) : "landing";
+  return (PUBLIC_SCREENS as readonly string[]).includes(pathname) ? (pathname as Screen) : "landing";
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
@@ -356,7 +355,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   // "how many things actually need my review" question shown there, so it
   // must use the same source rather than the local demo seed data.
   const [approvalsCount, setApprovalsCount] = useState(0);
+  // Public pages have no signed-in person, so the badges are not asked for there.
+  const signedInScreen = !PUBLIC_SCREENS.includes(screen);
   useEffect(() => {
+    if (!signedInScreen) return;
     let active = true;
     const capabilities = PERSONAS[askRole].capabilities;
     const load = async () => {
@@ -381,11 +383,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     };
     void load();
     return () => { active = false; };
-  }, [askRole, screen]);
+  }, [askRole, screen, signedInScreen]);
 
   // Topic E review inbox: items this person can approve now (can_decide).
   const [reviewInboxCount, setReviewInboxCount] = useState(0);
   useEffect(() => {
+    if (!signedInScreen) return;
     let active = true;
     const load = async () => {
       try {
@@ -397,7 +400,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     };
     void load();
     return () => { active = false; };
-  }, [askRole, screen]);
+  }, [askRole, screen, signedInScreen]);
 
   const value: AppStateValue = {
     screen, show,

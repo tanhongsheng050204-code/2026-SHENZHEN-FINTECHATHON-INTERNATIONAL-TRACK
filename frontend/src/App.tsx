@@ -11,7 +11,7 @@ import { ServerStatusBanner } from "./components/ServerStatusBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LogoMark } from "./components/Logo";
 import { sharedRouteFor } from "./lib/sharedRoutes";
-import { PAGE_TITLES } from "./lib/screens";
+import { PAGE_TITLES, PUBLIC_SCREENS } from "./lib/screens";
 
 // Route-level code splitting: a visitor to the marketing landing page
 // shouldn't have to download the chat interface, invoice forms, and
@@ -68,7 +68,7 @@ const SharedView = lazy(() => fresh(() => import("./screens/SharedView")));
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
   const { identity, loading } = useAuth();
-  const isPublic = ["landing", "login", "signup", "security", "legal", "pricing", "changelog", "help"].includes(screen);
+  const isPublic = PUBLIC_SCREENS.includes(screen);
 
   useEffect(() => {
     if (identity) setAskRole(identity.role);
