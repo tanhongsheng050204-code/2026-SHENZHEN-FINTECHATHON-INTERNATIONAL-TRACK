@@ -1061,3 +1061,227 @@ def employee_contact_request() -> Result:
         f"employee sees '{employee}'",
         f"leaked {leaked} to employee; finance sees '{finance}'",
     )
+
+
+# --- Attack tests added Oct 12 (ADV-16 to ADV-21) ---
+
+
+def _owner_member(db, tenant=TENANT_A):
+    from app.models import AuthUserRole
+
+    owner = _principal(UserRole.OWNER_DIRECTOR, tenant)
+    db.add(
+        AuthUserRole(
+            user_id=str(owner.user_id),
+            tenant_id=str(tenant),
+            user_role="owner_director",
+            job_functions=["owner"],
+            active=True,
+        )
+    )
+    db.commit()
+
+
+def _mcp_app(db):
+    from app.routes.collaboration import router as keys_router
+    from app.routes.mcp import router as mcp_router
+    from app.security import rate_limit
+
+    rate_limit.reset()
+    app = FastAPI()
+    app.include_router(keys_router)
+    app.include_router(mcp_router)
+    app.dependency_overrides[get_db] = lambda: db
+    app.dependency_overrides[get_current_user] = lambda: _principal()
+    return TestClient(app)
+
+
+def _rpc(client, key, method, params=None):
+    return client.post(
+        "/mcp",
+        headers={"Authorization": f"Bearer {key}"},
+        json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}},
+    )
+
+
+@check("expired_ai_key")
+def expired_ai_key() -> Result:
+    """Broken variant this catches: an AI key that keeps working after its expiry date."""
+    from app.services import api_keys
+
+    db = _database()
+    _owner_member(db)
+    client = _mcp_app(db)
+    made = client.post("/api-keys", json={"expires_in_days": 30}).json()
+    before = _rpc(client, made["secret"], "ping").status_code
+    created = dt.datetime.fromisoformat(made["key"]["created_at"])
+    with patch.object(api_keys, "_now", lambda: created + dt.timedelta(days=31)):
+        after = _rpc(client, made["secret"], "ping").status_code
+    return _expect(
+        (before, after) == (200, 401),
+        "a 30-day key works on day 0 and is refused (401) on day 31",
+        f"day 0 {before}, day 31 {after}",
+    )
+
+
+@check("ai_key_tool_scope")
+def ai_key_tool_scope() -> Result:
+    """Broken variant this catches: a key that can call a tool the owner did not give it."""
+    db = _database()
+    _owner_member(db)
+    client = _mcp_app(db)
+    key = client.post("/api-keys", json={"tools": ["get_cash_forecast"]}).json()["secret"]
+    listed = [t["name"] for t in _rpc(client, key, "tools/list").json()["result"]["tools"]]
+    refused = _rpc(client, key, "tools/call", {"name": "get_financing_matches"}).json()
+    calls = db.scalars(
+        select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "mcp_tool_called")
+    ).all()
+    ok = (
+        listed == ["get_cash_forecast"]
+        and refused.get("error", {}).get("message") == "Tool not allowed for this key"
+        and not calls
+    )
+    return _expect(
+        ok,
+        "the key lists one tool, and a call to another is refused before anything runs",
+        f"listed {listed}, refused {refused}, calls recorded {len(calls)}",
+    )
+
+
+@check("finance_cannot_make_ai_keys")
+def finance_cannot_make_ai_keys() -> Result:
+    """Broken variant this catches: a non-owner minting a key that reads as the owner."""
+    from app.routes.collaboration import router
+
+    db = _database()
+    finance = _client(router, db, UserRole.FINANCE_OPS)
+    created = finance.post("/api-keys").status_code
+    listed = finance.get("/api-keys").status_code
+    return _expect(
+        (created, listed) == (403, 403),
+        "Finance is refused both creating (403) and listing (403) AI keys",
+        f"create {created}, list {listed}",
+    )
+
+
+@check("cross_company_hold")
+def cross_company_hold() -> Result:
+    """Broken variant this catches: one company pausing the chasing of another's invoice."""
+    from decimal import Decimal as D
+
+    from app.models import Customer, SalesPipeline
+    from app.routes.collaboration import router
+    from app.services import cashflow
+    from app.services.cashflow_engine import CashBasis
+
+    db = _database()
+    db.add(Customer(id=7, tenant_id=str(TENANT_A), canonical_name="A", normalized_name="a"))
+    db.add(
+        SalesPipeline(
+            id=1,
+            tenant_id=str(TENANT_A),
+            source_record_id="t1:INV-1",
+            record_hash="0" * 64,
+            batch_id="b1",
+            customer_id=7,
+            customer_token="tok",
+            stage="invoiced",
+            amount=D("24500.00"),
+            expected_payment_date=dt.date.today() - dt.timedelta(days=20),
+            probability=D("1.00"),
+        )
+    )
+    db.commit()
+    live = CashBasis(demo.BASIS.data_mode.__class__("live"), D("1"), D("0"), ())
+    with patch.object(cashflow, "basis_for", lambda *a: live):
+        other = _client(router, db, UserRole.FINANCE_OPS, TENANT_B)
+        response = other.put("/collections/holds/pipeline:1", json={"kind": "disputed"})
+        own = _client(router, db, UserRole.FINANCE_OPS).get("/collections/board").json()
+    held = [c for col in own["columns"] if col["stage"] == "on_hold" for c in col["cards"]]
+    return _expect(
+        response.status_code == 404 and not held,
+        "company B's hold on company A's invoice is refused (404); A's board is unchanged",
+        f"status {response.status_code}, A's held cards {held}",
+    )
+
+
+@check("automation_skips_disputed")
+def automation_skips_disputed() -> Result:
+    """Broken variant this catches: an automation that keeps chasing a disputed invoice."""
+    from decimal import Decimal as D
+
+    from app.models import Customer, SalesPipeline
+    from app.routes.collaboration import router
+    from app.services import cashflow
+    from app.services.cashflow_engine import CashBasis
+
+    db = _database()
+    db.add(Customer(id=7, tenant_id=str(TENANT_A), canonical_name="A", normalized_name="a"))
+    db.add(
+        SalesPipeline(
+            id=1,
+            tenant_id=str(TENANT_A),
+            source_record_id="t1:INV-1",
+            record_hash="0" * 64,
+            batch_id="b1",
+            customer_id=7,
+            customer_token="tok",
+            stage="invoiced",
+            amount=D("24500.00"),
+            expected_payment_date=dt.date.today() - dt.timedelta(days=40),
+            probability=D("1.00"),
+        )
+    )
+    db.commit()
+    live = CashBasis(demo.BASIS.data_mode.__class__("live"), D("1"), D("0"), ())
+    with patch.object(cashflow, "basis_for", lambda *a: live):
+        owner = _client(router, db)
+        owner.post(
+            "/automations",
+            json={"trigger": "invoice_overdue_days", "days": 7, "action": "reminder_sequence"},
+        )
+        _client(router, db, UserRole.FINANCE_OPS).put(
+            "/collections/holds/pipeline:1", json={"kind": "disputed"}
+        )
+        proposals = owner.post("/automations/run").json()["proposals"]
+        automation_id = owner.get("/automations").json()["automations"][0]["id"]
+        runs = owner.get(f"/automations/{automation_id}/runs").json()["runs"]
+    skipped = runs[0]["skipped"] if runs else {}
+    return _expect(
+        proposals == [] and skipped == {"on_hold": 1},
+        "a disputed invoice 40 days overdue gets no reminder; the run says 1 on hold",
+        f"proposals {proposals}, skipped {skipped}",
+    )
+
+
+@check("sign_in_keeps_no_address")
+def sign_in_keeps_no_address() -> Result:
+    """Broken variant this catches: a sign-in record that stores the IP address or the
+    full browser string, which identify a person."""
+    from types import SimpleNamespace
+
+    from app.services import security_activity
+
+    db = _database()
+    agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0 Safari/537.36"
+    request = SimpleNamespace(
+        headers={"user-agent": agent, "x-forwarded-for": "203.0.113.77"},
+        client=SimpleNamespace(host="10.0.0.1"),
+    )
+    owner = _principal()
+    row = SimpleNamespace(user_id=str(owner.user_id), tenant_id=str(TENANT_A))
+    security_activity.record_sign_in(db, row, request, method="password")
+    db.commit()
+    stored = [
+        json.dumps(e.event_payload)
+        for e in db.scalars(
+            select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "sign_in_recorded")
+        )
+    ]
+    markers = ("203.0.113", "10.0.0.1", "Mozilla", "Win64")
+    leaked = [v for v in markers if any(v in s for s in stored)]
+    return _expect(
+        len(stored) == 1 and not leaked,
+        f"one sign-in kept as {stored[0] if stored else ''}",
+        f"stored {stored}, leaked {leaked}",
+    )

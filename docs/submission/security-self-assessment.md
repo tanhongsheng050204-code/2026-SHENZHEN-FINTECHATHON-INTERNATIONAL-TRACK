@@ -39,6 +39,9 @@ All data shown in the demonstration is synthetic and labelled as such.
 | Step-up: sensitive actions (kill switch, autonomy grants, invitations, security settings) need an authenticator check from the last five minutes; the app asks for a code and retries | Backend built, verification pending · frontend built and exercised against a simulated backend |
 | Idle timeout per company (5–60 minutes, can only be shortened); sign out everywhere; role changes invalidate old sessions | Built, verification pending |
 | The last active owner cannot be removed or demoted | Built and tested (stub) · persistent version verification pending |
+| Sign-in activity: each completed sign-in is kept on the audit chain with the browser family, operating system, method and a device fingerprint (an HMAC of person, browser, system and network). The IP address and the full browser string are never stored. Each person sees their own recent sign-ins | Built and tested (`tests/test_security_activity.py`, `ADV-21`) |
+| Security feed for the owner and Compliance: new-device sign-ins, AI keys, role and access changes, kill switches, autonomy grants, settings, shared lender links, erasures, data exports and incidents, each with a fixed title and severity; kinds and roles only | Built and tested |
+| AI connection keys (MCP): owner-only, after step-up; each key names the tools it may call and expires (30 to 365 days, 90 by default); the owner sees when it was last used and for which tools; keys made earlier expire 90 days after creation | Built and tested (`tests/test_mcp.py`, `ADV-16` to `ADV-18`) |
 | Shared demo company for judges ("Open the demo company"): the API signs in with a password and an authenticator code held only on the server, so the session is an ordinary AAL2 session and every check still applies. The demo session alone can read its own current code. In that company, email and Telegram deliveries (briefings, alerts, outreach) are recorded as simulated and never sent, and global sign-out, new authenticators and team changes are refused. Off unless the server sets `DEMO_SIGN_IN_ENABLED` and all three demo secrets | Built and tested with a mocked provider (`tests/test_demo_sign_in.py`, `tests/test_telegram_sender.py`); hosted verification pending |
 
 ## 3. Data protection
@@ -52,6 +55,7 @@ All data shown in the demonstration is synthetic and labelled as such.
 | Disclosure of an exact value: 30-second single-use grants bound to the request, every allow and deny audited; unauthorized roles see shaped masks | Built and tested |
 | Database: row-level security enabled and forced on every table, public Data API grants revoked, audit tables reject updates and deletes | Built and tested |
 | Employee data in its own token namespace and data class | Built, verification pending |
+| Holds on chasing (disputed invoice, promise to pay, paused customer): Finance or the owner only, kinds and dates on the chain, validated against the company's own board; automations skip held invoices | Built and tested (`tests/test_receivable_holds.py`, `ADV-19`, `ADV-20`) |
 | Message templates refuse emails and phone, card or account numbers (including numbers written with spaces or dashes) and any brace that is not an approved placeholder | Built and tested |
 
 ## 4. AI agent safety
@@ -104,6 +108,12 @@ providers and disposable SQLite databases containing persisted synthetic proposa
 | `ADV-13` | Instructions hidden in an imported CSV cell block the import before any row is stored; a guardrail event is recorded; nothing is proposed or sent |
 | `ADV-14` | On a persisted L3 money item, the maker's second approval is refused (409 same_person_cannot_approve_twice) |
 | `ADV-15` | A general employee sees a customer's email and phone masked, even from vault rows written under the older, wider policy; finance sees them |
+| `ADV-16` | An AI connection key is refused (401) after its expiry date |
+| `ADV-17` | An AI key lists only the tools it was given; a call to another tool is refused before anything runs or is recorded |
+| `ADV-18` | Finance can neither create nor list AI keys (403) |
+| `ADV-19` | Company B cannot put a hold on company A's invoice (404); A's board is unchanged |
+| `ADV-20` | A disputed invoice 40 days overdue gets no reminder from a sequence; the run history records it as on hold |
+| `ADV-21` | A sign-in record keeps the browser family and system, never the IP address or browser string |
 
 Additional tests check hostile/invalid model picks, private provider exceptions,
 recent-MFA enforcement and distinct L3 maker/checker approvals. Injected faults
@@ -160,6 +170,7 @@ Status: rules built and tested in the contract; database constraints built, veri
 | Area | How DuitDuit supports it |
 | --- | --- |
 | PDPA 2010 (Malaysia) | Data minimisation through tokenization; access and erasure workflows for data subjects; purpose-bound disclosure with audit |
+| PDPA amendments in force from 1 June 2025: data protection officer, breach notification, data portability | The owner names a data protection officer from the team. Compliance keeps an incident register (kinds and numbers only) with a checklist: contained, assessed, Commissioner notified, people affected notified when significant harm is likely, closed; closing waits for the required steps. Notices are drafted as review-inbox proposals and sent by a person outside DuitDuit. Compliance can export one customer's records as a JSON file after step-up; each protected value in it is a disclosure on the audit chain. DuitDuit does not decide the legal thresholds for the company: check the Commissioner's guidelines. Built and tested (`tests/test_incidents.py`, `tests/test_portability.py`) |
 | LHDN MyInvois e-invoicing | Readiness checks and validated e-invoice share used in the Passport |
 | China cross-border trade (RMB) | Supplier payables in CNY shown with conversion; China financing catalogue; no browser dependency on services blocked in mainland China |
 
@@ -170,7 +181,9 @@ DuitDuit is not certified under any standard, and we do not claim partnerships w
 - Plan 2 identity and session controls have mocked-provider regression coverage and disposable PostgreSQL permission/trigger checks. End-to-end tests against hosted Supabase (real email delivery, TOTP, refresh and revocation) remain outstanding.
 - A company on its own records gets a persisted review inbox, real review records and persisted autonomy grants, all on its audit chain. A company on the demo data still sees sample inbox items and sample agent metrics, labelled as such.
 - ZAP scans are automated passive and baseline checks, not a penetration test. No independent penetration test has been done.
-- The shared demo company is not reset automatically; changes judges make (decisions, settings, kill switches) stay until an operator reverts them in the app.
+- The shared demo company resets itself daily at 03:00 Malaysia time (`DEMO_DAILY_RESET`); changes judges make stay until the next reset.
+- New-device alerts are shown in the app's security feed; they are not emailed yet.
+- AI connection keys are bearer keys, not OAuth tokens. The MCP specification moves remote servers to OAuth; that is on the roadmap.
 - Guardrails are deterministic patterns. The offline adversarial evaluation passes its scripted cases; this does not prove coverage of paraphrased or novel injections.
 - Passport anchors appear only where the anchor files are deployed with the backend; the public verification endpoint has not been validated against hosted PostgreSQL row-level security.
 - The backend is currently reached through a temporary tunnel; production needs a fixed HTTPS hostname under the app's parent domain.

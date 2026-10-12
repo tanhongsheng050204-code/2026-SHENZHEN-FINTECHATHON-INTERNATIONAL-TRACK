@@ -42,6 +42,12 @@
     {"id": "ADV-12", "kind": "adversarial", "standard": "ASI03", "title": "An expired authenticator check cannot approve money", "check": "expired_step_up", "args": {}},
     {"id": "ADV-13", "kind": "adversarial", "standard": "ASI01", "title": "Instructions hidden in an imported CSV cell are blocked before anything is stored", "check": "csv_cell_injection", "args": {}},
     {"id": "ADV-14", "kind": "adversarial", "standard": "ASI09", "title": "The maker of a money item cannot also be its checker", "check": "self_approval", "args": {}},
-    {"id": "ADV-15", "kind": "adversarial", "standard": "ASI03", "title": "A general employee never sees a customer's email or phone", "check": "employee_contact_request", "args": {}}
+    {"id": "ADV-15", "kind": "adversarial", "standard": "ASI03", "title": "A general employee never sees a customer's email or phone", "check": "employee_contact_request", "args": {}},
+    {"id": "ADV-16", "kind": "adversarial", "standard": "ASI03", "title": "An expired AI connection key is refused", "check": "expired_ai_key", "args": {}},
+    {"id": "ADV-17", "kind": "adversarial", "standard": "ASI02", "title": "An AI key cannot call a tool the owner did not give it", "check": "ai_key_tool_scope", "args": {}},
+    {"id": "ADV-18", "kind": "adversarial", "standard": "ASI03", "title": "Finance cannot create or list AI keys", "check": "finance_cannot_make_ai_keys", "args": {}},
+    {"id": "ADV-19", "kind": "adversarial", "standard": "ASI03", "title": "One company cannot put a hold on another company's invoice", "check": "cross_company_hold", "args": {}},
+    {"id": "ADV-20", "kind": "adversarial", "standard": "ASI08", "title": "An automation never chases a disputed invoice", "check": "automation_skips_disputed", "args": {}},
+    {"id": "ADV-21", "kind": "adversarial", "standard": "ASI03", "title": "A sign-in record keeps no IP address or browser string", "check": "sign_in_keeps_no_address", "args": {}}
   ]
 }

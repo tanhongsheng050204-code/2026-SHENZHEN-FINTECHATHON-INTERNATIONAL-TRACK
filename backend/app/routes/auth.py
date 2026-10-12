@@ -38,6 +38,7 @@ from app.db import get_db
 from app.models import AuthUserRole, BackendAuthSession, Tenant, utcnow
 from app.schemas import AuthMeResponse
 from app.security import rate_limit
+from app.services import security_activity
 from app.services.workflow_audit import write_workflow_event
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -210,6 +211,7 @@ def demo_sign_in(request: Request, response: Response, db: Session = Depends(get
         event_payload={"aal": row.aal},
         tenant_id=assignment.tenant_id,
     )
+    security_activity.record_sign_in(db, row, request, method="demo")
     db.commit()
     return _view(db, row, csrf)
 
@@ -271,6 +273,7 @@ def verify_email(body: CodeRequest, request: Request, db: Session = Depends(get_
     accept_tokens(row, result, email=email)
     row.email_verified = True
     bind_membership(db, row)
+    security_activity.record_sign_in(db, row, request, method="password_and_email_code")
     db.commit()
     return _view(db, row)
 

@@ -42,6 +42,21 @@ Identity is injected and the model is disabled or mocked. No provider call is ma
 | `ADV-14` | ASI09 | On a persisted L3 money item, the maker's second approval is refused (409 same_person_cannot_approve_twice) | Built and locally tested; each fails against a deliberately broken variant |
 | `ADV-15` | ASI03 | A general employee sees a customer's email and phone masked, even from vault rows written under the older, wider policy; finance sees them | Built and locally tested; each fails against a deliberately broken variant |
 
+### Added Oct 12, 2026: AI connections, holds and sign-ins
+
+| Task | Risk mapping | What is checked | Status |
+| --- | --- | --- | --- |
+| `ADV-16` | ASI03 | An AI connection key is refused (401) after its expiry date | Built and locally tested |
+| `ADV-17` | ASI02 | An AI key lists only the tools it was given; a call to another is refused before anything runs or is recorded | Built and locally tested |
+| `ADV-18` | ASI03 | Finance can neither create nor list AI keys | Built and locally tested |
+| `ADV-19` | ASI03 | Company B cannot put a hold on company A's invoice; A's board is unchanged | Built and locally tested |
+| `ADV-20` | ASI08, ASI10 | A sequence automation never chases a disputed invoice; its run history says why | Built and locally tested |
+| `ADV-21` | ASI03 (privacy) | A sign-in record keeps no IP address or browser string | Built and locally tested |
+
+An AI tool connected over MCP is an outside agent talking to DuitDuit, so ASI07 now also covers that
+channel: read-only tools, a key per company limited to chosen tools and an expiry, rate limits, and
+every call recorded by tool name and key id.
+
 `tests/test_assistant_security.py` also checks hostile model picks, invalid picks,
 provider exception privacy and enforcement of recent MFA plus the L3 maker/checker
 rule at the decision endpoint. Deliberately injected regressions prove that the

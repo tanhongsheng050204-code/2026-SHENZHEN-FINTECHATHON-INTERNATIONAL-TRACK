@@ -24,6 +24,7 @@ Browser → Vercel (static app and same-origin `/api` proxy) → FastAPI on Clou
 | 4 | API ↔ optional model provider |
 | 5 | Public share links ↔ tenant data |
 | 6 | CI ↔ repository (audit anchors) |
+| 7 | An AI tool (MCP client) with a company key ↔ API |
 
 ## Threats and controls
 
@@ -47,9 +48,18 @@ Browser → Vercel (static app and same-origin `/api` proxy) → FastAPI on Clou
 | Denial of service | Oversized or malicious uploads | 1, 3 | Size, type and signature checks before parsing; CSV limits (Plan 3) | ADV-05 |
 | Elevation of privilege | An agent acting beyond its manifest | 1 | `authorize` checks agent, skill and side effect on every call; kill switch and budgets (Plan 2) | ADV-03 |
 | Elevation of privilege | Autonomy granted without a record | 1 | Promotion needs a recommendation; L3 is never delegable | F10 |
+| Spoofing | A leaked AI connection key used by someone else | 7 | Keys are read-only, expire (90 days by default), name the tools they may call, work only while their owner is still an owner, and are revocable; the owner sees when each was last used and for what; per-address and per-key rate limits | ADV-16, `tests/test_mcp.py` |
+| Elevation of privilege | An AI key reaching a tool it was not given | 7 | The key's tool list is checked on `tools/list` and on every `tools/call`, before the tool runs or is recorded | ADV-17 |
+| Elevation of privilege | A non-owner minting a key that reads as the owner | 1 | Creating, listing and revoking keys need the owner role and a recent authenticator check | ADV-18 |
+| Spoofing | A sign-in from a stolen password and code on a new device | 1 | Each sign-in is recorded; a device the person has not used before appears as a warning in the owner's and Compliance's security feed | `tests/test_security_activity.py` |
+| Information disclosure | The sign-in record itself identifying a person's location | 1 | Only browser family, system and an HMAC fingerprint are kept; no IP address or browser string | ADV-21 |
+| Tampering | One company pausing the collection of another's invoice | 1, 2 | A hold is accepted only for a receivable on the company's own board or one of its own customers | ADV-19 |
+| Repudiation | "We never knew about the breach" | 1 | The incident register records who opened it and who completed each step, on the chain; closing waits for the required steps | `tests/test_incidents.py` |
 
 ## Not yet covered
 
 - Hosted RLS for the public verify and share endpoints, which read the chain before a tenant context exists. Needs validation on Supabase.
 - A rate limit shared across server instances (today each instance limits on its own).
 - Email one-time codes for lenders.
+- New-device sign-ins are shown in the app's security feed but not emailed.
+- AI connection keys are bearer keys; OAuth for remote MCP servers is not built.
