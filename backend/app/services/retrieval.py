@@ -146,7 +146,10 @@ def retrieve_hybrid_hits(
     if terms:
         return exact_hits[:k]
 
-    semantic_hits = retrieve_hits(db, query_embedding, k=k, filters=filters)
+    # Fetch more than needed, then let the question's own words reorder them.
+    semantic_hits = rerank(
+        question, retrieve_hits(db, query_embedding, k=k * 3, filters=filters), k * 3
+    )
     merged: list[RetrievalHit] = []
     seen: set[int] = set()
     for hit in semantic_hits:
@@ -157,6 +160,57 @@ def retrieve_hybrid_hits(
         if len(merged) == k:
             break
     return merged
+
+
+_TERM = re.compile(r"[a-z][a-z0-9_-]{2,}")
+_STOP = frozenset(
+    "the and for with that this from what which who whom whose are was were has have had "
+    "how why when where can could would should does did any all our your their about".split()
+)
+RRF_K = 60
+BM25_K1, BM25_B = 1.2, 0.75
+
+
+def _terms(text: str) -> list[str]:
+    return [t for t in _TERM.findall(text.casefold()) if t not in _STOP]
+
+
+def rerank(question: str, hits: list[RetrievalHit], k: int) -> list[RetrievalHit]:
+    """Fuse the vector order with a BM25 keyword order by reciprocal rank fusion.
+
+    BM25 is computed over the candidates themselves (a local index), so a record
+    that actually contains the question's words moves up without losing records the
+    vectors found. A question with no keywords keeps the vector order.
+    """
+    query = set(_terms(question))
+    if not query or len(hits) < 2:
+        return hits[:k]
+    documents = [_terms(hit.retrieval_text) for hit in hits]
+    average = sum(len(d) for d in documents) / len(documents) or 1.0
+    frequency = {t: sum(1 for d in documents if t in d) for t in query}
+    total = len(documents)
+
+    def bm25(document: list[str]) -> float:
+        score = 0.0
+        for term in query:
+            count = document.count(term)
+            if not count:
+                continue
+            idf = np.log(1 + (total - frequency[term] + 0.5) / (frequency[term] + 0.5))
+            norm = count + BM25_K1 * (1 - BM25_B + BM25_B * len(document) / average)
+            score += idf * count * (BM25_K1 + 1) / norm
+        return score
+
+    scores = [bm25(document) for document in documents]
+    # Only records that contain a question word get keyword credit.
+    keyword = sorted((i for i in range(total) if scores[i] > 0), key=lambda i: -scores[i])
+    keyword_credit = {index: 1 / (RRF_K + rank) for rank, index in enumerate(keyword)}
+    fused = sorted(
+        range(total),
+        key=lambda i: 1 / (RRF_K + i) + keyword_credit.get(i, 0.0),
+        reverse=True,
+    )
+    return [hits[i] for i in fused[:k]]
 
 
 def retrieve_top_k(db: Session, query_embedding: list[float], k: int = 5) -> list[str]:

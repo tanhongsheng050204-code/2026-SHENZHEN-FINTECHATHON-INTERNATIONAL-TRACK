@@ -10,11 +10,17 @@ and whether the real balance fell inside the best-to-worst range. The largest
 differences are listed with the money in and out the forecast expected by that day,
 so a person can see where to look.
 
+Calibrated range (split conformal prediction): once a horizon has MIN_CALIBRATION
+comparisons, the likely balance ± the ceil((n + 1) × 0.8)-th smallest past miss is
+a range that held at least 80% of the time on this company's own days, with no
+assumption about how errors are distributed. Fewer comparisons: not measured.
+
 Nothing is scored until a statement covers a target day, and the synthetic demo
 company is never scored: its figures are made up, so any accuracy would be too.
 """
 
 import datetime as dt
+import math
 from decimal import Decimal
 
 from sqlalchemy import func, select
@@ -31,6 +37,8 @@ from app.services.workflow_audit import chain_scalar, chain_scalars, write_workf
 
 TARGET_DAYS = (7, 14, 30)
 LARGEST_SHOWN = 3
+MIN_CALIBRATION = 5
+COVERAGE = Decimal("0.8")
 EVENT = "forecast_snapshot"
 _CENT = Decimal("0.01")
 
@@ -113,6 +121,14 @@ def _balance_at_end_of(db, tenant_id: str, day: dt.date) -> Decimal | None:
     return None if row is None else Decimal(row.balance)
 
 
+def _conformal(misses: list[Decimal]) -> Decimal | None:
+    n = len(misses)
+    if n < MIN_CALIBRATION:
+        return None
+    rank = math.ceil((n + 1) * COVERAGE)
+    return None if rank > n else sorted(misses)[rank - 1].quantize(_CENT)
+
+
 def _amount(value: str | None) -> Decimal | None:
     # Snapshots kept before the expected amounts were added have none.
     return None if value is None else Decimal(value)
@@ -189,6 +205,8 @@ def report(db, tenant_id: str, data_mode: DataMode) -> ForecastCheckResponse:
                 if accuracy.get(days)
                 else None
             ),
+            calibrated_80_myr=_conformal(errors[days]),
+            calibration_needs=max(0, MIN_CALIBRATION - len(errors[days])),
         )
         for days in TARGET_DAYS
     ]

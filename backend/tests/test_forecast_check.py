@@ -166,3 +166,33 @@ def test_the_snapshot_keeps_amounts_only(db):
         "expected_in",
         "expected_out",
     }
+
+
+def test_a_calibrated_range_needs_five_comparisons_then_covers_eighty_percent(db):
+    from app.services.forecast_check import MIN_CALIBRATION
+
+    # Seven days' forecasts, each scored 7 days later against a bank balance.
+    balances = ["71000.00", "69000.00", "74000.00", "66000.00", "70500.00", "62000.00"]
+    for n, balance in enumerate(balances):
+        forecast_check.record(db, TENANT, _forecast(as_of=DAY0 + dt.timedelta(days=n)))
+        _bank(db, DAY0 + dt.timedelta(days=n + 7), balance, n + 1)
+    report = forecast_check.report(db, TENANT, DataMode.LIVE)
+    week = next(h for h in report.by_horizon if h.horizon_days == 7)
+
+    # The likely day-7 balance is 70,000 each time; misses 1,000 1,000 4,000 4,000 500 8,000.
+    assert week.compared == 6 and MIN_CALIBRATION == 5
+    # Split conformal at 80%: the ceil(7 * 0.8) = 6th smallest miss.
+    assert week.calibrated_80_myr == Decimal("8000.00")
+    assert week.calibration_needs == 0
+
+
+def test_too_few_comparisons_say_how_many_are_still_needed(db):
+    forecast_check.record(db, TENANT, _forecast())
+    _bank(db, dt.date(2026, 9, 8), "72000.00", 1)
+
+    week = next(
+        h
+        for h in forecast_check.report(db, TENANT, DataMode.LIVE).by_horizon
+        if h.horizon_days == 7
+    )
+    assert week.calibrated_80_myr is None and week.calibration_needs == 4

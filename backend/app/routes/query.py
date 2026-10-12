@@ -35,6 +35,7 @@ from app.services.conversations import (
     turn_citation_hits,
 )
 from app.services.embeddings import embed_query_cached
+from app.services.grounding import check as grounding_check
 from app.services.intelligence import (
     authorize_brief_with_trace,
     citation_freshness,
@@ -547,7 +548,17 @@ def query(
     )
     if reasoning_model is None and conversational_plan is not None:
         reasoning_model = settings.morpheus_model
+    # Each sentence of the protected answer, checked against the sources it cites.
+    cited_texts = [
+        hit.retrieval_text
+        for index, hit in enumerate(hits, 1)
+        if f"SOURCE-{index}" in cited_answer.citations
+    ]
+    grounding = (
+        None if cited_answer.insufficient_evidence else grounding_check(raw_answer, cited_texts)
+    )
     return QueryResponse(
+        grounding=grounding,
         answer=answer_trace.text,
         model_answer=raw_answer,
         model_question=sanitized_question,

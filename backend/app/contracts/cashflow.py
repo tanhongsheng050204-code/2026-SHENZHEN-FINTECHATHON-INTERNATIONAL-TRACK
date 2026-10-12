@@ -107,6 +107,10 @@ class ForecastCheckHorizon(BaseModel):
     mean_abs_error_myr: Decimal | None
     # Mean of 1 - |likely - actual| / |actual|, as a percentage (0 to 100).
     accuracy_pct: Decimal | None = None
+    # Split-conformal half-width: likely ± this held 80% of the time on past days.
+    calibrated_80_myr: Decimal | None = None
+    # More comparisons needed before the calibrated range is shown.
+    calibration_needs: int = 0
 
 
 class ForecastDifference(BaseModel):
@@ -135,3 +139,31 @@ class ForecastCheckResponse(BaseModel):
     first_comparison_on: dt.date | None
     by_horizon: list[ForecastCheckHorizon]
     largest_differences: list[ForecastDifference] = Field(default_factory=list)
+
+
+class PaymentModelCustomer(BaseModel):
+    customer_id: int
+    # The masked name the customer list shows.
+    label: str
+    paid_invoices: int
+    median_days_late: int
+    # Added to the likely receipt date for the worst case, after shrinkage.
+    worst_extra_days: int
+
+
+class PaymentModelBacktest(BaseModel):
+    """Leave-one-out on past paid invoices: how often one landed inside its worst case."""
+
+    checked: int
+    within: int
+    coverage_pct: float
+
+
+class PaymentModelResponse(BaseModel):
+    data_mode: DataMode
+    learned_from: int
+    default_extra_days: int
+    company_extra_days: int
+    company_learned: bool
+    customers: list[PaymentModelCustomer]
+    backtest: PaymentModelBacktest | None

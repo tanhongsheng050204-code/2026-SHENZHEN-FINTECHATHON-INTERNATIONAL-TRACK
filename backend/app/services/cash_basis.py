@@ -8,7 +8,8 @@ Signals, each landing on its own day relative to the as-of date:
 - Approved and draft payroll runs on their pay date, gross plus employer contributions.
 - Invoiced sales pipeline on its expected payment date. Plan 3 stores likely
   receipt dates with the collection delay already included, so the delay is not
-  added again; the worst case assumes WORST_CASE_EXTRA_DAYS more.
+  added again. The worst case adds the customer's spread learned by
+  payment_model from paid e-invoices, or WORST_CASE_EXTRA_DAYS without history.
 - Uncertain pipeline by probability: at least 0.5 counts in the best and likely
   cases, below 0.5 only in the best case, and lost deals never.
 - Expected marketplace payouts (net of fees) and marketing spend still to start.
@@ -76,7 +77,7 @@ def _foreign(currency: str, amount: Decimal, rate) -> dict:
     return {"source_currency": currency, "source_amount": amount, "fx_rate": rate}
 
 
-def _pipeline_signal(row, as_of: dt.date) -> Signal | None:
+def _pipeline_signal(row, as_of: dt.date, extra_days: int = WORST_CASE_EXTRA_DAYS) -> Signal | None:
     probability = float(row.probability)
     if row.stage in ("lost", "paid") or probability <= 0:
         return None
@@ -92,7 +93,7 @@ def _pipeline_signal(row, as_of: dt.date) -> Signal | None:
             Decimal(row.amount),
             day,
             day,
-            day + WORST_CASE_EXTRA_DAYS,
+            day + extra_days,
         )
     return Signal(
         f"SO-{row.id}",
@@ -182,8 +183,11 @@ def load(db, tenant_id: str, as_of: dt.date) -> CashBasis | None:
             )
         )
 
+    from app.services import payment_model
+
+    delays = payment_model.fit(db, tenant_id)
     for row in db.scalars(select(m.SalesPipeline).where(m.SalesPipeline.tenant_id == tenant_id)):
-        signal = _pipeline_signal(row, as_of)
+        signal = _pipeline_signal(row, as_of, delays.extra_days(row.customer_id))
         if signal is not None:
             signals.append(signal)
 

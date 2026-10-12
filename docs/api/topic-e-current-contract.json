@@ -1678,6 +1678,23 @@
             ],
             "title": "Accuracy Pct"
           },
+          "calibrated_80_myr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calibrated 80 Myr"
+          },
+          "calibration_needs": {
+            "default": 0,
+            "title": "Calibration Needs",
+            "type": "integer"
+          },
           "compared": {
             "title": "Compared",
             "type": "integer"
@@ -2840,6 +2857,114 @@
           "passport"
         ],
         "title": "PassportResponse",
+        "type": "object"
+      },
+      "PaymentModelBacktest": {
+        "description": "Leave-one-out on past paid invoices: how often one landed inside its worst case.",
+        "properties": {
+          "checked": {
+            "title": "Checked",
+            "type": "integer"
+          },
+          "coverage_pct": {
+            "title": "Coverage Pct",
+            "type": "number"
+          },
+          "within": {
+            "title": "Within",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "checked",
+          "within",
+          "coverage_pct"
+        ],
+        "title": "PaymentModelBacktest",
+        "type": "object"
+      },
+      "PaymentModelCustomer": {
+        "properties": {
+          "customer_id": {
+            "title": "Customer Id",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "median_days_late": {
+            "title": "Median Days Late",
+            "type": "integer"
+          },
+          "paid_invoices": {
+            "title": "Paid Invoices",
+            "type": "integer"
+          },
+          "worst_extra_days": {
+            "title": "Worst Extra Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "customer_id",
+          "label",
+          "paid_invoices",
+          "median_days_late",
+          "worst_extra_days"
+        ],
+        "title": "PaymentModelCustomer",
+        "type": "object"
+      },
+      "PaymentModelResponse": {
+        "properties": {
+          "backtest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentModelBacktest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "company_extra_days": {
+            "title": "Company Extra Days",
+            "type": "integer"
+          },
+          "company_learned": {
+            "title": "Company Learned",
+            "type": "boolean"
+          },
+          "customers": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentModelCustomer"
+            },
+            "title": "Customers",
+            "type": "array"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/DataMode"
+          },
+          "default_extra_days": {
+            "title": "Default Extra Days",
+            "type": "integer"
+          },
+          "learned_from": {
+            "title": "Learned From",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data_mode",
+          "learned_from",
+          "default_extra_days",
+          "company_extra_days",
+          "company_learned",
+          "customers",
+          "backtest"
+        ],
+        "title": "PaymentModelResponse",
         "type": "object"
       },
       "PnlMonth": {
@@ -5087,6 +5212,33 @@
           }
         ],
         "summary": "Cashflow Forecast Check",
+        "tags": [
+          "cashflow"
+        ]
+      }
+    },
+    "/cashflow/payment-model": {
+      "get": {
+        "description": "How late each customer usually pays, learned from paid e-invoices.",
+        "operationId": "cashflow_payment_model_cashflow_payment_model_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentModelResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Cashflow Payment Model",
         "tags": [
           "cashflow"
         ]

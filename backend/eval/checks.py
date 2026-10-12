@@ -1285,3 +1285,154 @@ def sign_in_keeps_no_address() -> Result:
         f"one sign-in kept as {stored[0] if stored else ''}",
         f"stored {stored}, leaked {leaked}",
     )
+
+
+# --- AI techniques added Oct 12 (F23, ADV-22 to ADV-24) ---
+
+
+def _suppliers_and_bills(db, bills):
+    from app.models import Payable, Supplier
+
+    for n in {s for s, *_ in bills}:
+        db.add(Supplier(id=n, tenant_id=str(TENANT_A), normalized_name=f"s{n}", name_token=f"t{n}"))
+    for n, (supplier, amount, days, bill_no, status) in enumerate(bills, 1):
+        db.add(
+            Payable(
+                id=n,
+                tenant_id=str(TENANT_A),
+                source_record_id=f"p{n}",
+                record_hash="0" * 64,
+                batch_id="b1",
+                supplier_id=supplier,
+                bill_no=bill_no,
+                amount=Decimal(amount),
+                currency="MYR",
+                amount_myr=Decimal(amount),
+                due_date=TODAY + dt.timedelta(days=days),
+                status=status,
+            )
+        )
+    db.commit()
+
+
+@check("anomaly_duplicate_and_outlier")
+def anomaly_duplicate_and_outlier() -> Result:
+    """Functional: a duplicate bill and a bill far outside a supplier's range are flagged,
+    and an ordinary bill is not."""
+    from app.services import anomalies
+
+    db = _database()
+    history = [(1, a, -60 + n * 7, f"H-{n}", "paid") for n, a in enumerate(
+        ("5000", "5200", "4900", "5100", "5050", "4950"))]
+    _suppliers_and_bills(
+        db,
+        [
+            *history,
+            (1, "5100", 10, "OK-1", "open"),
+            (1, "48000", 12, "BIG-1", "open"),
+            (2, "12800", 5, "INV-77", "open"),
+            (2, "12800", 9, "INV-77", "open"),
+        ],
+    )
+    found = {(f.label.split(" · ")[0], f.kind) for f in anomalies.scan(db, str(TENANT_A)).findings}
+    expected = {("BIG-1", "unusual_amount"), ("INV-77", "possible_duplicate")}
+    return _expect(
+        found == expected,
+        "BIG-1 flagged as unusual, the second INV-77 as a duplicate, OK-1 not flagged",
+        f"found {sorted(found)}",
+    )
+
+
+@check("checker_blocks_reminder_on_hold")
+def checker_blocks_reminder_on_hold() -> Result:
+    """Broken variant this catches: a checker that lets a reminder through for an
+    invoice the customer disputes."""
+    from app.contracts.collaboration import HoldRequest
+    from app.contracts.common import EvidenceRef, JobFunction
+    from app.services import policy_checks, receivable_holds, review_inbox
+
+    db = _database()
+    finance = _principal(UserRole.FINANCE_OPS)
+    action_id = review_inbox.propose(
+        db,
+        str(TENANT_A),
+        agent_id="receivables",
+        reviewer=JobFunction.FINANCE,
+        level=AutonomyLevel.L2,
+        title="Payment reminder for INV-9",
+        summary="One reminder.",
+        amount=Decimal("5000.00"),
+        evidence=[EvidenceRef(label="Receivable record", source="pipeline:9")],
+    )
+    receivable_holds.put(db, finance, "pipeline:9", HoldRequest(kind="disputed"))
+    checks = {c.name: c for c in policy_checks.check(db, finance, action_id)}
+    ok = checks["holds"].status == "fail" and "disputed" in checks["holds"].detail
+    return _expect(
+        ok,
+        f"the checker fails the reminder: {checks['holds'].detail}",
+        f"holds check was {checks['holds'].status}",
+    )
+
+
+@check("benchmark_needs_five_companies")
+def benchmark_needs_five_companies() -> Result:
+    """Broken variant this catches: a cross-company average released for so few
+    companies that one company's figure could be worked out."""
+    import uuid
+
+    from app.models import EInvoiceRecord
+    from app.services import benchmarks
+
+    db = _database()
+
+    def company(late, tenant=None):
+        tenant = tenant or str(uuid.uuid4())
+        if db.get(Tenant, tenant) is None:
+            db.add(Tenant(id=tenant, slug=f"t-{tenant[:8]}", name="SYNTHETIC peer"))
+        due = TODAY - dt.timedelta(days=60)
+        db.add(
+            EInvoiceRecord(
+                tenant_id=tenant,
+                supplier_name="SYNTHETIC",
+                total_amount=Decimal("1000.00"),
+                status="validated",
+                due_date=due,
+                paid_at=due + dt.timedelta(days=late),
+            )
+        )
+        db.commit()
+
+    company(10, str(TENANT_A))
+    for late in (5, 15, 20):
+        company(late)
+    four = benchmarks.report(db, str(TENANT_A), TODAY)
+    company(25)
+    five = benchmarks.report(db, str(TENANT_A), TODAY)
+    ok = (
+        four.metrics[0].peer_value is None
+        and five.metrics[0].peer_value is not None
+        and five.metrics[0].noise_scale == 18.0
+    )
+    return _expect(
+        ok,
+        "nothing released for 4 companies; for 5, a noisy average with Laplace scale 18 days",
+        f"four {four.metrics[0]}, five {five.metrics[0]}",
+    )
+
+
+@check("grounding_flags_invented_figure")
+def grounding_flags_invented_figure() -> Result:
+    """Broken variant this catches: an answer that adds a figure no cited source holds,
+    reported as fully grounded."""
+    from app.services import grounding
+
+    report = grounding.check(
+        "The customer disputed the carton count [SOURCE-1]. They owe 98000 [SOURCE-1].",
+        ["The customer disputed the carton count; 24500 is overdue."],
+    )
+    ok = report is not None and report.supported == 1 and report.unsupported == [2]
+    return _expect(
+        ok,
+        "the sentence with 98000, which no source holds, is reported unsupported",
+        f"report {report}",
+    )

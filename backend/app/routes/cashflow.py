@@ -10,12 +10,13 @@ from app.contracts.cashflow import (
     CashSignalsResponse,
     ForecastCheckResponse,
     ForecastResponse,
+    PaymentModelResponse,
     ScenarioRequest,
 )
 from app.contracts.common import JobFunction
 from app.db import get_db
 from app.schemas import UserRole
-from app.services import cashflow_engine, forecast_check
+from app.services import cashflow_engine, forecast_check, payment_model
 from app.services.cashflow import basis_for
 from app.services.cashflow_engine import UnknownEventError
 
@@ -55,6 +56,16 @@ def cashflow_forecast_check(
 ) -> ForecastCheckResponse:
     data_mode = basis_for(db, principal, dt.date.today()).data_mode
     return forecast_check.report(db, str(principal.tenant_id), data_mode)
+
+
+@router.get("/cashflow/payment-model", response_model=PaymentModelResponse)
+def cashflow_payment_model(
+    principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
+    db: Session = Depends(get_db),
+) -> PaymentModelResponse:
+    """How late each customer usually pays, learned from paid e-invoices."""
+    data_mode = basis_for(db, principal, dt.date.today()).data_mode
+    return payment_model.report(db, str(principal.tenant_id), data_mode)
 
 
 @router.post("/cashflow/scenarios", response_model=ForecastResponse)

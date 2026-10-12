@@ -48,6 +48,10 @@
     {"id": "ADV-18", "kind": "adversarial", "standard": "ASI03", "title": "Finance cannot create or list AI keys", "check": "finance_cannot_make_ai_keys", "args": {}},
     {"id": "ADV-19", "kind": "adversarial", "standard": "ASI03", "title": "One company cannot put a hold on another company's invoice", "check": "cross_company_hold", "args": {}},
     {"id": "ADV-20", "kind": "adversarial", "standard": "ASI08", "title": "An automation never chases a disputed invoice", "check": "automation_skips_disputed", "args": {}},
-    {"id": "ADV-21", "kind": "adversarial", "standard": "ASI03", "title": "A sign-in record keeps no IP address or browser string", "check": "sign_in_keeps_no_address", "args": {}}
+    {"id": "ADV-21", "kind": "adversarial", "standard": "ASI03", "title": "A sign-in record keeps no IP address or browser string", "check": "sign_in_keeps_no_address", "args": {}},
+    {"id": "F23", "kind": "functional", "title": "Unusual and duplicate supplier bills are flagged; ordinary ones are not", "check": "anomaly_duplicate_and_outlier", "args": {}},
+    {"id": "ADV-22", "kind": "adversarial", "standard": "ASI09", "title": "The checker agent fails a reminder for a disputed invoice", "check": "checker_blocks_reminder_on_hold", "args": {}},
+    {"id": "ADV-23", "kind": "adversarial", "standard": "ASI03", "title": "No cross-company benchmark is released below five companies", "check": "benchmark_needs_five_companies", "args": {}},
+    {"id": "ADV-24", "kind": "adversarial", "standard": "ASI06", "title": "An answer with a figure no source holds is reported as not grounded", "check": "grounding_flags_invented_figure", "args": {}}
   ]
 }

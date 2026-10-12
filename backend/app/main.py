@@ -50,6 +50,7 @@ from app.routes import (
 from app.routes import alerts as alerts_routes
 from app.routes import analysis as analysis_routes
 from app.routes import collaboration as collaboration_routes
+from app.routes import insights as insights_routes
 from app.routes import mcp as mcp_routes
 from app.routes import security as security_routes
 from app.routes import settings as settings_routes
@@ -249,6 +250,7 @@ app.include_router(analysis_routes.router)
 app.include_router(collaboration_routes.router)
 app.include_router(mcp_routes.router)
 app.include_router(security_routes.router)
+app.include_router(insights_routes.router)
 
 
 @app.exception_handler(RequestValidationError)

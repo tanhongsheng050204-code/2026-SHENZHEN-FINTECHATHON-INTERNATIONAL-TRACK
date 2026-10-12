@@ -255,6 +255,15 @@ class ExposureReceipt(BaseModel):
     vault_key_version: int
 
 
+class GroundingReport(BaseModel):
+    """How many sentences of an answer were found in the sources it cites."""
+
+    sentences: int
+    supported: int
+    # 1-based positions of sentences not found in the cited sources.
+    unsupported: list[int] = Field(default_factory=list)
+
+
 class QueryResponse(BaseModel):
     answer: str
     model_answer: str
@@ -270,6 +279,7 @@ class QueryResponse(BaseModel):
     intelligence_brief: CustomerIntelligenceBrief | None = None
     exposure_receipt: ExposureReceipt | None = None
     context_customer_id: int | None = None
+    grounding: GroundingReport | None = None
 
 
 class CitationDetailResponse(BaseModel):
