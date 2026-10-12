@@ -93,22 +93,37 @@ def test_a_company_without_paid_invoices_is_not_counted(db):
     assert report.metrics[0].your_value is None
 
 
-def test_a_changed_cohort_gets_fresh_noise_so_differences_reveal_nothing(db, monkeypatch):
-    seeds = []
-    real = benchmarks.laplace
+def test_one_release_per_day_whatever_changes_during_the_day(db):
+    _company(db, [10, 10], str(TENANT_A))
+    for late in (5, 15, 20, 25):
+        _company(db, [late])
+    first = benchmarks.report(db, str(TENANT_A), TODAY)
 
-    def recording(scale, seed):
-        seeds.append(seed)
-        return real(scale, seed)
+    # A company joins and another's figure moves: still the day's one release, so
+    # no two answers can be compared to cancel the noise or average it away.
+    _company(db, [80])
+    _company(db, [90])
+    later = benchmarks.report(db, str(TENANT_A), TODAY)
+    assert later.metrics[0].peer_value == first.metrics[0].peer_value
+    assert later.metrics[0].noise_scale == first.metrics[0].noise_scale
 
-    monkeypatch.setattr(benchmarks, "laplace", recording)
+    # The next day is a new release, with the new data.
+    tomorrow = benchmarks.report(db, str(TENANT_A), TODAY + dt.timedelta(days=1))
+    assert tomorrow.metrics[0].noise_scale == round(90 / 7, 2)
+
+
+def test_the_release_is_kept_on_the_chain_as_figures_only(db):
+    from sqlalchemy import select
+
+    from app.models import WorkflowAuditEntry
+
     _company(db, [10, 10], str(TENANT_A))
     for late in (5, 15, 20, 25):
         _company(db, [late])
     benchmarks.report(db, str(TENANT_A), TODAY)
-    benchmarks.report(db, str(TENANT_A), TODAY)  # same data: same noise
-    _company(db, [30])  # a company joins the same day
-    benchmarks.report(db, str(TENANT_A), TODAY)
 
-    assert seeds[0] == seeds[1]
-    assert seeds[2] != seeds[0]
+    event = db.scalar(
+        select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "benchmark_released")
+    )
+    assert event.resource_id == TODAY.isoformat()
+    assert set(event.event_payload) == {"metric", "peer_value", "noise_scale", "epsilon"}

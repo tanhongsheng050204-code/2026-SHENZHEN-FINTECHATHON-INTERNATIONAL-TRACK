@@ -1407,16 +1407,19 @@ def benchmark_needs_five_companies() -> Result:
         company(late)
     four = benchmarks.report(db, str(TENANT_A), TODAY)
     company(25)
-    five = benchmarks.report(db, str(TENANT_A), TODAY)
+    same_day = benchmarks.report(db, str(TENANT_A), TODAY)
+    next_day = benchmarks.report(db, str(TENANT_A), TODAY + dt.timedelta(days=1))
     ok = (
         four.metrics[0].peer_value is None
-        and five.metrics[0].peer_value is not None
-        and five.metrics[0].noise_scale == 18.0
+        and same_day.metrics[0].peer_value is None
+        and next_day.metrics[0].peer_value is not None
+        and next_day.metrics[0].noise_scale == 18.0
     )
     return _expect(
         ok,
-        "nothing released for 4 companies; for 5, a noisy average with Laplace scale 18 days",
-        f"four {four.metrics[0]}, five {five.metrics[0]}",
+        "nothing released for 4 companies, nor again that day after a fifth joins; "
+        "the next day, a noisy average with Laplace scale 18 days",
+        f"four {four.metrics[0]}, same day {same_day.metrics[0]}, next day {next_day.metrics[0]}",
     )
 
 

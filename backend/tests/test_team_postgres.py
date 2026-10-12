@@ -274,3 +274,25 @@ def test_holds_and_run_history_are_shared_across_roles_under_rls():
         runs = automations.runs(db, tid, saved.id)
         assert runs and runs[0].skipped.get("on_hold") == 1
         db.rollback()
+
+
+def test_the_benchmark_release_is_stored_once_under_rls():
+    import datetime as dt
+
+    from app.services import benchmarks
+
+    engine = create_engine(DSN)
+    team = _team()
+    owner = team[UserRole.OWNER_DIRECTOR]
+    tid = str(owner.tenant_id)
+    day = dt.date(2031, 1, 1) + dt.timedelta(days=int(uuid4().int % 3000))
+    with Session(engine, expire_on_commit=False) as db:
+        db.add(Tenant(id=tid, name="SYNTHETIC benchmark review", slug=f"review-{tid}"))
+        db.flush()
+        initialize_settings(db, tid, "SYNTHETIC benchmark review")
+        db.commit()
+        _as(db, owner)
+        first = benchmarks.report(db, tid, day)
+        again = benchmarks.report(db, tid, day)
+        assert first.metrics[0].peer_value == again.metrics[0].peer_value
+        db.rollback()
