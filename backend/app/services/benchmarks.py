@@ -13,7 +13,9 @@ company's own figure being revealed or worked out:
   figures only); every later request that day gets exactly that release, whatever
   changes in the data. So two answers can never be compared to cancel the noise,
   and asking again cannot average it away. The privacy cost is epsilon per metric
-  per day, adding up over days (sequential composition).
+  per day, adding up over days (sequential composition). The first release of a
+  day is taken under a database lock, so simultaneous first requests cannot each
+  store one.
 - Nothing is released below MIN_COMPANIES contributing companies.
 
 The company's own value is shown exactly, to itself only. Reading other companies'
@@ -26,7 +28,7 @@ import hmac
 import math
 import statistics
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -90,6 +92,12 @@ def _release(db: Session, today: dt.date, values: dict[str, float]) -> dict:
     worker = _worker(db)
     session = worker or db
     try:
+        if worker is not None:
+            # Concurrent first requests wait here, so the day gets exactly one release.
+            worker.execute(
+                text("select pg_advisory_xact_lock(hashtext(:key))"),
+                {"key": f"finbrain:benchmark:{today.isoformat()}"},
+            )
         stored = session.scalar(
             select(WorkflowAuditEntry)
             .where(

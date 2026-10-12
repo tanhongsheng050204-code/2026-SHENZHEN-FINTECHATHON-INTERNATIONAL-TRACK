@@ -296,3 +296,49 @@ def test_the_benchmark_release_is_stored_once_under_rls():
         again = benchmarks.report(db, tid, day)
         assert first.metrics[0].peer_value == again.metrics[0].peer_value
         db.rollback()
+
+
+def test_two_first_requests_at_once_store_one_release():
+    import datetime as dt
+    import threading
+
+    from sqlalchemy import func, select
+
+    from app.models import DEFAULT_TENANT_ID, WorkflowAuditEntry
+    from app.services import benchmarks
+
+    engine = create_engine(DSN)
+    team = _team()
+    owner = team[UserRole.OWNER_DIRECTOR]
+    tid = str(owner.tenant_id)
+    day = dt.date(2041, 1, 1) + dt.timedelta(days=int(uuid4().int % 3000))
+    with Session(engine) as db:
+        db.add(Tenant(id=tid, name="SYNTHETIC race review", slug=f"review-{tid}"))
+        db.flush()
+        initialize_settings(db, tid, "SYNTHETIC race review")
+        db.commit()
+    results, start = [], threading.Barrier(4)
+
+    def ask():
+        with Session(engine, expire_on_commit=False) as db:
+            _as(db, owner)
+            start.wait()
+            results.append(benchmarks.report(db, tid, day).metrics[0].peer_value)
+
+    threads = [threading.Thread(target=ask) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    with Session(engine) as db:
+        stored = db.scalar(
+            select(func.count())
+            .select_from(WorkflowAuditEntry)
+            .where(
+                WorkflowAuditEntry.tenant_id == DEFAULT_TENANT_ID,
+                WorkflowAuditEntry.event_type == "benchmark_released",
+                WorkflowAuditEntry.resource_id == day.isoformat(),
+            )
+        )
+    assert len(results) == 4 and len(set(results)) == 1
+    assert stored == 1
