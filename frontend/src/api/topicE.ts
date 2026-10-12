@@ -1072,6 +1072,10 @@ export interface ForecastCheckHorizon {
   mean_abs_error_myr: string | null;
   /** Mean of 1 - |likely - actual| / |actual|, as a percentage. */
   accuracy_pct: string | null;
+  /** Split-conformal half-width: likely ± this held 80% of the time on past days. */
+  calibrated_80_myr: string | null;
+  /** Scored days still needed before the calibrated range is shown. */
+  calibration_needs: number;
 }
 
 export interface ForecastDifference {

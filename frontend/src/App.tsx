@@ -63,6 +63,7 @@ const Autonomy = lazy(() => fresh(() => import("./screens/Autonomy")));
 const Team = lazy(() => fresh(() => import("./screens/Team")));
 const Trust = lazy(() => fresh(() => import("./screens/Trust")));
 const SecurityActivity = lazy(() => fresh(() => import("./screens/SecurityActivity")));
+const Signals = lazy(() => fresh(() => import("./screens/Signals")));
 const CompanySettings = lazy(() => fresh(() => import("./screens/CompanySettings")));
 const SharedView = lazy(() => fresh(() => import("./screens/SharedView")));
 
@@ -122,6 +123,7 @@ function Screens() {
     case "team": return <Team />;
     case "trust": return <Trust />;
     case "activity": return <SecurityActivity />;
+    case "signals": return <Signals />;
     case "company": return <CompanySettings />;
     default: return <Landing />;
   }

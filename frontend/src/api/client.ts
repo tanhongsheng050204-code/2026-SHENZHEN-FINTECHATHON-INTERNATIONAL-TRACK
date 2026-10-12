@@ -32,6 +32,8 @@ export interface QueryResponse {
   intelligence_brief: CustomerIntelligenceBrief | null;
   exposure_receipt: ExposureReceipt | null;
   context_customer_id: number | null;
+  /** How many answer sentences were found in the cited sources. */
+  grounding?: { sentences: number; supported: number; unsupported: number[] } | null;
 }
 
 export interface QueryCitation {

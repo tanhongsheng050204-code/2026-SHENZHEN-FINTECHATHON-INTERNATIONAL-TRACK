@@ -17,6 +17,7 @@ import {
 import { matchEinvoiceReadinessEmbed, resolveChatReply, type ChatReply } from "../components/embeds/ChatEmbeds";
 import { listRecentConversations, recordConversationTurn, type RecentConversation } from "../lib/recentConversations";
 import { OutreachComposerCard } from "../components/outreach/OutreachComposerCard";
+import { GroundingChip } from "../components/GroundingChip";
 import {
   askQuestion,
   ApiError,
@@ -26,6 +27,7 @@ import {
   type CustomerIntelligenceBrief,
   type ExposureReceipt,
   type QueryIntent,
+  type QueryResponse,
   type UploadCommitResponse,
   type UploadPreviewResponse,
 } from "../api/client";
@@ -47,6 +49,7 @@ interface Message {
   turnId?: number;
   brief?: CustomerIntelligenceBrief;
   exposure?: ExposureReceipt;
+  grounding?: QueryResponse["grounding"];
   isFallback?: boolean;
 }
 
@@ -178,6 +181,7 @@ export default function Agents() {
       let embed = fallback.embed;
       let brief: CustomerIntelligenceBrief | undefined;
       let exposure: ExposureReceipt | undefined;
+      let grounding: QueryResponse["grounding"];
       let modelQuestion: string | undefined;
       let turnId: number | undefined;
       let isFallback = false;
@@ -196,6 +200,7 @@ export default function Agents() {
         queryIntent = response.query_intent;
         brief = response.intelligence_brief ?? undefined;
         exposure = response.exposure_receipt ?? undefined;
+        grounding = response.grounding ?? undefined;
         modelQuestion = response.model_question;
         turnId = response.turn_id ?? undefined;
         embed = matchEinvoiceReadinessEmbed(trimmed) ?? undefined;
@@ -224,6 +229,7 @@ export default function Agents() {
               turnId,
               brief,
               exposure,
+              grounding,
               isFallback,
             }
           : message
@@ -410,6 +416,7 @@ export default function Agents() {
                     {msg.from === "agent" && msg.protectedText && !msg.brief && msg.queryIntent !== "list_records" && (
                       <div className="fb-answer-actions">
                         <div className="fb-answer-actions-row">
+                          {msg.grounding && msg.grounding.sentences > 0 && <GroundingChip grounding={msg.grounding} />}
                           {msg.exposure && msg.rawQuestion && msg.modelQuestion && (
                             <StandaloneExposureReceipt exposure={msg.exposure} rawQuestion={msg.rawQuestion} modelQuestion={msg.modelQuestion} protectedAnswer={msg.protectedText} authorizedAnswer={msg.text} />
                           )}

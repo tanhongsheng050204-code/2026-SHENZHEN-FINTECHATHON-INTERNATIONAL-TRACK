@@ -6,6 +6,7 @@ import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import { ApiError, friendlyLoadError } from "../api/client";
 import "../components/records.css";
+import { PaymentModelCard } from "../components/PaymentModelCard";
 import {
   fetchCashSignals,
   fetchForecast,
@@ -150,13 +151,14 @@ function ForecastCheck({ check }: { check: ForecastCheckResponse }) {
       ) : (
         <div className="fb-cash-scroll">
           <table className="fb-cash-table">
-            <thead><tr><th>{tx("Ahead")}</th><th className="is-num">{tx("Compared")}</th><th className="is-num">{tx("Accuracy")}</th><th className="is-num">{tx("Off by, on average")}</th><th className="is-num">{tx("Inside the range")}</th></tr></thead>
+            <thead><tr><th>{tx("Ahead")}</th><th className="is-num">{tx("Compared")}</th><th className="is-num">{tx("Accuracy")}</th><th className="is-num">{tx("Calibrated 80% range")}</th><th className="is-num">{tx("Off by, on average")}</th><th className="is-num">{tx("Inside the range")}</th></tr></thead>
             <tbody>
               {check.by_horizon.map((h) => (
                 <tr key={h.horizon_days}>
                   <td>{tx("{n} days ahead", { n: h.horizon_days })}</td>
                   <td className="is-num">{h.compared}</td>
                   <td className="is-num">{h.accuracy_pct === null ? "—" : `${h.accuracy_pct}%`}</td>
+                  <td className="is-num">{h.calibrated_80_myr === null ? tx("needs {n} more", { n: h.calibration_needs }) : `± ${ringgit(h.calibrated_80_myr)}`}</td>
                   <td className="is-num">{h.mean_abs_error_myr === null ? "—" : ringgit(h.mean_abs_error_myr)}</td>
                   <td className="is-num">{h.compared ? tx("{inside} of {n}", { inside: h.within_range, n: h.compared }) : "—"}</td>
                 </tr>
@@ -329,6 +331,7 @@ export default function CashFlow() {
             </section>
 
             {check && <ForecastCheck check={check} />}
+            <PaymentModelCard />
 
             {canRunScenarios && (
               <section className="fb-cash-card">

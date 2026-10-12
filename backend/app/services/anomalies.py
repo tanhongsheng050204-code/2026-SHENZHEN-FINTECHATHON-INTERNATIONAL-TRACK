@@ -8,7 +8,8 @@ Checks, each on the company's own records:
   median absolute deviation of zero falls back to "more than 50% away".
 - possible_duplicate: an open bill with the same supplier and amount as another
   bill, with the same bill number (ignoring case and spaces) or due within
-  DUPLICATE_DAYS of it. The later one is flagged.
+  DUPLICATE_DAYS of it. The later one is flagged. A monthly bill of the same amount
+  (rent, a subscription) is not a duplicate.
 - new_supplier_large: a supplier's only bill is at or above the company's 90th
   percentile bill, once the company has MIN_COMPANY_BILLS other bills.
 - possible_duplicate_payment: two equal bank debits to the same payee within
@@ -19,6 +20,7 @@ L1 item for Finance. Statistics, not a trained model: every flag can be checked
 by hand from the numbers it names.
 """
 
+import re
 import statistics
 from dataclasses import dataclass
 from decimal import Decimal
@@ -34,7 +36,7 @@ from app.services.workflow_audit import write_workflow_event
 MIN_HISTORY = 5
 MIN_COMPANY_BILLS = 10
 THRESHOLD = 3.5
-DUPLICATE_DAYS = 30
+DUPLICATE_DAYS = 7
 PAYMENT_DAYS = 3
 _TITLES = {
     "unusual_amount": "Check an unusual bill: {label}",
@@ -65,6 +67,15 @@ def _money(amount) -> str:
 def _masked(db, token: str | None, fallback: str) -> str:
     registry = db.get(ProtectedTokenRegistry, token) if token else None
     return registry.masked_value if registry else fallback
+
+
+_TOKEN = re.compile(r"^[A-Z]+_[0-9a-f]{10}$")
+
+
+def _bill_name(bill: Payable) -> str:
+    """The bill number, or its due date when the number is a protected token."""
+    number = bill.bill_no.strip()
+    return f"Bill due {bill.due_date:%d %b}" if _TOKEN.match(number) else number
 
 
 def _modified_z(value: float, others: list[float]) -> tuple[float, float]:
@@ -104,7 +115,7 @@ def scan(db, tenant_id: str) -> Scan:
             continue
         amount = float(bill.amount_myr)
         same = [b for b in by_supplier[bill.supplier_id] if b.id != bill.id]
-        label = f"{bill.bill_no.strip()} · {supplier_label(bill)}"
+        label = f"{_bill_name(bill)} · {supplier_label(bill)}"
         twin = next(
             (
                 b
@@ -127,8 +138,8 @@ def scan(db, tenant_id: str) -> Scan:
                     label=label,
                     amount_myr=Decimal(bill.amount_myr),
                     score=None,
-                    reason=f"Same supplier and amount ({_money(bill.amount_myr)}) as bill "
-                    f"{twin.bill_no.strip()}, due "
+                    reason=f"Same supplier and amount ({_money(bill.amount_myr)}) as "
+                    f"{_bill_name(twin).replace('Bill due', 'the bill due')}, "
                     f"{(bill.due_date - twin.due_date).days} days apart.",
                 )
             )

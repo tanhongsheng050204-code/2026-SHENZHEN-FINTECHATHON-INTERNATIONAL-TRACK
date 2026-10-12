@@ -10,6 +10,7 @@ import { useAppState } from "../lib/appState";
 import type { Screen } from "../lib/screens";
 import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
+import { CheckerPanel } from "../components/CheckerPanel";
 import { ApiError, friendlyLoadError } from "../api/client";
 import {
   decidableCount,
@@ -229,6 +230,8 @@ export default function ReviewInbox() {
                       <div className="fb-inbox-label">{tx("Activity")}</div>
                       <ActivityTimeline action={selected} />
                     </div>
+
+                    <CheckerPanel key={`checks-${selected.id}`} actionId={selected.id} />
 
                     <ReviewComments key={selected.id} actionId={selected.id} />
 

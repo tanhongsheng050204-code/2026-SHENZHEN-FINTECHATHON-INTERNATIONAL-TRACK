@@ -168,3 +168,21 @@ def test_staff_cannot_see_anomalies_and_the_review_is_kinds_only(db):
         select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "anomaly_sent_for_review")
     )
     assert event.event_payload == {"kind": "unusual_amount", "ref": ref}
+
+
+def test_a_monthly_bill_of_the_same_amount_is_not_a_duplicate(db):
+    _bill(db, 2, "14800", 5, "RENT-OCT")
+    _bill(db, 2, "14800", 35, "RENT-NOV")
+
+    assert anomalies.scan(db, str(TENANT_A)).findings == []
+
+
+def test_a_protected_bill_number_is_named_by_its_due_date(db):
+    _bill(db, 2, "12800", 5, "TEXT_166461f08e")
+    second = _bill(db, 2, "12800", 6, "TEXT_4712cc7b43")
+
+    [finding] = anomalies.scan(db, str(TENANT_A)).findings
+    due = (TODAY + dt.timedelta(days=6)).strftime("%d %b")
+    assert finding.ref == f"payable:{second}"
+    assert finding.label.startswith(f"Bill due {due}")
+    assert "TEXT_" not in finding.label and "TEXT_" not in finding.reason

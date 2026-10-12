@@ -121,6 +121,7 @@ Status as of 2026-10-12. The demo company and its data are synthetic and labelle
 | Finance and staff on the live database | **Fixed 2026-10-12.** Row-level security let only the owner and Compliance read other people's audit-chain entries, so Finance saw an empty review inbox and could not record decisions. Chain reads and such writes now use a worker session scoped to the same company; a PostgreSQL test runs these paths as Finance and staff. |
 | AI connections (MCP) | **Built and tested.** Claude Code, Claude Desktop or any MCP client with a company key can read the forecast, forecast check, review inbox, collections board and financing matches. Each key reads only the tools the owner chose and expires (90 days by default); the owner sees when it was last used and for what. Read-only, masked labels, every call recorded, keys revocable. Not yet tried with ChatGPT, and keys are not OAuth tokens yet. |
 | Security activity and PDPA: sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, portability exports | **Built and tested.** New-device warnings show in the app; they are not emailed yet. Notices are drafted for a person to send; DuitDuit does not decide the legal thresholds. Sign-in recording is tested on SQLite and with a mocked provider, not yet on the hosted database. |
+| AI techniques: a payment-delay model, calibrated forecast ranges (conformal prediction), anomaly detection on bills and payments, a checker agent on every review item, keyword reranking with a grounding check on answers, and benchmarks across companies with differential privacy | **Built and tested.** Described, with what each does not claim, in [docs/standards/ai-techniques.md](docs/standards/ai-techniques.md). On the synthetic demo company the payment model has no paid e-invoices to learn from and the forecast ranges need five scored days, so both say "not measured"; the benchmark needs five companies. Reinforcement learning and federated learning are roadmap, not built. |
 | Public site | **Built.** Attio-style Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
 | Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Supabase Auth is configured: codes in every email template, sending through a dedicated Gmail account. The API still runs through a temporary tunnel, whose address changes when it restarts, and some requests time out. |
@@ -130,8 +131,8 @@ Status as of 2026-10-12. The demo company and its data are synthetic and labelle
 
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Task completion | 40% | An offline evaluation harness of 48 tasks, 22 of them functional. The latest run passes all 48. Plus the live demo company and the demo video. |
-| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 26 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
+| Task completion | 40% | An offline evaluation harness of 52 tasks, 23 of them functional. The latest run passes all 52. Plus the live demo company and the demo video. |
+| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 29 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
 | Innovation & interaction | 30% | An assistant that proposes and never acts on its own; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
 
 ### Submission map
@@ -962,7 +963,7 @@ The full list, with checks for each step, is in the
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 48-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
+| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 52-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
 | `anchor-audit-chain.yml` | daily 00:00 UTC + manual | Writes each tenant's audit-chain tail to `audit-anchors/<date>.json` and commits it — tamper evidence outside the database trust boundary. Requires the `PRODUCTION_DATABASE_URL` repository secret (read-only). |
 
 ---
@@ -996,12 +997,12 @@ models, or call an AI provider. Coverage spans:
 - conversation context resolution and query intent planning;
 - RLS / authorization boundaries.
 
-Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 48
-scripted tasks (22 functional, 26 adversarial) offline and writes `output/eval-report.md`.
+Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 52
+scripted tasks (23 functional, 29 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **749 passed, 9 skipped** (the skipped tests need PostgreSQL, which CI provides; the 8 PostgreSQL tests also pass against a local migrated database);
-- evaluation: **48 of 48**;
+- backend: **787 passed, 11 skipped** (the skipped tests need PostgreSQL, which CI provides; the 10 PostgreSQL tests also pass against a local migrated database);
+- evaluation: **52 of 52**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,

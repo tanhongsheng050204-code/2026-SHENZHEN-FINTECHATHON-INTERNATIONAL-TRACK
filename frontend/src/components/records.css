@@ -130,3 +130,8 @@
   .dd-board-summary > *{border-right:0;border-bottom:1px solid var(--rc-line,var(--line))}
   .dd-board-summary > *:last-child{border-bottom:0}
 }
+
+/* A card heading with a chip or button on the right. */
+.sa-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.4rem .6rem}
+.sa-head h2{margin:0}
+.dd-checker h3{display:flex;align-items:center;gap:.5rem}
