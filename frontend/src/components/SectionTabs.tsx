@@ -20,6 +20,7 @@ const SECTIONS: Record<string, { screen: Screen; key: string }[]> = {
   ],
   trust: [
     { screen: "trust", key: "tabs.posture" },
+    { screen: "activity", key: "tabs.securityActivity" },
     { screen: "audit", key: "tabs.audit" },
   ],
 };

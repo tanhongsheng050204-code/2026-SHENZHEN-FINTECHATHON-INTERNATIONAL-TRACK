@@ -6,6 +6,7 @@ import { useTheme, type ThemePreference } from "../lib/theme";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { PERSONAS } from "../lib/personas";
 import { BriefingPushCard } from "../components/BriefingPushCard";
+import { SignInsPanel } from "../components/SignInsPanel";
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; desc: string }[] = [
   { value: "light", label: "Light", desc: "Always light, whatever your device is set to." },
@@ -115,6 +116,8 @@ export default function Settings() {
             </div>
           </div>
         </section>
+
+        <SignInsPanel />
       </div>
     </div>
   );

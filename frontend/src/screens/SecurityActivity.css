@@ -1,0 +1,29 @@
+/* Security activity: a feed on the left, incidents and the officer on the right. */
+.sa-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:1rem;align-items:start}
+.sa-side{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.sa-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.sa-head h2{margin:0}
+.sa-officer{font-size:.95rem !important}
+.sa-form{display:flex;flex-direction:column;gap:.8rem}
+.sa-form label{display:flex;flex-direction:column;gap:.25rem;font-size:.78rem;color:var(--rc-muted)}
+.sa-form select,.sa-form input[type="number"],.sa-form input[type="date"]{min-height:38px;padding:.25rem .55rem;border:1px solid var(--rc-line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;font-size:.86rem}
+.sa-form fieldset{margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:.35rem}
+.sa-form legend{padding:0;margin-bottom:.35rem;font-size:.78rem;color:var(--rc-muted)}
+.sa-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.sa-form label.sa-check{flex-direction:row;align-items:center;gap:.45rem;font-size:.84rem;color:var(--ink)}
+.sa-check input{accent-color:var(--accent);width:16px;height:16px}
+.sa-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--rc-line);border-radius:10px;overflow:hidden}
+.sa-steps li{display:grid;grid-template-columns:22px 1fr auto;gap:.6rem;align-items:center;padding:.6rem .7rem;border-bottom:1px solid var(--rc-line)}
+.sa-steps li:last-child{border-bottom:0}
+.sa-steps i{width:20px;height:20px;border-radius:50%;border:2px solid var(--rc-line);display:grid;place-items:center;font-style:normal;font-size:.7rem;font-weight:700;color:#fff}
+.sa-steps li.is-done i{background:var(--rc-green);border-color:var(--rc-green)}
+.sa-steps li.is-optional{opacity:.65}
+.sa-steps div{display:flex;flex-direction:column;gap:.1rem;min-width:0}
+.sa-steps strong{font-size:.84rem;font-weight:600}
+.sa-steps span{font-size:.76rem;color:var(--rc-muted)}
+.sa-link{padding:0;border:0;background:none;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
+
+/* Sign-ins in My preferences */
+.sa-signins .rc-chip{margin-left:.3rem}
+@media (max-width:900px){.sa-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.sa-row{grid-template-columns:1fr}}

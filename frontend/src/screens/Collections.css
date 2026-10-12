@@ -1,12 +1,4 @@
 /* The collections board: quiet columns, record-style cards, colour only for status. */
-.dd-board-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 0 1rem;border:1px solid var(--rc-line,var(--line));border-radius:12px;background:var(--card);overflow:hidden}
-.dd-board-summary > *{display:flex;flex-direction:column;gap:.2rem;padding:.75rem 1rem;border:0;border-right:1px solid var(--rc-line,var(--line));background:transparent;color:inherit;font:inherit;text-align:left}
-.dd-board-summary > *:last-child{border-right:0}
-.dd-board-summary span{font-size:.76rem;color:var(--rc-muted,#66726E)}
-.dd-board-summary strong{font-size:1.15rem;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.dd-board-summary strong.is-late{color:var(--rc-red,#B4372B)}
-.dd-board-summary button{cursor:pointer}
-.dd-board-summary button:hover{background:var(--rc-hover,#F3F5F4)}
 .dd-board-toolbar{display:flex;flex-direction:column;gap:.1rem;margin-bottom:.4rem}
 
 .dd-board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:.7rem;overflow-x:auto;padding-bottom:.6rem;position:relative}
@@ -38,9 +30,6 @@
 .dd-board-filters button:hover,.dd-views button:hover{background:var(--rc-hover,#F3F5F4)}
 .dd-board-filters button.is-on{background:var(--ink);border-color:var(--ink);color:var(--card)}
 @media (max-width:640px){
-  .dd-board-summary{grid-template-columns:1fr}
-  .dd-board-summary > *{border-right:0;border-bottom:1px solid var(--rc-line,var(--line))}
-  .dd-board-summary > *:last-child{border-bottom:0}
   .dd-board{grid-template-columns:repeat(6,minmax(240px,82vw))}
   .dd-board-filters button,.dd-views button,.dd-card-open{min-height:44px}
 }
@@ -60,3 +49,4 @@
 .fb-table td.dd-risk-cell{white-space:normal;min-width:24ch;max-width:34ch;font-size:.82rem;line-height:1.35}
 .dd-risk-cell .rc-chip{margin-bottom:.25rem}
 .dd-risk-callout{margin:0 0 1rem}
+.dd-export{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-left:.6rem}

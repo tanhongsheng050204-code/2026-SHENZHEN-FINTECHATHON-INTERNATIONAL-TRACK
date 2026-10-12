@@ -3,7 +3,7 @@ export const SCREENS = [
   "landing", "login", "signup", "onboarding", "security", "legal", "pricing", "changelog", "help",
   "home", "agents", "customers", "einvoice", "einvoice-detail", "finance", "audit", "approvals", "ingestion", "settings",
   // Topic E pages
-  "inbox", "positions", "autonomy", "cashflow", "analysis", "collections", "financing", "team", "trust", "company",
+  "inbox", "positions", "autonomy", "cashflow", "analysis", "collections", "financing", "team", "trust", "activity", "company",
 ] as const;
 
 export type Screen = (typeof SCREENS)[number];
@@ -41,5 +41,6 @@ export const PAGE_TITLES: Record<Screen, string> = {
   financing: "Financing & Passport",
   team: "Team",
   trust: "Trust & audit",
+  activity: "Security activity",
   company: "Company settings",
 };

@@ -4,6 +4,7 @@ import { SavedViewsBar } from "../components/SavedViewsBar";
 import { useI18n } from "../lib/i18n";
 import "./Collections.css";
 import "../components/records.css";
+import { ExportCustomerData } from "../components/ExportCustomerData";
 import {
   createCustomerEndpoint,
   createOutreachAction,
@@ -180,6 +181,7 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
       </div>
     )}
     <button className="fb-btn fb-btn-solid" type="button" onClick={() => show("agents")}>Ask about this customer</button>
+    <ExportCustomerData customerId={customer.id} />
     <h3 style={{ marginTop: "1.5rem" }}>Why this customer needs attention</h3>
     {customer.attention_signals.length ? (
       <div className="fb-signal-list">

@@ -115,3 +115,18 @@
 .dd-key-tool input{accent-color:var(--accent)}
 @media (max-width:640px){.dd-key-tool{min-height:44px}}
 .dd-key-form .fb-cash-field{flex:0 1 220px}
+
+/* A strip of three figures at the top of a page (Collections, Security activity). */
+.dd-board-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 0 1rem;border:1px solid var(--rc-line,var(--line));border-radius:12px;background:var(--card);overflow:hidden}
+.dd-board-summary > *{display:flex;flex-direction:column;gap:.2rem;padding:.75rem 1rem;border:0;border-right:1px solid var(--rc-line,var(--line));background:transparent;color:inherit;font:inherit;text-align:left}
+.dd-board-summary > *:last-child{border-right:0}
+.dd-board-summary span{font-size:.76rem;color:var(--rc-muted,#66726E)}
+.dd-board-summary strong{font-size:1.15rem;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.dd-board-summary strong.is-late{color:var(--rc-red,#B4372B)}
+.dd-board-summary button{cursor:pointer}
+.dd-board-summary button:hover{background:var(--rc-hover,#F3F5F4)}
+@media (max-width:640px){
+  .dd-board-summary{grid-template-columns:1fr}
+  .dd-board-summary > *{border-right:0;border-bottom:1px solid var(--rc-line,var(--line))}
+  .dd-board-summary > *:last-child{border-bottom:0}
+}

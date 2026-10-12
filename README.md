@@ -129,8 +129,8 @@ Status as of 2026-10-11. The demo company and its data are synthetic and labelle
 
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Task completion | 40% | An offline evaluation harness of 42 tasks, 22 of them functional. The latest run passes all 42. Plus the live demo company and the demo video. |
-| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Also 20 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
+| Task completion | 40% | An offline evaluation harness of 48 tasks, 22 of them functional. The latest run passes all 48. Plus the live demo company and the demo video. |
+| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 26 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
 | Innovation & interaction | 30% | An assistant that proposes and never acts on its own; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
 
 ### Submission map
@@ -282,7 +282,9 @@ finance-copilot capabilities and their status are listed under
 | Reminder sequences | A friendly reminder at N days overdue, a firm one at N+7 and a call task for Finance at N+21; each step waits until a person decided the last | Collections escalate on time without anyone tracking dates |
 | AI connections (MCP) | `POST /mcp` with a read-only company key limited to chosen tools and an expiry; HMAC-only key storage; each call on the audit chain | Owners can ask their own AI tool about their cash, without giving it the power to act |
 | E-invoice readiness | MyInvois-oriented scoring, LHDN-style invoice PDF, official payment receipt, owner UIN issuance | Submission blockers surface before LHDN rejects them |
-| PDPA subject rights | Token-level access export and crypto-shredding erasure, both audited | Data-subject requests are one audited operation |
+| PDPA subject rights | Token-level access export and crypto-shredding erasure, both audited; a portability export of one customer's records as JSON for Compliance, after step-up | Data-subject requests are one audited operation |
+| Incident register and data protection officer | Compliance records a breach as kinds and numbers, works the amended PDPA's checklist (contained, assessed, Commissioner notified, people affected notified when significant harm is likely, closed), and gets notices drafted in the review inbox; the owner names the data protection officer from the team | A breach is handled the same way every time, with a record |
+| Sign-in activity and security feed | Each sign-in kept with browser family, system and a device id from an HttpOnly cookie (never the IP address); new devices, AI keys, role changes, kill switches, settings, shared links, exports and incidents in one feed for the owner and Compliance | Account takeover and risky changes are visible, not buried |
 
 ### Trust
 
@@ -997,7 +999,7 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (22 functional, 20 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **729 passed, 9 skipped** (the skipped tests need PostgreSQL, which CI provides; the 8 PostgreSQL tests also pass against a local migrated database);
+- backend: **749 passed, 9 skipped** (the skipped tests need PostgreSQL, which CI provides; the 8 PostgreSQL tests also pass against a local migrated database);
 - evaluation: **42 of 42**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 

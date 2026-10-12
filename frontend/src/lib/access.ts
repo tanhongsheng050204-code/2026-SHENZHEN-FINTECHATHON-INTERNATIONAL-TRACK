@@ -29,6 +29,7 @@ const SCREEN_ROLES: Partial<Record<Screen, Role[]>> = {
   ingestion: FINANCE_WORK,
   team: OVERSIGHT,
   trust: OVERSIGHT,
+  activity: OVERSIGHT,
   audit: ["compliance"],
 };
 
@@ -45,5 +46,6 @@ export const PARENT_SCREEN: Partial<Record<Screen, Screen>> = {
   analysis: "cashflow",
   collections: "cashflow",
   audit: "trust",
+  activity: "trust",
   "einvoice-detail": "einvoice",
 };
