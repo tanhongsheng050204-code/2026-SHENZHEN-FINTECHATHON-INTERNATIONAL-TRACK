@@ -105,8 +105,17 @@ function writeLocalPref(key: string, value: string) {
   }
 }
 
+// A link or a refresh on a public page opens that page; signed-in screens still
+// start from the landing page and are reached after sign-in.
+const DIRECT_SCREENS: readonly Screen[] = ["login", "signup", "security", "legal", "pricing", "changelog", "help"];
+
+function screenFromPath(): Screen {
+  const pathname = window.location.pathname.replace(/^\/|\/$/g, "");
+  return (DIRECT_SCREENS as readonly string[]).includes(pathname) ? (pathname as Screen) : "landing";
+}
+
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [screen, setScreen] = useState<Screen>("landing");
+  const [screen, setScreen] = useState<Screen>(screenFromPath);
   const [returnTo, setReturnTo] = useState<"landing" | "login" | "signup">("landing");
   const [legalSection, setLegalSection] = useState<"privacy" | "terms">("privacy");
   const [signupName, setSignupName] = useState("");
