@@ -187,3 +187,25 @@ def test_workspaces_compute_follow_ups_statutory_dates_and_duplicate_bills(live_
         for r in live_agents.workspace(live_db, owner, JobFunction.FINANCE).skill_results
     }
     assert finance["duplicate_bills"].value == "0 flagged"
+
+
+def test_payroll_figures_need_the_owner_or_a_fresh_authenticator_check(live_db, monkeypatch):  # noqa: F811
+    import dataclasses
+
+    monkeypatch.setattr(cashflow, "basis_for", lambda *a: _basis(PAYROLL))
+    stale = dataclasses.replace(principal(UserRole.FINANCE_OPS), mfa_verified_at=None)
+    run = agent_runtime.start_run(live_db, stale, "payroll")
+    events = agent_runtime.run_events(live_db, stale, run.run_id)
+
+    hr = [e for e in events if e.agent_id == "hr_payroll"]
+    assert [e.type for e in hr] == ["tool_called"]
+    assert "RM" not in hr[0].message and "authenticator" in hr[0].message
+
+
+def test_incidents_are_for_the_owner_and_compliance_only(live_db, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(cashflow, "basis_for", lambda *a: _basis())
+
+    events = _run(live_db, "Any compliance incidents?", UserRole.FINANCE_OPS)
+    [line] = [e for e in events if e.agent_id == "compliance"]
+    assert "Incidents" in line.message and "owner and Compliance" in line.message
+    assert not any(ch.isdigit() for ch in line.message)

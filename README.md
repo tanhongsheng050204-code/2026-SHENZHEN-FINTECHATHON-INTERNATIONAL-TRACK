@@ -1008,7 +1008,7 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (25 functional, 29 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **801 passed, 11 skipped** (the skipped tests need PostgreSQL, which CI provides; the 10 PostgreSQL tests also pass against a local migrated database);
+- backend: **803 passed, 11 skipped** (the skipped tests need PostgreSQL, which CI provides; the 10 PostgreSQL tests also pass against a local migrated database);
 - evaluation: **54 of 54**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 

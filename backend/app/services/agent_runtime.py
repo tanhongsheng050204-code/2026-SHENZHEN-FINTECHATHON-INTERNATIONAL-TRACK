@@ -31,6 +31,7 @@ from app.config import get_settings
 from app.contracts.agents import AgentRunCreated, AgentRunEvent
 from app.contracts.cashflow import CashSignal, EventShift, ForecastResponse
 from app.contracts.common import DataMode, EvidenceRef
+from app.schemas import UserRole
 from app.services import agent_skills, cashflow, cashflow_engine, financing_profile, review_inbox
 from app.stubs import agents as manifests
 from app.stubs.financing import matches
@@ -468,9 +469,19 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
             )
 
     if "hr_payroll" in chosen:
+        from app.services.live_agents import _sees_exact_payroll
+
         authorize(db, principal, "hr_payroll", "payroll_cash_plan")
-        checks = agent_skills.payroll_checks(forecast)
-        emit("tool_called", "hr_payroll", _payroll_line(checks))
+        # Payroll totals follow the HR & payroll screen: the owner, or a fresh code.
+        exact_payroll = _sees_exact_payroll(principal)
+        checks = agent_skills.payroll_checks(forecast) if exact_payroll else []
+        emit(
+            "tool_called",
+            "hr_payroll",
+            _payroll_line(checks)
+            if exact_payroll
+            else "Payroll figures are for the owner, or after a fresh authenticator check.",
+        )
         for check in checks:
             if not check.short:
                 continue
@@ -543,7 +554,12 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
                 line += f"; {len(flagged)} flagged as unusual (see Unusual activity)"
         emit("tool_called", "payables", line)
 
-    if "compliance" in chosen:
+    if "compliance" in chosen and principal.role not in (
+        UserRole.OWNER_DIRECTOR,
+        UserRole.COMPLIANCE,
+    ):
+        emit("tool_called", "compliance", "Incidents are for the owner and Compliance.")
+    elif "compliance" in chosen:
         authorize(db, principal, "compliance", "ai_oversight")
         count, steps_left = agent_skills.open_incidents(db, str(principal.tenant_id))
         emit(
