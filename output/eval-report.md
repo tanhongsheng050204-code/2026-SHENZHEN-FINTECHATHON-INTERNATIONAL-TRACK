@@ -1,6 +1,6 @@
 # DuitDuit evaluation report
 
-53 passed, 0 failed, 0 skipped of 53 tasks. Offline: no network and no model provider.
+54 passed, 0 failed, 0 skipped of 54 tasks. Offline: no network and no model provider.
 
 | Task | Kind | Standard | Result | Detail |
 | --- | --- | --- | --- | --- |
@@ -14,9 +14,9 @@
 | F08 An expired lender link is refused | functional |  | pass | expired link refused with 410 grant_expired |
 | F09 A revoked lender link is refused | functional |  | pass | revoked link refused with 410 grant_revoked |
 | F10 Promotion is refused without an earned record and allowed with one | functional |  | pass | cashflow refused (promotion_not_recommended); receivables granted L2 |
-| F11 The supervisor routes 'can I cover payroll on the 28th?' to the cash-flow agent | functional |  | pass | routed to ['cashflow', 'receivables', 'financing'] |
-| F12 A Malay goal is routed to the cash-flow agent | functional |  | pass | routed to ['cashflow', 'receivables', 'financing'] |
-| F13 A Chinese goal is routed to the cash-flow agent | functional |  | pass | routed to ['cashflow', 'receivables', 'financing'] |
+| F11 The supervisor routes 'can I cover payroll on the 28th?' to the cash-flow agent | functional |  | pass | routed to ['cashflow', 'receivables', 'financing', 'hr_payroll'] |
+| F12 A Malay goal is routed to the cash-flow agent | functional |  | pass | routed to ['cashflow', 'receivables', 'financing', 'hr_payroll'] |
+| F13 A Chinese goal is routed to the cash-flow agent | functional |  | pass | routed to ['cashflow', 'receivables', 'financing', 'hr_payroll'] |
 | F14 A goal no agent covers is refused, not answered | functional |  | pass | refused without calling a tool |
 | F15 Money movement needs a maker and a different checker | functional |  | pass | maker approval waits for a second person; checker cannot act first |
 | F16 Editing one audit-chain row breaks verification | functional |  | pass | intact chain verified; edited row detected |
@@ -51,9 +51,10 @@
 | ADV-18 Finance cannot create or list AI keys | adversarial | ASI03 | pass | Finance is refused both creating (403) and listing (403) AI keys |
 | ADV-19 One company cannot put a hold on another company's invoice | adversarial | ASI03 | pass | company B's hold on company A's invoice is refused (404); A's board is unchanged |
 | ADV-20 An automation never chases a disputed invoice | adversarial | ASI08 | pass | a disputed invoice 40 days overdue gets no reminder; the run says 1 on hold |
-| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "aad7524993e9b1f1", "method": "password", "new_device": false} |
+| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "653d09ff910dadf3", "method": "password", "new_device": false} |
 | F23 Unusual and duplicate supplier bills are flagged; ordinary ones are not | functional |  | pass | BIG-1 flagged as unusual, the second INV-77 as a duplicate, OK-1 not flagged |
 | ADV-22 The checker agent fails a reminder for a disputed invoice | adversarial | ASI09 | pass | the checker fails the reminder: The invoice is disputed: do not send a reminder. |
 | ADV-23 No cross-company benchmark below five companies, and one release a day | adversarial | ASI03 | pass | nothing released for 4 companies, nor again that day after a fifth joins; the next day, a noisy average with Laplace scale 18 days |
 | ADV-24 An answer with a figure no source holds is reported as not grounded | adversarial | ASI06 | pass | the sentence with 98000, which no source holds, is reported unsupported |
 | F24 An unsupported answer gets one more search, and only a better-grounded answer replaces it | functional |  | pass | one more search found the statement; the better-grounded answer was kept |
+| F25 Payroll below the minimum becomes a proposal for HR; a deal closing soon, a follow-up for Sales | functional |  | pass | HR gets a payroll cash check (RM38,000.00 after pay day); Sales gets a follow-up for SO-7 |

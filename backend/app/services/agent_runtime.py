@@ -31,7 +31,7 @@ from app.config import get_settings
 from app.contracts.agents import AgentRunCreated, AgentRunEvent
 from app.contracts.cashflow import CashSignal, EventShift, ForecastResponse
 from app.contracts.common import DataMode, EvidenceRef
-from app.services import cashflow, cashflow_engine, financing_profile, review_inbox
+from app.services import agent_skills, cashflow, cashflow_engine, financing_profile, review_inbox
 from app.stubs import agents as manifests
 from app.stubs.financing import matches
 
@@ -92,6 +92,43 @@ _FINANCE = (
     "融资",
 )
 
+_PAYROLL = ("payroll", "salary", "salaries", "wages", "epf", "socso", "pcb", "gaji", "工资", "薪")
+_SALES = (
+    "sales",
+    "deal",
+    "deals",
+    "pipeline",
+    "quote",
+    "quotes",
+    "quotation",
+    "jualan",
+    "销售",
+    "报价",
+)
+_BILLS = (
+    "bill",
+    "bills",
+    "supplier",
+    "suppliers",
+    "vendor",
+    "vendors",
+    "payable",
+    "payables",
+    "pembekal",
+    "供应商",
+    "账单",
+)
+_COMPLY = (
+    "compliance",
+    "incident",
+    "incidents",
+    "breach",
+    "pdpa",
+    "pematuhan",
+    "合规",
+    "泄露",
+)
+
 # Review inbox items that hold each proposal for a person to decide.
 _INBOX = {
     "cashflow": "act_cashflow_alert",
@@ -120,10 +157,22 @@ class Plan:
     cash: bool
     collections: bool
     financing: bool
+    payroll: bool = False
+    sales: bool = False
+    bills: bool = False
+    compliance: bool = False
 
     @property
     def empty(self) -> bool:
-        return not (self.cash or self.collections or self.financing)
+        return not (
+            self.cash
+            or self.collections
+            or self.financing
+            or self.payroll
+            or self.sales
+            or self.bills
+            or self.compliance
+        )
 
 
 def plan(goal: str) -> Plan:
@@ -131,6 +180,10 @@ def plan(goal: str) -> Plan:
         cash=_mentions(goal, _CASH),
         collections=_mentions(goal, _COLLECT),
         financing=_mentions(goal, _FINANCE),
+        payroll=_mentions(goal, _PAYROLL),
+        sales=_mentions(goal, _SALES),
+        bills=_mentions(goal, _BILLS),
+        compliance=_mentions(goal, _COMPLY),
     )
 
 
@@ -257,8 +310,9 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
         emit(
             "run_completed",
             "supervisor",
-            "No built agent covers this goal. Agents can work on cash, collections or "
-            "financing; ask DuitDuit in the chat for anything else.",
+            "No built agent covers this goal. Agents can work on cash, collections, "
+            "financing, payroll, sales deals, supplier bills or compliance; ask DuitDuit "
+            "in the chat for anything else.",
         )
         return _events(run_id, steps)
 
@@ -267,6 +321,14 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
         chosen.append("receivables")
     if route.cash or route.financing:
         chosen.append("financing")
+    if route.payroll:
+        chosen.append("hr_payroll")
+    if route.sales:
+        chosen.append("sales")
+    if route.bills:
+        chosen.append("payables")
+    if route.compliance:
+        chosen.append("compliance")
     emit("run_started", "supervisor", f"Goal received; routing to {', '.join(chosen)}.")
 
     authorize(db, principal, "cashflow", "forecast")
@@ -274,9 +336,9 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
     basis = cashflow.basis_for(db, principal, today)
     demo = basis.data_mode == DataMode.STUB
 
-    def inbox_item(agent: str, title: str, summary: str, amount, source: str) -> str:
+    def inbox_item(agent: str, title: str, summary: str, amount, source: str) -> str | None:
         if demo:
-            return _INBOX[agent]
+            return _INBOX.get(agent)  # the demo company's sample inbox has no item for it
         reviewer = manifests.find_agent(agent).reviewer_job_function
         return review_inbox.propose(
             db,
@@ -405,6 +467,97 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
                 f"Nothing qualifies yet. Closest: {closest.product.name}. Not met: {missing}.",
             )
 
+    if "hr_payroll" in chosen:
+        authorize(db, principal, "hr_payroll", "payroll_cash_plan")
+        checks = agent_skills.payroll_checks(forecast)
+        emit("tool_called", "hr_payroll", _payroll_line(checks))
+        for check in checks:
+            if not check.short:
+                continue
+            message = (
+                f"{check.signal.label} on {check.pay_date:%d %b}: the likely balance after it "
+                f"is {_ringgit(check.balance_after)}, below the "
+                f"{_ringgit(check.minimum)} minimum. Plan the cash before pay day."
+            )
+            emit(
+                "proposal_created",
+                "hr_payroll",
+                message,
+                inbox_item(
+                    "hr_payroll",
+                    f"Payroll cash check: {check.signal.label}",
+                    message + " Nothing has been paid.",
+                    check.signal.amount_myr,
+                    f"cash-signal:{check.signal.id}",
+                ),
+            )
+        due = agent_skills.statutory_due(db, str(principal.tenant_id), today)
+        if due is not None:
+            emit(
+                "tool_called",
+                "hr_payroll",
+                f"EPF, SOCSO, EIS and PCB for {due[0]} are due by {due[1]:%d %b}.",
+            )
+
+    if "sales" in chosen:
+        authorize(db, principal, "sales", "pipeline_inflows")
+        deals = agent_skills.deals_to_follow_up(forecast)
+        emit(
+            "tool_called",
+            "sales",
+            f"follow_up_deals(within={agent_skills.FOLLOW_UP_DAYS}d) → {len(deals)} found",
+        )
+        for deal in deals[:3]:
+            chance = f"{round(deal.probability * 100)}%"
+            message = (
+                f"Follow up {deal.id} ({_ringgit(deal.amount_myr)}, {chance} likely): "
+                f"{deal.label.lower()}. Confirm the order or update the forecast."
+            )
+            emit(
+                "proposal_created",
+                "sales",
+                message,
+                inbox_item(
+                    "sales",
+                    f"Follow up deal {deal.id}",
+                    message + " Nothing has been sent.",
+                    deal.amount_myr,
+                    f"cash-signal:{deal.id}",
+                ),
+            )
+
+    if "payables" in chosen:
+        authorize(db, principal, "payables", "bill_calendar")
+        bills = agent_skills.bills_due(forecast)
+        total = sum((b.amount_myr for b in bills), Decimal("0"))
+        one = len(bills) == 1
+        line = (
+            f"bill_calendar(within={agent_skills.BILL_DAYS}d) → {len(bills)} "
+            f"bill{'' if one else 's'} due, {_ringgit(total)}"
+        )
+        if db is not None and not demo:
+            from app.services import anomalies
+
+            flagged = anomalies.scan(db, str(principal.tenant_id)).findings
+            if flagged:
+                line += f"; {len(flagged)} flagged as unusual (see Unusual activity)"
+        emit("tool_called", "payables", line)
+
+    if "compliance" in chosen:
+        authorize(db, principal, "compliance", "ai_oversight")
+        count, steps_left = agent_skills.open_incidents(db, str(principal.tenant_id))
+        emit(
+            "tool_called",
+            "compliance",
+            f"{count} open incident{'' if count == 1 else 's'}"
+            + (
+                f", {steps_left} required step{'' if steps_left == 1 else 's'} to do"
+                if count
+                else ""
+            )
+            + ".",
+        )
+
     proposals = sum(1 for kind, *_ in steps if kind == "proposal_created")
     in_inbox = sum(1 for kind, *_, action in steps if kind == "proposal_created" and action)
     if in_inbox:
@@ -423,6 +576,16 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
         )
     emit("run_completed", "supervisor", done)
     return _events(run_id, steps)
+
+
+def _payroll_line(checks) -> str:
+    if not checks:
+        return f"payroll_cash_plan(within={agent_skills.PAYROLL_DAYS}d) → no payroll due"
+    parts = [
+        f"{c.signal.label} on {c.pay_date:%d %b}: {_ringgit(c.balance_after)} after it"
+        for c in checks
+    ]
+    return f"payroll_cash_plan(within={agent_skills.PAYROLL_DAYS}d) → " + "; ".join(parts)
 
 
 def _events(run_id: str, steps: list[tuple[str, str, str, str | None]]) -> list[AgentRunEvent]:

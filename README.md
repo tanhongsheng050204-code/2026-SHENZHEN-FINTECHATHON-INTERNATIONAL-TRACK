@@ -112,7 +112,7 @@ Status as of 2026-10-12. The demo company and its data are synthetic and labelle
 | Financing matching with reasons and next steps; credit scorecard; application packs; products modelled on public schemes | **Built and tested** |
 | Monthly profit and loss, ratios, "what changed", bank-line matching | **Built and tested** |
 | Ask DuitDuit assistant: four playbooks, voice input with transcript review, confirmation before every change | **Built and tested** |
-| Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested** |
+| Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested.** The Supervisor routes a goal (English, Malay or Chinese, by fixed keyword rules) to the cash-flow, collections, financing, HR & payroll, sales, payables and compliance agents. Working agents: cash flow, collections, financing, HR & payroll (payroll cash check, EPF/SOCSO/EIS/PCB due dates), sales (follow-ups on deals closing soon), payables (bill calendar, duplicate bills), compliance (incidents, notices), plus the checker agent. Agents are rule-based on purpose: they propose and a person decides. In the position workspaces, 12 of the 33 available skills compute from records; the rest say "not computed yet". Production is designed only. |
 | Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
 | Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. **On the live site (2026-10-11):** a new company's owner signed up end to end: password, 6-digit email code, authenticator setup, then into the app. One run, done by hand by the team; not yet repeated by an automated test. |
 | One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
@@ -131,7 +131,7 @@ Status as of 2026-10-12. The demo company and its data are synthetic and labelle
 
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Task completion | 40% | An offline evaluation harness of 53 tasks, 24 of them functional. The latest run passes all 53. Plus the live demo company and the demo video. |
+| Task completion | 40% | An offline evaluation harness of 54 tasks, 25 of them functional. The latest run passes all 54. Plus the live demo company and the demo video. |
 | Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 29 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
 | Innovation & interaction | 30% | An assistant that proposes and never acts on its own; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
 
@@ -970,7 +970,7 @@ The full list, with checks for each step, is in the
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 53-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
+| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 54-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
 | `anchor-audit-chain.yml` | daily 00:00 UTC + manual | Writes each tenant's audit-chain tail to `audit-anchors/<date>.json` and commits it — tamper evidence outside the database trust boundary. Requires the `PRODUCTION_DATABASE_URL` repository secret (read-only). |
 
 ---
@@ -1004,12 +1004,12 @@ models, or call an AI provider. Coverage spans:
 - conversation context resolution and query intent planning;
 - RLS / authorization boundaries.
 
-Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 53
-scripted tasks (24 functional, 29 adversarial) offline and writes `output/eval-report.md`.
+Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 54
+scripted tasks (25 functional, 29 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-11):
-- backend: **793 passed, 11 skipped** (the skipped tests need PostgreSQL, which CI provides; the 10 PostgreSQL tests also pass against a local migrated database);
-- evaluation: **53 of 53**;
+- backend: **801 passed, 11 skipped** (the skipped tests need PostgreSQL, which CI provides; the 10 PostgreSQL tests also pass against a local migrated database);
+- evaluation: **54 of 54**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,

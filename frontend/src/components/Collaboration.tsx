@@ -14,6 +14,10 @@ const AGENT_LABELS: Record<string, string> = {
   cashflow: "Cash-flow agent",
   cash: "Cash-flow agent",
   supervisor: "Supervisor",
+  hr_payroll: "HR & payroll agent",
+  sales: "Sales agent",
+  payables: "Payables agent",
+  compliance: "Compliance agent",
 };
 
 function agentLabel(agentId: string): string {

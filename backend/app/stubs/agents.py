@@ -170,7 +170,7 @@ _AGENTS: tuple[AgentCard, ...] = (
             ("bill_calendar", "Bill-due calendar", "W1", "read"),
             ("bank_change_check", "Supplier bank-change check", "W1", "read"),
             ("early_payment_discounts", "Early-payment discounts", "W2", "read"),
-            ("duplicate_bills", "Duplicate-bill detection", "W2", "read"),
+            ("duplicate_bills", "Duplicate-bill detection", "W1", "read"),
             ("bank_reconciliation", "Bank reconciliation and data health", "W2", "read"),
             ("sst_preparation", "SST filing preparation", "W2", "draft"),
         ],
@@ -184,7 +184,7 @@ _AGENTS: tuple[AgentCard, ...] = (
         [
             ("pipeline_inflows", "Pipeline to expected inflows", "W1", "read"),
             ("credit_check", "Credit check before a new order", "W1", "read"),
-            ("quote_followups", "Quote follow-up drafts", "W2", "draft"),
+            ("quote_followups", "Quote follow-up drafts", "W1", "draft"),
             ("win_loss", "Win/loss summary", "W2", "read"),
             ("concentration_watch", "Customer concentration watch", "W2", "read"),
         ],

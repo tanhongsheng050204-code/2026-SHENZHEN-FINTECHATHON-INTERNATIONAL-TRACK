@@ -1476,3 +1476,43 @@ def agentic_retrieval_replaces_only_with_better() -> Result:
         f"rounds {result.rounds}, improved {result.improved}, answer calls {calls}",
     )
 
+
+@check("agents_payroll_and_sales")
+def agents_payroll_and_sales() -> Result:
+    """Functional: payroll that would leave cash below the minimum becomes a proposal
+    for HR, and a deal closing soon becomes a follow-up for Sales."""
+    from app.contracts.common import DataMode, JobFunction
+    from app.services import agent_runtime, cashflow
+    from app.services.cashflow_engine import CashBasis, Signal
+
+    db = _database()
+    basis = CashBasis(
+        DataMode.LIVE,
+        Decimal("100000.00"),
+        Decimal("50000.00"),
+        (
+            Signal("PR-1", "hr_payroll", JobFunction.HR, "outflow", "Payroll 2026-10",
+                   Decimal("62000.00"), 10, 10, 10),
+            Signal("SO-7", "sales", JobFunction.SALES, "inflow", "Quoted expected 20 Oct",
+                   Decimal("18000.00"), 8, None, None, probability=0.4),
+        ),
+    )
+    owner = _principal()
+    with patch.object(cashflow, "basis_for", lambda *a: basis), patch.object(
+        agent_runtime, "_external_guard", lambda *a, **k: None
+    ):
+        run = agent_runtime.start_run(db, owner, "Can we pay salaries, and which sales deals?")
+        events = agent_runtime.run_events(db, owner, run.run_id)
+    made = {e.agent_id: e for e in events if e.type == "proposal_created" and e.action_id}
+    ok = (
+        "hr_payroll" in made
+        and "RM38,000.00" in made["hr_payroll"].message
+        and "sales" in made
+        and "SO-7" in made["sales"].message
+    )
+    return _expect(
+        ok,
+        "HR gets a payroll cash check (RM38,000.00 after pay day); Sales gets a follow-up for SO-7",
+        f"proposals {sorted(made)}",
+    )
+

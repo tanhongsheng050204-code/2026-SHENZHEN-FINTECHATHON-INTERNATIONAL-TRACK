@@ -281,6 +281,54 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
         "ok",
         "sales:pipeline",
     )
+    from app.services import agent_skills
+
+    deals = agent_skills.deals_to_follow_up(forecast)
+    results["quote_followups"] = _result(
+        "quote_followups",
+        "Deals to follow up",
+        f"{len(deals)} deal{'' if len(deals) == 1 else 's'}",
+        (
+            f"Uncertain deals expected within {agent_skills.FOLLOW_UP_DAYS} days: "
+            + ", ".join(d.id for d in deals[:5])
+            + ". The Supervisor drafts a follow-up for each."
+        )
+        if deals
+        else f"No uncertain deal is expected within {agent_skills.FOLLOW_UP_DAYS} days.",
+        "attention" if deals else "ok",
+        "sales:pipeline",
+    )
+    due = agent_skills.statutory_due(db, str(principal.tenant_id), forecast.as_of)
+    results["statutory_reminders"] = _result(
+        "statutory_reminders",
+        "EPF, SOCSO, EIS and PCB",
+        f"Due {due[1]:%d %b}" if due else None,
+        f"Contributions for {due[0]} are due by {due[1]:%d %b} (the 15th of the next month)."
+        if due
+        else "Nothing due in the next 14 days. Contributions are due by the 15th of the "
+        "month after each payroll.",
+        "attention" if due else "ok",
+        "payroll:runs",
+    )
+    if db is not None:
+        from app.services import anomalies
+
+        duplicates = [
+            f
+            for f in anomalies.scan(db, str(principal.tenant_id)).findings
+            if f.kind in ("possible_duplicate", "possible_duplicate_payment")
+        ]
+        results["duplicate_bills"] = _result(
+            "duplicate_bills",
+            "Possible duplicates",
+            f"{len(duplicates)} flagged",
+            "Same supplier and amount with the same bill number or within 7 days, and equal "
+            "payments to one payee within 3 days. Open Unusual activity to check them."
+            if duplicates
+            else "No possible duplicate bills or payments.",
+            "attention" if duplicates else "ok",
+            "payables:anomalies",
+        )
     payouts = sorted(_by(forecast, "marketing", "inflow"), key=lambda s: s.best_day)
     results["payout_timing"] = _result(
         "payout_timing",

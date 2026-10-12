@@ -3,6 +3,11 @@ import { useAppState } from "../lib/appState";
 import { BriefingCard } from "./BriefingCard";
 import { SCREENS, type Screen } from "../lib/screens";
 import { friendlyLoadError } from "../api/client";
+
+const RUN_AGENT_NAMES: Record<string, string> = {
+  supervisor: "Supervisor", cashflow: "Cash flow", receivables: "Collections", financing: "Financing",
+  hr_payroll: "HR & payroll", sales: "Sales", payables: "Payables", compliance: "Compliance",
+};
 import {
   decideReviewAction,
   errorCode,
@@ -143,7 +148,7 @@ function GoalRun({ goal, message }: { goal: string; message: string }) {
       <ol className="fb-agent-run" aria-live="polite">
         {events.map((e) => (
           <li key={e.sequence} className={"is-" + e.type}>
-            <strong>{e.agent_id.replace(/_/g, " ")}</strong> · {e.message}
+            <strong>{RUN_AGENT_NAMES[e.agent_id] ?? e.agent_id.replace(/_/g, " ")}</strong> · {e.message}
           </li>
         ))}
       </ol>

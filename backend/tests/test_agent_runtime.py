@@ -41,7 +41,8 @@ def test_payroll_goal_runs_forecast_collections_and_financing_on_real_numbers():
     assert events[0]["type"] == "run_started"
     assert events[-1]["type"] == "run_completed"
     tools = [(e["agent_id"], e["message"]) for e in events if e["type"] == "tool_called"]
-    assert [agent for agent, _ in tools] == ["cashflow", "receivables", "financing"]
+    # "payroll" also brings in the HR & payroll agent; the demo payroll is 23 days out.
+    assert [agent for agent, _ in tools] == ["cashflow", "receivables", "financing", "hr_payroll"]
     assert "match_products(gap=29440.00)" in tools[2][1]
 
     proposals = {e["agent_id"]: e for e in events if e["type"] == "proposal_created"}
@@ -65,7 +66,7 @@ def test_goal_outside_every_agent_is_answered_honestly():
 
     assert [e["type"] for e in events] == ["run_started", "run_completed"]
     assert all(e["action_id"] is None for e in events)
-    assert "cash, collections or financing" in events[-1]["message"]
+    assert "cash, collections, financing, payroll" in events[-1]["message"]
 
 
 def test_financing_goal_skips_collections():
@@ -118,6 +119,7 @@ def test_every_tool_call_is_authorized_against_the_manifest(monkeypatch):
         ("cashflow", "forecast", "read"),
         ("receivables", "rank_overdue", "read"),
         ("financing", "match_products", "read"),
+        ("hr_payroll", "payroll_cash_plan", "read"),
     ]
 
 
