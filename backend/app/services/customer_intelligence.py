@@ -75,7 +75,7 @@ def customer_summary(db: Session, tenant_id: str, customer: Customer) -> Custome
         if customer.primary_name_token
         else None
     )
-    note, sources = risk_note(
+    note, sources, band = risk_note(
         db, tenant_id, customer.id, snapshot.id if snapshot else None, date.today()
     )
     return CustomerSummaryResponse(
@@ -92,6 +92,7 @@ def customer_summary(db: Session, tenant_id: str, customer: Customer) -> Custome
         linked_source_count=linked,
         risk_note=note,
         risk_sources=sources,
+        risk_band=band,
     )
 
 

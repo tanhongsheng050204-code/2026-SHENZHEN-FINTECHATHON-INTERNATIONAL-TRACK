@@ -92,6 +92,7 @@ def test_each_receivable_sits_in_one_column(live_db):
         "later": ["INV-3"],
         "due_soon": ["INV-2"],
         "overdue": ["INV-1"],
+        "on_hold": [],
         "reminder": [],
         "paid": ["INV-4"],
     }

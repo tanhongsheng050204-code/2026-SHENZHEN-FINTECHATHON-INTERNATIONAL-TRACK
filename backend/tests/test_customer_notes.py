@@ -90,3 +90,76 @@ def test_only_the_money_roles_read_risk_notes(live_db, monkeypatch):  # noqa: F8
     for path in ("/customers", "/briefing"):
         assert rows(UserRole.GENERAL_EMPLOYEE, path)[0]["risk_note"] is None
     assert rows(UserRole.GENERAL_EMPLOYEE, "/customers/7")["risk_note"] is None
+    assert rows(UserRole.GENERAL_EMPLOYEE, "/customers/7")["risk_band"] is None
+
+
+def _paid_einvoices(db, days_late: list[int]):
+    import datetime as dt
+    from decimal import Decimal
+
+    from app.models import EInvoiceRecord
+
+    for n, late in enumerate(days_late):
+        due = TODAY - dt.timedelta(days=90 + n)
+        db.add(
+            EInvoiceRecord(
+                tenant_id=str(TENANT_A),
+                supplier_name="SYNTHETIC supplier",
+                buyer_customer_id=7,
+                invoice_no=f"EI-{n}",
+                due_date=due,
+                total_amount=Decimal("1000.00"),
+                status="validated",
+                paid_at=due + dt.timedelta(days=late),
+            )
+        )
+    db.commit()
+
+
+def test_a_customer_gets_a_band_from_fixed_rules(live_db):  # noqa: F811
+    # INV-1 is 20 days late: beyond the grace period, not yet 30 days.
+    [row] = list_customers(live_db, str(TENANT_A))
+    assert row.risk_band == "medium"
+
+
+def test_a_few_days_late_is_within_the_grace_period(live_db):  # noqa: F811
+    import datetime as dt
+
+    from app.models import SalesPipeline
+
+    live_db.get(SalesPipeline, 1).expected_payment_date = TODAY - dt.timedelta(days=2)
+    live_db.commit()
+
+    [row] = list_customers(live_db, str(TENANT_A))
+    assert row.risk_note.startswith("RM24,500.00 due 2 days ago, within the 3-day grace period")
+    assert row.risk_band == "low"
+
+
+def test_long_overdue_is_high(live_db):  # noqa: F811
+    import datetime as dt
+
+    from app.models import SalesPipeline
+
+    live_db.get(SalesPipeline, 1).expected_payment_date = TODAY - dt.timedelta(days=45)
+    live_db.commit()
+
+    [row] = list_customers(live_db, str(TENANT_A))
+    assert row.risk_band == "high"
+
+
+def test_payment_history_and_slower_than_usual(live_db):  # noqa: F811
+    _paid_einvoices(live_db, [2, 4, 6])
+
+    [row] = list_customers(live_db, str(TENANT_A))
+    assert "Usually pays 4 days late (3 paid e-invoices)" in row.risk_note
+    # 20 days late now against a usual 4: more than two weeks slower.
+    assert "Slower than usual." in row.risk_note
+    assert "Validated e-invoices" in row.risk_sources
+
+
+def test_too_little_history_is_not_measured(live_db):  # noqa: F811
+    _paid_einvoices(live_db, [4, 6])
+
+    [row] = list_customers(live_db, str(TENANT_A))
+    assert "Usually pays" not in row.risk_note
+    assert "Slower than usual" not in row.risk_note

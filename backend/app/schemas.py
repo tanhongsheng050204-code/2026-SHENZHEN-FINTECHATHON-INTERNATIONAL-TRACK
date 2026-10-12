@@ -691,6 +691,8 @@ class CustomerSummaryResponse(BaseModel):
     # One sentence written by fixed rules from the records named in risk_sources.
     risk_note: str | None = None
     risk_sources: list[str] = Field(default_factory=list)
+    # low, medium or high by the fixed rules in app.services.customer_notes.
+    risk_band: Literal["low", "medium", "high"] | None = None
 
 
 class CustomerTimelineItemResponse(BaseModel):

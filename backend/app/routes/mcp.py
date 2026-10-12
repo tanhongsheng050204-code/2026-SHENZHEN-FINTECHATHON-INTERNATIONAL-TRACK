@@ -180,7 +180,7 @@ def _error(request_id, code: int, message: str) -> dict:
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
-def _answer(db, principal, key_id: str, message: dict) -> dict | None:
+def _answer(db, principal, key_id: str, allowed: frozenset[str], message: dict) -> dict | None:
     if not isinstance(message, dict) or message.get("jsonrpc") != "2.0":
         return _error(None, -32600, "Invalid request")
     method, request_id = message.get("method"), message.get("id")
@@ -203,13 +203,16 @@ def _answer(db, principal, key_id: str, message: dict) -> dict | None:
     if method == "ping":
         return {"jsonrpc": "2.0", "id": request_id, "result": {}}
     if method == "tools/list":
-        return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": TOOLS}}
+        tools = [tool for tool in TOOLS if tool["name"] in allowed]
+        return {"jsonrpc": "2.0", "id": request_id, "result": {"tools": tools}}
     if method == "tools/call":
         params = message.get("params") or {}
         name, args = params.get("name"), params.get("arguments") or {}
         handler = HANDLERS.get(name)
         if handler is None:
             return _error(request_id, -32602, f"Unknown tool: {name}")
+        if name not in allowed:
+            return _error(request_id, -32602, "Tool not allowed for this key")
         try:
             payload = _plain(handler(db, principal, args))
             is_error = False
@@ -249,7 +252,7 @@ async def mcp(request: Request, db: Session = Depends(get_db)):
             status_code=401,
             headers={"WWW-Authenticate": 'Bearer realm="duitduit"'},
         )
-    principal, key_id = found
+    principal, key_id, allowed = found
     # Read with the owner's role, but never restore protected values.
     db.info["finbrain_disclosure_allowed"] = False
     set_rls_context(
@@ -271,9 +274,11 @@ async def mcp(request: Request, db: Session = Depends(get_db)):
     for _ in messages:
         _per_key(f"key:{key_id}")  # every message counts against the key's limit
     if isinstance(body, list):
-        answers = [a for a in (_answer(db, principal, key_id, m) for m in body) if a is not None]
+        answers = [
+            a for a in (_answer(db, principal, key_id, allowed, m) for m in body) if a is not None
+        ]
         return JSONResponse(answers) if answers else Response(status_code=202)
-    answer = _answer(db, principal, key_id, body)
+    answer = _answer(db, principal, key_id, allowed, body)
     return JSONResponse(answer) if answer is not None else Response(status_code=202)
 
 

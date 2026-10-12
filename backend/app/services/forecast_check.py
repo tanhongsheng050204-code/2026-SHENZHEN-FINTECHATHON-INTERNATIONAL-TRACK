@@ -5,8 +5,10 @@ The first time a company's live forecast is built on a given day, its likely, be
 and worst balances 7, 14 and 30 days ahead are kept as a "forecast_snapshot" event
 on the company's workflow chain (amounts only, no names). Once an imported bank
 statement covers a target day, the balance at the end of that day is compared:
-how far the likely balance was off, and whether the real balance fell inside the
-best-to-worst range.
+how far the likely balance was off, the accuracy (1 - |likely - actual| / actual),
+and whether the real balance fell inside the best-to-worst range. The largest
+differences are listed with the money in and out the forecast expected by that day,
+so a person can see where to look.
 
 Nothing is scored until a statement covers a target day, and the synthetic demo
 company is never scored: its figures are made up, so any accuracy would be too.
@@ -17,12 +19,18 @@ from decimal import Decimal
 
 from sqlalchemy import func, select
 
-from app.contracts.cashflow import ForecastCheckHorizon, ForecastCheckResponse, ForecastResponse
+from app.contracts.cashflow import (
+    ForecastCheckHorizon,
+    ForecastCheckResponse,
+    ForecastDifference,
+    ForecastResponse,
+)
 from app.contracts.common import DataMode
 from app.models import BankTransaction, WorkflowAuditEntry
 from app.services.workflow_audit import chain_scalar, chain_scalars, write_workflow_event
 
 TARGET_DAYS = (7, 14, 30)
+LARGEST_SHOWN = 3
 EVENT = "forecast_snapshot"
 _CENT = Decimal("0.01")
 
@@ -54,6 +62,18 @@ def record(db, tenant_id: str, forecast: ForecastResponse) -> None:
     if exists is not None:
         return
     points = {point.day: point for point in forecast.points}
+
+    def expected(kind: str, days: int) -> str:
+        total = sum(
+            (
+                d.amount_myr
+                for d in forecast.drivers
+                if d.kind == kind and d.likely_day is not None and d.likely_day <= days
+            ),
+            Decimal(0),
+        )
+        return str(total.quantize(_CENT))
+
     targets = [
         {
             "horizon_days": days,
@@ -61,6 +81,8 @@ def record(db, tenant_id: str, forecast: ForecastResponse) -> None:
             "likely": str(points[days].likely.quantize(_CENT)),
             "best": str(points[days].best.quantize(_CENT)),
             "worst": str(points[days].worst.quantize(_CENT)),
+            "expected_in": expected("inflow", days),
+            "expected_out": expected("outflow", days),
         }
         for days in TARGET_DAYS
         if days in points
@@ -91,6 +113,11 @@ def _balance_at_end_of(db, tenant_id: str, day: dt.date) -> Decimal | None:
     return None if row is None else Decimal(row.balance)
 
 
+def _amount(value: str | None) -> Decimal | None:
+    # Snapshots kept before the expected amounts were added have none.
+    return None if value is None else Decimal(value)
+
+
 def report(db, tenant_id: str, data_mode: DataMode) -> ForecastCheckResponse:
     empty = [
         ForecastCheckHorizon(horizon_days=d, compared=0, within_range=0, mean_abs_error_myr=None)
@@ -114,7 +141,9 @@ def report(db, tenant_id: str, data_mode: DataMode) -> ForecastCheckResponse:
         )
     )
     errors: dict[int, list[Decimal]] = {d: [] for d in TARGET_DAYS}
+    accuracy: dict[int, list[Decimal]] = {d: [] for d in TARGET_DAYS}
     inside: dict[int, int] = {d: 0 for d in TARGET_DAYS}
+    differences: list[ForecastDifference] = []
     pending: list[dt.date] = []
     for snapshot in snapshots:
         for target in snapshot.event_payload["targets"]:
@@ -128,9 +157,25 @@ def report(db, tenant_id: str, data_mode: DataMode) -> ForecastCheckResponse:
                 pending.append(day)
                 continue
             days = target["horizon_days"]
-            errors.setdefault(days, []).append(abs(actual - Decimal(target["likely"])))
+            likely = Decimal(target["likely"])
+            errors.setdefault(days, []).append(abs(actual - likely))
+            if actual != 0:
+                score = max(Decimal(0), 1 - abs(actual - likely) / abs(actual))
+                accuracy.setdefault(days, []).append(score)
             low, high = sorted((Decimal(target["worst"]), Decimal(target["best"])))
             inside[days] = inside.get(days, 0) + int(low <= actual <= high)
+            differences.append(
+                ForecastDifference(
+                    date=day,
+                    horizon_days=days,
+                    likely_myr=likely,
+                    actual_myr=actual,
+                    difference_myr=(actual - likely).quantize(_CENT),
+                    within_range=low <= actual <= high,
+                    expected_in_myr=_amount(target.get("expected_in")),
+                    expected_out_myr=_amount(target.get("expected_out")),
+                )
+            )
     by_horizon = [
         ForecastCheckHorizon(
             horizon_days=days,
@@ -138,6 +183,11 @@ def report(db, tenant_id: str, data_mode: DataMode) -> ForecastCheckResponse:
             within_range=inside[days],
             mean_abs_error_myr=(
                 (sum(errors[days]) / len(errors[days])).quantize(_CENT) if errors[days] else None
+            ),
+            accuracy_pct=(
+                (100 * sum(accuracy[days]) / len(accuracy[days])).quantize(Decimal("0.1"))
+                if accuracy.get(days)
+                else None
             ),
         )
         for days in TARGET_DAYS
@@ -155,4 +205,7 @@ def report(db, tenant_id: str, data_mode: DataMode) -> ForecastCheckResponse:
         within_range=sum(h.within_range for h in by_horizon),
         first_comparison_on=min(pending) if pending else None,
         by_horizon=by_horizon,
+        largest_differences=sorted(
+            differences, key=lambda d: (abs(d.difference_myr), d.date), reverse=True
+        )[:LARGEST_SHOWN],
     )

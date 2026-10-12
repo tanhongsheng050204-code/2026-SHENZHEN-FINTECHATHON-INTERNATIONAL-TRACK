@@ -1,7 +1,8 @@
 """The collections board: every receivable in one of five columns.
 
-Later → Due soon (within DUE_SOON_DAYS) → Overdue → Reminder waiting for approval
-→ Paid (in the last PAID_WINDOW_DAYS). A receivable is an invoiced line of the
+Later → Due soon (within DUE_SOON_DAYS) → Overdue → On hold (disputed, promised
+or customer paused; see receivable_holds) → Reminder waiting for approval → Paid
+(in the last PAID_WINDOW_DAYS). A receivable is an invoiced line of the
 company's sales ledger or a validated e-invoice; "Reminder" means an open
 reminder proposal in the review inbox cites it.
 
@@ -20,14 +21,21 @@ from decimal import Decimal
 from sqlalchemy import select
 
 from app.auth.principal import AuthPrincipal
-from app.contracts.collaboration import BoardCard, BoardColumn, CollectionsBoardResponse
+from app.contracts.collaboration import (
+    BoardCard,
+    BoardColumn,
+    CollectionsBoardResponse,
+    Hold,
+    HoldInfo,
+    HoldRequest,
+)
 from app.contracts.common import AutonomyLevel, DataMode, EvidenceRef, JobFunction
 from app.models import Customer, EInvoiceRecord, ProtectedTokenRegistry, SalesPipeline
-from app.services import cashflow, review_inbox
+from app.services import cashflow, receivable_holds, review_inbox
 
 DUE_SOON_DAYS = 14
 PAID_WINDOW_DAYS = 30
-STAGES = ("later", "due_soon", "overdue", "reminder", "paid")
+STAGES = ("later", "due_soon", "overdue", "on_hold", "reminder", "paid")
 _OPEN = ("pending", "awaiting_second_approval", "edited")
 ZERO = Decimal("0.00")
 
@@ -163,6 +171,25 @@ def _demo_cards(as_of: dt.date, basis) -> list[BoardCard]:
     return cards
 
 
+def _held(card: BoardCard, holds: dict, as_of: dt.date) -> BoardCard:
+    """An invoice's own hold first, then its customer's; a lapsed promise is noted."""
+    if card.stage == "paid":
+        return card
+    broken = None
+    for target in (card.ref, f"customer:{card.customer_id}" if card.customer_id else None):
+        hold = holds.get(target) if target else None
+        if hold is None:
+            continue
+        if receivable_holds.active(hold, as_of):
+            info = HoldInfo(kind=hold.kind, until=hold.until, target=target)
+            return card.model_copy(
+                update={"stage": "on_hold", "hold": info, "promise_broken_on": broken}
+            )
+        if hold.kind == "promised":
+            broken = hold.until
+    return card.model_copy(update={"promise_broken_on": broken}) if broken else card
+
+
 def board(db, principal: AuthPrincipal, as_of: dt.date) -> CollectionsBoardResponse:
     tenant_id = str(principal.tenant_id)
     basis = cashflow.basis_for(db, principal, as_of)
@@ -176,6 +203,8 @@ def board(db, principal: AuthPrincipal, as_of: dt.date) -> CollectionsBoardRespo
             else card
             for card in cards
         ]
+        holds = receivable_holds.stored(db, tenant_id)
+        cards = [_held(card, holds, as_of) for card in cards]
     columns = []
     for stage in STAGES:
         chosen = sorted(
@@ -198,6 +227,8 @@ def propose_reminder(db, principal: AuthPrincipal, ref: str, as_of: dt.date) -> 
         raise BoardError("receivable_not_found", 404)
     if card.stage == "paid":
         raise BoardError("receivable_already_paid", 409)
+    if card.stage == "on_hold":
+        raise BoardError("receivable_on_hold", 409)
     if card.stage == "reminder":
         return card.reminder_action_id
     customer_ref = f"customer:{card.customer_id}" if card.customer_id else None
@@ -221,3 +252,61 @@ def propose_reminder(db, principal: AuthPrincipal, ref: str, as_of: dt.date) -> 
             EvidenceRef(label="Receivable record", source=ref),
         ],
     )
+
+
+def _find(db, principal: AuthPrincipal, ref: str, as_of: dt.date) -> BoardCard | None:
+    current = board(db, principal, as_of)
+    return next((c for column in current.columns for c in column.cards if c.ref == ref), None)
+
+
+def _customer_label(db, tenant_id: str, target: str) -> str | None:
+    try:
+        customer_id = int(target.removeprefix("customer:"))
+    except ValueError:
+        return None
+    return _customer_labels(db, tenant_id, {customer_id}).get(customer_id)
+
+
+def set_hold(db, principal: AuthPrincipal, target: str, request: HoldRequest, as_of: dt.date):
+    """Dispute or promise for one unpaid invoice, or pause one customer."""
+    receivable_holds.check(target, request, as_of)
+    if target.startswith("customer:"):
+        if _customer_label(db, str(principal.tenant_id), target) is None:
+            raise BoardError("customer_not_found", 404)
+    else:
+        card = _find(db, principal, target, as_of)
+        if card is None:
+            raise BoardError("receivable_not_found", 404)
+        if card.stage == "paid":
+            raise BoardError("receivable_already_paid", 409)
+    receivable_holds.put(db, principal, target, request)
+
+
+def holds(db, principal: AuthPrincipal, as_of: dt.date) -> list[Hold]:
+    """Every hold in force: one list of what nobody is chasing, and why."""
+    tenant_id = str(principal.tenant_id)
+    cards = {c.ref: c for column in board(db, principal, as_of).columns for c in column.cards}
+    found = []
+    for target, hold in receivable_holds.stored(db, tenant_id).items():
+        if not receivable_holds.active(hold, as_of):
+            continue
+        if target.startswith("customer:"):
+            label = _customer_label(db, tenant_id, target)
+        else:
+            card = cards.get(target)
+            label = (
+                f"{card.label} · {card.customer_label}" if card and card.stage != "paid" else None
+            )
+        if label is None:
+            continue  # paid since, or no longer on the board
+        found.append(
+            Hold(
+                target=target,
+                kind=hold.kind,
+                until=hold.until,
+                label=label,
+                set_at=hold.set_at,
+                set_by_role=hold.set_by_role,
+            )
+        )
+    return sorted(found, key=lambda h: h.set_at, reverse=True)

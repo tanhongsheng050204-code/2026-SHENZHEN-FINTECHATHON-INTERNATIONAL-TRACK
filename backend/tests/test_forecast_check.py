@@ -121,3 +121,48 @@ def test_the_demo_company_says_why_it_is_not_measured(db):
 
     assert report.status == "not_measured"
     assert report.reason == "synthetic_company"
+
+
+def test_each_horizon_has_an_accuracy_and_the_biggest_differences_are_explained(db):
+    forecast_check.record(db, TENANT, _forecast())
+    _bank(db, dt.date(2026, 9, 8), "72000.00", 1)
+    _bank(db, dt.date(2026, 9, 15), "95000.00", 2)
+
+    report = forecast_check.report(db, TENANT, DataMode.LIVE)
+    by = {h.horizon_days: h for h in report.by_horizon}
+
+    # 1 - |forecast - actual| / actual: 1 - 2,000/72,000 and 1 - 5,000/95,000.
+    assert by[7].accuracy_pct == Decimal("97.2")
+    assert by[14].accuracy_pct == Decimal("94.7")
+    assert by[30].accuracy_pct is None
+
+    first, second = report.largest_differences
+    assert (first.date, first.difference_myr, first.within_range) == (
+        dt.date(2026, 9, 15),
+        Decimal("5000.00"),
+        False,
+    )
+    # By day 14 the forecast expected the 20,000 receipt and the 30,000 bill.
+    assert (first.expected_in_myr, first.expected_out_myr) == (
+        Decimal("20000.00"),
+        Decimal("30000.00"),
+    )
+    assert (second.expected_in_myr, second.expected_out_myr) == (
+        Decimal("0.00"),
+        Decimal("30000.00"),
+    )
+
+
+def test_the_snapshot_keeps_amounts_only(db):
+    forecast_check.record(db, TENANT, _forecast())
+
+    row = db.scalar(select(WorkflowAuditEntry))
+    assert set(row.event_payload["targets"][0]) == {
+        "horizon_days",
+        "date",
+        "likely",
+        "best",
+        "worst",
+        "expected_in",
+        "expected_out",
+    }

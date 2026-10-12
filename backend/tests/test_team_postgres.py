@@ -203,3 +203,74 @@ def test_an_mcp_key_reads_its_own_company_under_rls():
         )
         assert response.status_code == 200, response.text
         assert response.json()["result"]["isError"] is False, name
+
+    # The owner sees when the key was last used, and for which tools.
+    with Session(engine, expire_on_commit=False) as db:
+        _as(db, owner)
+        [key] = api_keys.keys(db, tid)
+        assert key.last_used_at is not None
+        assert {call["tool"] for call in key.recent_calls} == {
+            "get_review_inbox",
+            "get_collections_board",
+            "get_forecast_check",
+        }
+
+
+def test_holds_and_run_history_are_shared_across_roles_under_rls():
+    import datetime as dt
+
+    from app.contracts.collaboration import HoldRequest
+    from app.services import collections
+
+    engine = create_engine(DSN)
+    team = _team()
+    owner = team[UserRole.OWNER_DIRECTOR]
+    finance = team[UserRole.FINANCE_OPS]
+    tid = str(owner.tenant_id)
+    today = dt.date.today()
+    with Session(engine, expire_on_commit=False) as db:
+        db.add(Tenant(id=tid, name="SYNTHETIC holds review", slug=f"review-{tid}"))
+        db.flush()
+        initialize_settings(db, tid, "SYNTHETIC holds review")
+        for person in (owner, finance):
+            db.execute(text("insert into auth.users(id) values (:id)"), {"id": str(person.user_id)})
+            db.add(
+                AuthUserRole(
+                    user_id=str(person.user_id),
+                    tenant_id=tid,
+                    user_role=person.role.value,
+                    job_functions=list(person.job_functions),
+                    active=True,
+                )
+            )
+        ensure_active_key(db)
+        db.commit()
+
+        # Finance disputes one receivable.
+        _as(db, finance)
+        board = collections.board(db, finance, today)
+        ref = next(c.ref for column in board.columns for c in column.cards if c.stage != "paid")
+        collections.set_hold(db, finance, ref, HoldRequest(kind="disputed"), today)
+
+        # The owner sees it on hold, and a run of the owner's sequence skips it.
+        _as(db, owner)
+        held = [
+            c.ref
+            for column in collections.board(db, owner, today).columns
+            if column.stage == "on_hold"
+            for c in column.cards
+        ]
+        assert held == [ref]
+        assert [h.target for h in collections.holds(db, owner, today)] == [ref]
+        saved = automations.save(
+            db,
+            owner,
+            AutomationRequest(trigger="invoice_due_within_days", days=120, action="draft_reminder"),
+        )
+        automations.run(db, tid, today)
+
+        # Finance reads the run history the owner's run wrote.
+        _as(db, finance)
+        runs = automations.runs(db, tid, saved.id)
+        assert runs and runs[0].skipped.get("on_hold") == 1
+        db.rollback()

@@ -1666,6 +1666,18 @@
       },
       "ForecastCheckHorizon": {
         "properties": {
+          "accuracy_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy Pct"
+          },
           "compared": {
             "title": "Compared",
             "type": "integer"
@@ -1733,6 +1745,13 @@
             "title": "Forecasts Kept",
             "type": "integer"
           },
+          "largest_differences": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastDifference"
+            },
+            "title": "Largest Differences",
+            "type": "array"
+          },
           "reason": {
             "anyOf": [
               {
@@ -1773,6 +1792,75 @@
           "by_horizon"
         ],
         "title": "ForecastCheckResponse",
+        "type": "object"
+      },
+      "ForecastDifference": {
+        "description": "One scored day: how far off, and the money the forecast expected before it.",
+        "properties": {
+          "actual_myr": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Actual Myr",
+            "type": "string"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "difference_myr": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Difference Myr",
+            "type": "string"
+          },
+          "expected_in_myr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected In Myr"
+          },
+          "expected_out_myr": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Out Myr"
+          },
+          "horizon_days": {
+            "title": "Horizon Days",
+            "type": "integer"
+          },
+          "likely_myr": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Likely Myr",
+            "type": "string"
+          },
+          "within_range": {
+            "title": "Within Range",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "date",
+          "horizon_days",
+          "likely_myr",
+          "actual_myr",
+          "difference_myr",
+          "within_range",
+          "expected_in_myr",
+          "expected_out_myr"
+        ],
+        "title": "ForecastDifference",
         "type": "object"
       },
       "ForecastPoint": {

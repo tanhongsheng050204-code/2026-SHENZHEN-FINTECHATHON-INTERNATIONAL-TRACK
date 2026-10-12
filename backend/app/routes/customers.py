@@ -41,7 +41,7 @@ def _authorized_customer_summary(
     if principal.role in _MONEY_ROLES:
         return summary
     # The risk note reads receivables and warning signs: the money roles' view.
-    return summary.model_copy(update={"risk_note": None, "risk_sources": []})
+    return summary.model_copy(update={"risk_note": None, "risk_sources": [], "risk_band": None})
 
 
 def _restored_name(
@@ -118,6 +118,7 @@ def _authorized_customer_detail(
             "name": summary.name,
             "risk_note": summary.risk_note,
             "risk_sources": summary.risk_sources,
+            "risk_band": summary.risk_band,
             "timeline": _visible_timeline(principal, detail.timeline),
         }
     )

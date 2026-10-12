@@ -9,12 +9,15 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import require_roles, require_step_up
 from app.auth.principal import AuthPrincipal
 from app.contracts.collaboration import (
+    ApiKeyCall,
     ApiKeyCreated,
+    ApiKeyRequest,
     ApiKeysResponse,
     ApiKeyView,
     Automation,
     AutomationRequest,
     AutomationRunResponse,
+    AutomationRunsResponse,
     AutomationsResponse,
     ChatChannel,
     ChatNotificationsResponse,
@@ -22,6 +25,8 @@ from app.contracts.collaboration import (
     CollectionsBoardResponse,
     CommentRequest,
     CommentsResponse,
+    HoldRequest,
+    HoldsResponse,
     MentionsResponse,
     ReminderProposalResponse,
     ReviewComment,
@@ -38,6 +43,7 @@ from app.services import (
     automations,
     chat_notify,
     collections,
+    receivable_holds,
     review_comments,
     saved_views,
 )
@@ -110,6 +116,42 @@ def collections_reminder(
     return ReminderProposalResponse(data_mode=DataMode.LIVE, action_id=action_id)
 
 
+@router.get("/collections/holds", response_model=HoldsResponse)
+def collections_holds(
+    principal: AuthPrincipal = Depends(require_roles(*_MONEY_READ)),
+    db: Session = Depends(get_db),
+) -> HoldsResponse:
+    return HoldsResponse(
+        data_mode=DataMode.LIVE, holds=collections.holds(db, principal, dt.date.today())
+    )
+
+
+@router.put("/collections/holds/{target}", status_code=200)
+def set_collections_hold(
+    target: str,
+    request: HoldRequest,
+    principal: AuthPrincipal = Depends(require_roles(*_MONEY_WORK)),
+    db: Session = Depends(get_db),
+) -> dict:
+    try:
+        collections.set_hold(db, principal, target, request, dt.date.today())
+    except (collections.BoardError, receivable_holds.HoldError) as error:
+        raise _refuse(error) from error
+    return {"target": target, "kind": request.kind}
+
+
+@router.delete("/collections/holds/{target}", status_code=204)
+def clear_collections_hold(
+    target: str,
+    principal: AuthPrincipal = Depends(require_roles(*_MONEY_WORK)),
+    db: Session = Depends(get_db),
+) -> None:
+    try:
+        receivable_holds.clear(db, principal, target)
+    except receivable_holds.HoldError as error:
+        raise _refuse(error) from error
+
+
 @router.get("/automations", response_model=AutomationsResponse)
 def list_automations(
     principal: AuthPrincipal = Depends(require_roles(*_MONEY_READ)),
@@ -154,6 +196,19 @@ def run_automations(
         data_mode=DataMode.LIVE,
         proposals=automations.run(db, str(principal.tenant_id), dt.date.today()),
     )
+
+
+@router.get("/automations/{automation_id}/runs", response_model=AutomationRunsResponse)
+def automation_runs(
+    automation_id: str,
+    principal: AuthPrincipal = Depends(require_roles(*_MONEY_READ)),
+    db: Session = Depends(get_db),
+) -> AutomationRunsResponse:
+    try:
+        rows = automations.runs(db, str(principal.tenant_id), automation_id)
+    except automations.AutomationError as error:
+        raise _refuse(error) from error
+    return AutomationRunsResponse(data_mode=DataMode.LIVE, runs=rows)
 
 
 def _check_screen(principal: AuthPrincipal, screen: str) -> None:
@@ -224,19 +279,25 @@ def list_api_keys(
     db: Session = Depends(get_db),
 ) -> ApiKeysResponse:
     rows = api_keys.keys(db, str(principal.tenant_id))
-    return ApiKeysResponse(data_mode=DataMode.LIVE, keys=[ApiKeyView(**vars(k)) for k in rows])
+    return ApiKeysResponse(data_mode=DataMode.LIVE, keys=[_key_view(k) for k in rows])
+
+
+def _key_view(key) -> ApiKeyView:
+    fields = vars(key) | {"recent_calls": [ApiKeyCall(**call) for call in key.recent_calls]}
+    return ApiKeyView(**fields)
 
 
 @router.post("/api-keys", response_model=ApiKeyCreated)
 def create_api_key(
+    request: ApiKeyRequest | None = Body(default=None),
     principal: AuthPrincipal = Depends(require_step_up(UserRole.OWNER_DIRECTOR)),
     db: Session = Depends(get_db),
 ) -> ApiKeyCreated:
     try:
-        key, secret = api_keys.create(db, principal)
+        key, secret = api_keys.create(db, principal, request)
     except api_keys.KeyError_ as error:
         raise _refuse(error) from error
-    return ApiKeyCreated(data_mode=DataMode.LIVE, key=ApiKeyView(**vars(key)), secret=secret)
+    return ApiKeyCreated(data_mode=DataMode.LIVE, key=_key_view(key), secret=secret)
 
 
 @router.delete("/api-keys/{key_id}", status_code=204)

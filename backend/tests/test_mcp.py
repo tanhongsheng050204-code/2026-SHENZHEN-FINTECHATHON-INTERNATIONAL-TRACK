@@ -171,3 +171,67 @@ def test_a_batch_cannot_carry_more_than_ten_messages(db):
     batch = [{"jsonrpc": "2.0", "id": n, "method": "ping"} for n in range(11)]
     response = client.post("/mcp", headers={"Authorization": f"Bearer {key}"}, json=batch)
     assert response.status_code == 400
+
+
+def test_a_key_can_be_limited_to_some_tools(db):
+    client = _app(db)
+    made = client.post(
+        "/api-keys", json={"tools": ["get_cash_forecast", "get_review_inbox"]}
+    ).json()
+    key = made["secret"]
+    assert made["key"]["tools"] == ["get_cash_forecast", "get_review_inbox"]
+
+    names = [t["name"] for t in _rpc(client, key, "tools/list").json()["result"]["tools"]]
+    assert names == ["get_cash_forecast", "get_review_inbox"]
+    refused = _rpc(client, key, "tools/call", {"name": "get_financing_matches"}).json()
+    assert refused["error"] == {"code": -32602, "message": "Tool not allowed for this key"}
+
+
+def test_a_key_expires(db, monkeypatch):
+    import datetime as dt
+
+    from app.services import api_keys
+
+    client = _app(db)
+    made = client.post("/api-keys", json={"expires_in_days": 30}).json()
+    created = dt.datetime.fromisoformat(made["key"]["created_at"])
+    expires = dt.datetime.fromisoformat(made["key"]["expires_at"])
+    assert (expires - created).days == 30
+    assert _rpc(client, made["secret"], "ping").status_code == 200
+
+    monkeypatch.setattr(api_keys, "_now", lambda: created + dt.timedelta(days=31))
+    assert _rpc(client, made["secret"], "ping").status_code == 401
+    assert client.get("/api-keys").json()["keys"][0]["expired"] is True
+
+
+def test_a_new_key_reads_every_tool_for_ninety_days_by_default(db):
+    import datetime as dt
+
+    made = _app(db).post("/api-keys").json()["key"]
+    assert len(made["tools"]) == 5
+    span = dt.datetime.fromisoformat(made["expires_at"]) - dt.datetime.fromisoformat(
+        made["created_at"]
+    )
+    assert span.days == 90
+
+
+def test_key_choices_are_checked(db):
+    client = _app(db)
+    assert client.post("/api-keys", json={"tools": []}).status_code == 422
+    assert client.post("/api-keys", json={"tools": ["send_money"]}).status_code == 422
+    assert client.post("/api-keys", json={"expires_in_days": 7}).status_code == 422
+
+
+def test_the_owner_sees_when_a_key_was_last_used_and_for_what(db):
+    key, client = _key(db), _app(db)
+    assert client.get("/api-keys").json()["keys"][0]["last_used_at"] is None
+
+    _rpc(client, key, "tools/call", {"name": "get_review_inbox"})
+    _rpc(client, key, "tools/call", {"name": "get_collections_board"})
+
+    [listed] = client.get("/api-keys").json()["keys"]
+    assert listed["last_used_at"] is not None
+    assert [call["tool"] for call in listed["recent_calls"]] == [
+        "get_collections_board",
+        "get_review_inbox",
+    ]

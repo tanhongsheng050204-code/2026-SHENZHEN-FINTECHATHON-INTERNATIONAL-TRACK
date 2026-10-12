@@ -123,7 +123,27 @@ def test_the_scheduler_runs_every_tenant_with_automations(live_db):  # noqa: F81
         json={"trigger": "invoice_overdue_days", "days": 14, "action": "draft_reminder"},
     )
 
-    assert automations.run_due(live_db, dt.datetime.combine(TODAY, dt.time(9))) == 1
+    assert automations.run_due(live_db, dt.datetime.combine(_weekday(TODAY), dt.time(9))) == 1
+
+
+def _weekday(day: dt.date) -> dt.date:
+    while day.weekday() >= 5:
+        day += dt.timedelta(days=1)
+    return day
+
+
+def test_the_scheduler_waits_for_a_working_day(live_db):  # noqa: F811
+    _client(live_db).post(
+        "/automations",
+        json={"trigger": "invoice_overdue_days", "days": 14, "action": "draft_reminder"},
+    )
+    saturday = TODAY + dt.timedelta(days=(5 - TODAY.weekday()) % 7)
+
+    assert automations.run_due(live_db, dt.datetime.combine(saturday, dt.time(9))) == 0
+    assert (
+        automations.run_due(live_db, dt.datetime.combine(saturday + dt.timedelta(2), dt.time(9)))
+        == 1
+    )
 
 
 def _sequence(db):
@@ -133,11 +153,11 @@ def _sequence(db):
     )
 
 
-def _decide(db, action_id):
+def _decide(db, action_id, decision="approve"):
     from app.contracts.agents import ReviewDecisionRequest
 
     review_inbox.decide(
-        db, principal(UserRole.OWNER_DIRECTOR), action_id, ReviewDecisionRequest(decision="approve")
+        db, principal(UserRole.OWNER_DIRECTOR), action_id, ReviewDecisionRequest(decision=decision)
     )
 
 
@@ -188,3 +208,106 @@ def test_sequences_only_follow_an_overdue_trigger(live_db):  # noqa: F811
         json={"trigger": "bill_due_within_days", "days": 7, "action": "reminder_sequence"},
     )
     assert response.status_code == 422
+
+
+def test_a_rejected_step_stops_the_sequence_for_that_invoice(live_db):  # noqa: F811
+    from app.models import SalesPipeline
+
+    live_db.get(SalesPipeline, 1).expected_payment_date = TODAY - dt.timedelta(days=40)
+    live_db.commit()
+    _sequence(live_db)
+    owner = _client(live_db)
+    [friendly] = owner.post("/automations/run").json()["proposals"]
+
+    _decide(live_db, friendly, "reject")
+
+    # 40 days overdue, so the firm step would be due; a rejection means "don't chase".
+    assert owner.post("/automations/run").json()["proposals"] == []
+
+
+def test_each_step_says_why_it_was_proposed(live_db):  # noqa: F811
+    _sequence(live_db)
+    owner = _client(live_db)
+    [friendly] = owner.post("/automations/run").json()["proposals"]
+    assert "Why this step: INV-1 reached 7 days overdue" in _open(live_db)[friendly].summary
+
+    _decide(live_db, friendly)
+    [firm] = owner.post("/automations/run").json()["proposals"]
+    assert "Why this step: INV-1 reached 14 days overdue and step 1 was approved" in (
+        _open(live_db)[firm].summary
+    )
+
+
+def test_a_sequence_skips_an_invoice_on_hold(live_db):  # noqa: F811
+    _sequence(live_db)
+    owner = _client(live_db)
+    finance = _client(live_db, UserRole.FINANCE_OPS)
+    finance.put("/collections/holds/pipeline:1", json={"kind": "disputed"})
+
+    assert owner.post("/automations/run").json()["proposals"] == []
+
+
+def test_a_courtesy_reminder_goes_before_the_due_date(live_db):  # noqa: F811
+    owner = _client(live_db)
+    saved = owner.post(
+        "/automations",
+        json={"trigger": "invoice_due_within_days", "days": 7, "action": "draft_reminder"},
+    )
+    assert saved.status_code == 200
+
+    # INV-2 is due in 5 days; INV-3 in 40 days is not yet in reach.
+    [courtesy] = owner.post("/automations/run").json()["proposals"]
+    action = _open(live_db)[courtesy]
+    assert action.title == "Courtesy reminder for INV-2"
+    assert action.autonomy_level.value == "L2"
+    assert "falls due on" in action.draft
+    assert owner.post("/automations/run").json()["proposals"] == []
+
+
+def test_a_courtesy_trigger_cannot_run_a_sequence(live_db):  # noqa: F811
+    response = _client(live_db).post(
+        "/automations",
+        json={"trigger": "invoice_due_within_days", "days": 7, "action": "reminder_sequence"},
+    )
+    assert response.status_code == 422
+
+
+def test_run_history_shows_what_was_proposed_and_what_was_skipped(live_db):  # noqa: F811
+    _sequence(live_db)
+    owner = _client(live_db)
+    automation_id = owner.get("/automations").json()["automations"][0]["id"]
+    [friendly] = owner.post("/automations/run").json()["proposals"]
+    owner.post("/automations/run")  # the friendly step still waits: skipped, once
+
+    runs = owner.get(f"/automations/{automation_id}/runs").json()["runs"]
+    assert [run["proposed"] for run in runs] == [[], [friendly]]
+    assert runs[0]["skipped"] == {"waiting_for_decision": 1}
+    assert runs[1]["skipped"] == {}
+    # The same outcome again is not written twice.
+    owner.post("/automations/run")
+    assert len(owner.get(f"/automations/{automation_id}/runs").json()["runs"]) == 2
+
+
+def test_run_history_is_kinds_and_ids_only(live_db):  # noqa: F811
+    _sequence(live_db)
+    owner = _client(live_db)
+    owner.post("/automations/run")
+
+    event = live_db.scalar(
+        select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "automation_ran")
+    )
+    assert set(event.event_payload) == {"proposed", "skipped"}
+    assert owner.get("/automations/auto_missing/runs").status_code == 404
+
+
+def test_an_approved_reminder_is_not_proposed_again(live_db):  # noqa: F811
+    owner = _client(live_db)
+    owner.post(
+        "/automations",
+        json={"trigger": "invoice_overdue_days", "days": 14, "action": "draft_reminder"},
+    )
+    [reminder] = owner.post("/automations/run").json()["proposals"]
+    _decide(live_db, reminder)
+
+    # INV-1 leaves the Reminder column once approved; one reminder per invoice is enough.
+    assert owner.post("/automations/run").json()["proposals"] == []

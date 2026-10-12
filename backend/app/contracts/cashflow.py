@@ -105,6 +105,22 @@ class ForecastCheckHorizon(BaseModel):
     compared: int
     within_range: int
     mean_abs_error_myr: Decimal | None
+    # Mean of 1 - |likely - actual| / |actual|, as a percentage (0 to 100).
+    accuracy_pct: Decimal | None = None
+
+
+class ForecastDifference(BaseModel):
+    """One scored day: how far off, and the money the forecast expected before it."""
+
+    date: dt.date
+    horizon_days: int
+    likely_myr: Decimal
+    actual_myr: Decimal
+    # actual - likely: positive means more cash than forecast.
+    difference_myr: Decimal
+    within_range: bool
+    expected_in_myr: Decimal | None
+    expected_out_myr: Decimal | None
 
 
 class ForecastCheckResponse(BaseModel):
@@ -118,3 +134,4 @@ class ForecastCheckResponse(BaseModel):
     within_range: int
     first_comparison_on: dt.date | None
     by_horizon: list[ForecastCheckHorizon]
+    largest_differences: list[ForecastDifference] = Field(default_factory=list)
