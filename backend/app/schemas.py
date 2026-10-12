@@ -262,6 +262,10 @@ class GroundingReport(BaseModel):
     supported: int
     # 1-based positions of sentences not found in the cited sources.
     unsupported: list[int] = Field(default_factory=list)
+    # Agentic retrieval: 2 when an unsupported sentence led to one more search.
+    rounds: int = 1
+    # Whether the second round gave a better-grounded answer, which was kept.
+    improved: bool = False
 
 
 class QueryResponse(BaseModel):

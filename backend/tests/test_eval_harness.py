@@ -29,5 +29,5 @@ def test_tasks_are_data_with_unique_ids():
 
     tasks = json.loads(TASKS.read_text(encoding="utf-8"))["tasks"]
     ids = [task["id"] for task in tasks]
-    assert len(ids) == len(set(ids)) == 52
-    assert {f"F{n:02}" for n in range(1, 24)} | {f"ADV-{n:02}" for n in range(1, 9)} <= set(ids)
+    assert len(ids) == len(set(ids)) == 53
+    assert {f"F{n:02}" for n in range(1, 25)} | {f"ADV-{n:02}" for n in range(1, 9)} <= set(ids)

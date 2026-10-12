@@ -21,6 +21,7 @@ from app.security.detect import contains_known_pii, detect_spans
 from app.security.detokenize import TOKEN_PATTERN, detokenize_response_with_trace, hash_query
 from app.security.query_entities import resolve_registered_entity_spans
 from app.security.tokenize import persist_vault_entries, tokenize_record
+from app.services.agentic_retrieval import refine as refine_answer
 from app.services.conversation_planning import plan_conversation
 from app.services.conversations import (
     get_or_create_conversation,
@@ -358,6 +359,8 @@ def query(
 
     hits: list[RetrievalHit]
     conversation_context_hits: list[RetrievalHit] | None = None
+    searched = False
+    retrieval_rounds, retrieval_improved = 1, False
     if ambiguous_person_reference:
         hits = []
         cited_answer = CitedAnswer(
@@ -426,6 +429,7 @@ def query(
                 k=SEMANTIC_TOP_K,
                 filters=plan.filters,
             )
+            searched = True
         if conversation.context_customer_id is not None and not referential:
             hits = _include_selected_customer_identity_evidence(
                 db,
@@ -433,6 +437,13 @@ def query(
                 existing_hits=hits,
                 protected_profile_context=selected_customer_profile_context,
             )
+        response_style = (
+            "compact"
+            if ordinal_reference or deterministic_intent is QueryIntent.LOOKUP
+            else conversational_plan.response_style
+            if conversational_plan is not None
+            else "compact"
+        )
         if plan.intent is QueryIntent.LOOKUP:
             contact_answer = structured_contact_lookup(payload.question, hits)
             if contact_answer is not None:
@@ -440,18 +451,39 @@ def query(
                 reasoning_mode = "structured-lookup"
             else:
                 cited_answer, reasoning_mode = answer_all_query_with_citations(
-                    reasoning_question,
-                    hits,
-                    response_style=(
-                        "compact"
-                        if ordinal_reference or deterministic_intent is QueryIntent.LOOKUP
-                        else conversational_plan.response_style
-                        if conversational_plan is not None
-                        else "compact"
-                    ),
+                    reasoning_question, hits, response_style=response_style
                 )
         else:
             cited_answer, reasoning_mode = answer_all_query_with_citations(reasoning_question, hits)
+        if searched and reasoning_mode not in {"structured-lookup", "no-evidence"}:
+            # Agentic retrieval: a sentence its sources do not support gets one more search.
+            def _answer_again(question, more_hits):
+                if plan.intent is QueryIntent.LOOKUP:
+                    return answer_all_query_with_citations(
+                        question, more_hits, response_style=response_style
+                    )
+                return answer_all_query_with_citations(question, more_hits)
+
+            def _search_again(follow_up):
+                # Search with the person's own question, not the conversation preamble.
+                follow_up = follow_up.replace(reasoning_question, sanitized_question, 1)
+                return retrieve_hybrid_hits(
+                    db,
+                    follow_up,
+                    embed_query_cached(follow_up)[0],
+                    k=SEMANTIC_TOP_K,
+                    filters=plan.filters,
+                )
+
+            refined = refine_answer(
+                reasoning_question,
+                hits,
+                cited_answer,
+                answer=_answer_again,
+                search=_search_again,
+            )
+            hits, cited_answer = refined.hits, refined.answer
+            retrieval_rounds, retrieval_improved = refined.rounds, refined.improved
     else:  # QueryIntent.ANALYZE_ALL: unbounded on purpose, see SEMANTIC_TOP_K note above.
         hits = prior_hits or [] if referential else list_eligible_hits(db, plan.filters)
         cited_answer, reasoning_mode = answer_all_query_with_citations(reasoning_question, hits)
@@ -557,6 +589,10 @@ def query(
     grounding = (
         None if cited_answer.insufficient_evidence else grounding_check(raw_answer, cited_texts)
     )
+    if grounding is not None:
+        grounding = grounding.model_copy(
+            update={"rounds": retrieval_rounds, "improved": retrieval_improved}
+        )
     return QueryResponse(
         grounding=grounding,
         answer=answer_trace.text,

@@ -33,7 +33,7 @@ export interface QueryResponse {
   exposure_receipt: ExposureReceipt | null;
   context_customer_id: number | null;
   /** How many answer sentences were found in the cited sources. */
-  grounding?: { sentences: number; supported: number; unsupported: number[] } | null;
+  grounding?: { sentences: number; supported: number; unsupported: number[]; rounds?: number; improved?: boolean } | null;
 }
 
 export interface QueryCitation {

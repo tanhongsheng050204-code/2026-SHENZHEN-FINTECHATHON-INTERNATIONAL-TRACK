@@ -1439,3 +1439,40 @@ def grounding_flags_invented_figure() -> Result:
         "the sentence with 98000, which no source holds, is reported unsupported",
         f"report {report}",
     )
+
+
+@check("agentic_retrieval_replaces_only_with_better")
+def agentic_retrieval_replaces_only_with_better() -> Result:
+    """Functional: an answer with an unsupported figure gets one more search; the new
+    answer is kept only because it is better grounded, and there is never a third round."""
+    from app.schemas import CitedAnswer
+    from app.services.agentic_retrieval import refine
+    from app.services.retrieval import RetrievalHit
+
+    def hit(n, text):
+        return RetrievalHit(n, f"r{n}", "email", "message", None, text, None, 0.8)
+
+    first_hits = [hit(1, "The customer disputed the carton count on the delivery.")]
+    found = hit(2, "Statement: the customer still owes 98000 on the October shipment.")
+    first = CitedAnswer(
+        answer="The customer disputed the carton count [SOURCE-1]. They owe 98000 [SOURCE-1].",
+        citations=["SOURCE-1"],
+    )
+    better = CitedAnswer(
+        answer="The customer disputed the carton count [SOURCE-1]. They owe 98000 [SOURCE-2].",
+        citations=["SOURCE-1", "SOURCE-2"],
+    )
+    calls = []
+
+    def answer(question, hits):
+        calls.append(len(hits))
+        return better, "test"
+
+    result = refine("What is owed?", first_hits, first, answer=answer, search=lambda q: [found])
+    ok = result.rounds == 2 and result.improved and result.answer is better and calls == [2]
+    return _expect(
+        ok,
+        "one more search found the statement; the better-grounded answer was kept",
+        f"rounds {result.rounds}, improved {result.improved}, answer calls {calls}",
+    )
+

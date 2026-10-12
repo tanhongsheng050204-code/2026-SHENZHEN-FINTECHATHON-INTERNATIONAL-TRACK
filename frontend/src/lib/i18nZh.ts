@@ -710,6 +710,9 @@ export const FB_ZH: Record<string, string> = {
   "A personal data export was prepared": "已准备个人数据导出",
   "The data protection officer was named": "已指定数据保护官",
   // AI: anomalies, checker agent, grounding, payment model, benchmarks
+  "Searched again and found better sources": "已再次检索并找到更好的来源",
+  "Searched again; nothing better found": "已再次检索，未找到更好的来源",
+  "A sentence was not found in its sources, so DuitDuit searched again with that sentence's own words and kept the better-grounded answer.": "有一句话在来源中找不到，因此 DuitDuit 用这句话本身的词语再次检索，并保留了依据更充分的回答。",
   "Unusual amount": "金额异常",
   "Possible duplicate bill": "疑似重复账单",
   "Large first bill": "首笔大额账单",

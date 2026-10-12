@@ -5,7 +5,7 @@ import "./records.css";
  * Whether each sentence of an answer was found in the sources it cites. A lexical
  * check: every figure must appear in a source, and most of the words.
  */
-export function GroundingChip({ grounding }: { grounding: { sentences: number; supported: number; unsupported: number[] } }) {
+export function GroundingChip({ grounding }: { grounding: { sentences: number; supported: number; unsupported: number[]; rounds?: number; improved?: boolean } }) {
   const { tx } = useI18n();
   const all = grounding.supported === grounding.sentences;
   const text = all
@@ -15,9 +15,17 @@ export function GroundingChip({ grounding }: { grounding: { sentences: number; s
         total: grounding.sentences,
         which: grounding.unsupported.join(", "),
       });
+  const again = (grounding.rounds ?? 1) > 1;
   return (
+    <>
+    {again && (
+      <span className="rc-chip is-blue" title={tx("A sentence was not found in its sources, so DuitDuit searched again with that sentence's own words and kept the better-grounded answer.")}>
+        {grounding.improved ? tx("Searched again and found better sources") : tx("Searched again; nothing better found")}
+      </span>
+    )}
     <span className={"rc-chip " + (all ? "is-green" : "is-amber")} title={tx("Each sentence is checked against the sources it cites: its figures must appear there, and most of its words.")}>
       {text}
     </span>
+    </>
   );
 }

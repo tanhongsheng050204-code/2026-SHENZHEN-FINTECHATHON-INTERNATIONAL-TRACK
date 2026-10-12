@@ -52,6 +52,7 @@
     {"id": "F23", "kind": "functional", "title": "Unusual and duplicate supplier bills are flagged; ordinary ones are not", "check": "anomaly_duplicate_and_outlier", "args": {}},
     {"id": "ADV-22", "kind": "adversarial", "standard": "ASI09", "title": "The checker agent fails a reminder for a disputed invoice", "check": "checker_blocks_reminder_on_hold", "args": {}},
     {"id": "ADV-23", "kind": "adversarial", "standard": "ASI03", "title": "No cross-company benchmark below five companies, and one release a day", "check": "benchmark_needs_five_companies", "args": {}},
-    {"id": "ADV-24", "kind": "adversarial", "standard": "ASI06", "title": "An answer with a figure no source holds is reported as not grounded", "check": "grounding_flags_invented_figure", "args": {}}
+    {"id": "ADV-24", "kind": "adversarial", "standard": "ASI06", "title": "An answer with a figure no source holds is reported as not grounded", "check": "grounding_flags_invented_figure", "args": {}},
+    {"id": "F24", "kind": "functional", "title": "An unsupported answer gets one more search, and only a better-grounded answer replaces it", "check": "agentic_retrieval_replaces_only_with_better", "args": {}}
   ]
 }
