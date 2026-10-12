@@ -51,4 +51,4 @@
 | ADV-18 Finance cannot create or list AI keys | adversarial | ASI03 | pass | Finance is refused both creating (403) and listing (403) AI keys |
 | ADV-19 One company cannot put a hold on another company's invoice | adversarial | ASI03 | pass | company B's hold on company A's invoice is refused (404); A's board is unchanged |
 | ADV-20 An automation never chases a disputed invoice | adversarial | ASI08 | pass | a disputed invoice 40 days overdue gets no reminder; the run says 1 on hold |
-| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "926843fb04e97579", "method": "password", "new_device": false} |
+| ADV-21 A sign-in record keeps no IP address or browser string | adversarial | ASI03 | pass | one sign-in kept as {"browser": "Chrome", "system": "Windows", "device": "e04b2c6af8666df7", "method": "password", "new_device": false} |

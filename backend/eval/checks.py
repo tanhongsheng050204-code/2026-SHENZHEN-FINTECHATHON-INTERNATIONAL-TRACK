@@ -1270,7 +1270,7 @@ def sign_in_keeps_no_address() -> Result:
     )
     owner = _principal()
     row = SimpleNamespace(user_id=str(owner.user_id), tenant_id=str(TENANT_A))
-    security_activity.record_sign_in(db, row, request, method="password")
+    security_activity.record_sign_in(db, row, request, None, method="password")
     db.commit()
     stored = [
         json.dumps(e.event_payload)

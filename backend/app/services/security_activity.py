@@ -1,11 +1,13 @@
 """Sign-in activity and the security feed.
 
-A completed sign-in is kept as "sign_in_recorded" on the company's workflow chain
-with the browser family, the operating system, how the person signed in, and a
-device fingerprint: an HMAC of the person, browser, system and network (the first
-two parts of the address). The address itself and the full browser string are
-never stored. A sign-in from a fingerprint the person has not used before is
-flagged as a new device; the very first sign-in only sets the baseline.
+A completed sign-in is kept on the company's workflow chain with the browser
+family, the operating system, how the person signed in, and a device fingerprint.
+The fingerprint is an HMAC of the person and a random device id that the server
+keeps in an HttpOnly cookie on that browser: it cannot be forged by copying a
+browser string or sending another address, which anyone can set. The address and
+the full browser string are never stored. A sign-in whose device id the person has
+not signed in with before is a new device ("sign_in_new_device"); others are
+"sign_in_recorded". The very first sign-in only sets the baseline.
 
 The security feed reads the chain for the events that matter to an owner or
 Compliance (keys, roles, kill switches, autonomy, settings, shared links, erasures,
@@ -17,6 +19,7 @@ import datetime as dt
 import hashlib
 import hmac
 import re
+import secrets
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -24,11 +27,16 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.contracts.security import SecurityEvent, SignIn
 from app.models import AuthUserRole, WorkflowAuditEntry
-from app.security import rate_limit
 from app.services.workflow_audit import chain_scalars, write_workflow_event
 
-SIGN_IN = "sign_in_recorded"
+SIGN_IN, NEW_DEVICE = "sign_in_recorded", "sign_in_new_device"
+SIGN_INS = (SIGN_IN, NEW_DEVICE)
+DEVICE_COOKIE = "finbrain_device"
+DEVICE_COOKIE_DAYS = 400
+_DEVICE_ID = re.compile(r"^[A-Za-z0-9_-]{32}$")
 FEED_DAYS = 30
+# Ordinary sign-ins are not in the feed query, so only security events count here.
+FEED_ROWS = 5000
 SIGN_INS_SHOWN = 20
 
 _BROWSERS = (
@@ -78,16 +86,29 @@ def describe_agent(agent: str) -> tuple[str, str]:
     return browser, system
 
 
-def _network(address: str) -> str:
-    if ":" in address:  # IPv6: the first two groups
-        return ":".join(address.split(":")[:2])
-    return ".".join(address.split(".")[:2]) if re.match(r"^\d+\.\d+\.", address) else address
-
-
-def _fingerprint(user_id: str, browser: str, system: str, address: str) -> str:
+def _fingerprint(user_id: str, device_id: str) -> str:
     secret = get_settings().token_root_secret.encode()
-    message = f"device:{user_id}:{browser}:{system}:{_network(address)}".encode()
+    message = f"device:{user_id}:{device_id}".encode()
     return hmac.new(secret, message, hashlib.sha256).hexdigest()[:16]
+
+
+def _device_id(request, response) -> str:
+    """This browser's device id, set as an HttpOnly cookie the first time."""
+    found = getattr(request, "cookies", {}).get(DEVICE_COOKIE, "")
+    if _DEVICE_ID.match(found or ""):
+        return found
+    device_id = secrets.token_urlsafe(24)
+    if response is not None:
+        response.set_cookie(
+            DEVICE_COOKIE,
+            device_id,
+            max_age=DEVICE_COOKIE_DAYS * 86400,
+            httponly=True,
+            secure=get_settings().auth_cookie_secure,
+            samesite="lax",
+            path="/",
+        )
+    return device_id
 
 
 def _previous(db: Session, tenant_id: str, user_id: str) -> list[WorkflowAuditEntry]:
@@ -96,7 +117,7 @@ def _previous(db: Session, tenant_id: str, user_id: str) -> list[WorkflowAuditEn
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
-            WorkflowAuditEntry.event_type == SIGN_IN,
+            WorkflowAuditEntry.event_type.in_(SIGN_INS),
             WorkflowAuditEntry.resource_id == user_id,
         )
         .order_by(WorkflowAuditEntry.id.desc())
@@ -112,18 +133,18 @@ def _previous(db: Session, tenant_id: str, user_id: str) -> list[WorkflowAuditEn
     return list(db.scalars(query).all())
 
 
-def record_sign_in(db: Session, row, request, *, method: str) -> bool:
+def record_sign_in(db: Session, row, request, response, *, method: str) -> bool:
     """Keep one completed sign-in; True when it came from a device not seen before."""
     if not (row.tenant_id and row.user_id):
         return False
     browser, system = describe_agent(request.headers.get("user-agent", ""))
-    device = _fingerprint(row.user_id, browser, system, rate_limit.client_address(request))
+    device = _fingerprint(row.user_id, _device_id(request, response))
     earlier = _previous(db, row.tenant_id, row.user_id)
     new_device = bool(earlier) and all(e.event_payload.get("device") != device for e in earlier)
     assignment = db.get(AuthUserRole, (row.user_id, row.tenant_id))
     write_workflow_event(
         db,
-        event_type=SIGN_IN,
+        event_type=NEW_DEVICE if new_device else SIGN_IN,
         actor_role=assignment.user_role if assignment else "member",
         actor_ref=f"user:{row.user_id}",
         resource_type="auth_user",
@@ -146,7 +167,7 @@ def sign_ins(db: Session, tenant_id: str, user_id: str) -> list[SignIn]:
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
-            WorkflowAuditEntry.event_type == SIGN_IN,
+            WorkflowAuditEntry.event_type.in_(SIGN_INS),
             WorkflowAuditEntry.resource_id == user_id,
         )
         .order_by(WorkflowAuditEntry.id.desc())
@@ -171,20 +192,18 @@ def feed(db: Session, tenant_id: str, now: dt.datetime | None = None) -> list[Se
         select(WorkflowAuditEntry)
         .where(
             WorkflowAuditEntry.tenant_id == tenant_id,
-            WorkflowAuditEntry.event_type.in_([*FEED, SIGN_IN]),
+            WorkflowAuditEntry.event_type.in_([*FEED, NEW_DEVICE]),
         )
         .order_by(WorkflowAuditEntry.id.desc())
-        .limit(500),
+        .limit(FEED_ROWS),
     )
     events = []
     for row in rows:
         at = _aware(row.created_at)
         if at < since:
             continue
-        if row.event_type == SIGN_IN:
+        if row.event_type == NEW_DEVICE:
             payload = row.event_payload
-            if not payload.get("new_device"):
-                continue  # ordinary sign-ins are in each person's own list
             severity = "warning"
             title = f"Sign-in from a new device: {payload['browser']} on {payload['system']}"
         else:

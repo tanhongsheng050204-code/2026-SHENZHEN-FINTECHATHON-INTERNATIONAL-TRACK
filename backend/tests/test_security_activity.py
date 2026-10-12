@@ -39,13 +39,32 @@ def db():
     return session
 
 
-def _request(agent: str, address: str):
-    return SimpleNamespace(headers={"user-agent": agent}, client=SimpleNamespace(host=address))
+LAPTOP, PHONE = "L" * 32, "P" * 32
 
 
-def _signed_in(db, person, agent=CHROME_WINDOWS, address="203.0.113.7"):
+class _Response:
+    def __init__(self):
+        self.cookies = {}
+
+    def set_cookie(self, name, value, **_):
+        self.cookies[name] = value
+
+
+def _request(agent: str, address: str, device: str | None):
+    cookies = {security_activity.DEVICE_COOKIE: device} if device else {}
+    return SimpleNamespace(
+        headers={"user-agent": agent, "x-forwarded-for": address},
+        client=SimpleNamespace(host=address),
+        cookies=cookies,
+    )
+
+
+def _signed_in(
+    db, person, agent=CHROME_WINDOWS, address="203.0.113.7", device=LAPTOP, response=None
+):
     row = SimpleNamespace(user_id=str(person.user_id), tenant_id=str(person.tenant_id))
-    return security_activity.record_sign_in(db, row, _request(agent, address), method="password")
+    request = _request(agent, address, device)
+    return security_activity.record_sign_in(db, row, request, response, method="password")
 
 
 def _client(db, role=UserRole.OWNER_DIRECTOR) -> TestClient:
@@ -81,14 +100,14 @@ def test_only_a_device_never_seen_before_counts_as_new(db):
 
     assert _signed_in(db, owner) is False  # the first sign-in sets the baseline
     assert _signed_in(db, owner) is False
-    assert _signed_in(db, owner, SAFARI_IPHONE, "198.51.100.4") is True
-    assert _signed_in(db, owner, SAFARI_IPHONE, "198.51.100.4") is False
+    assert _signed_in(db, owner, SAFARI_IPHONE, "198.51.100.4", PHONE) is True
+    assert _signed_in(db, owner, SAFARI_IPHONE, "198.51.100.4", PHONE) is False
 
 
 def test_each_person_sees_only_their_own_sign_ins(db):
     owner, finance = principal(UserRole.OWNER_DIRECTOR), principal(UserRole.FINANCE_OPS)
     _signed_in(db, owner)
-    _signed_in(db, finance, SAFARI_IPHONE)
+    _signed_in(db, finance, SAFARI_IPHONE, device=PHONE)
 
     mine = _client(db, UserRole.FINANCE_OPS).get("/security/sign-ins").json()["sign_ins"]
     assert [(s["browser"], s["system"]) for s in mine] == [("Safari", "iOS")]
@@ -119,11 +138,11 @@ def test_owner_and_compliance_see_the_security_feed_staff_do_not(db):
 def test_a_new_device_is_a_warning_and_an_ordinary_sign_in_is_not_listed(db):
     owner = principal(UserRole.OWNER_DIRECTOR)
     _signed_in(db, owner)
-    _signed_in(db, owner, SAFARI_IPHONE)
+    _signed_in(db, owner, SAFARI_IPHONE, device=PHONE)
 
     feed = _client(db).get("/security/activity").json()["events"]
     assert [(e["kind"], e["severity"], e["title"]) for e in feed] == [
-        ("sign_in_recorded", "warning", "Sign-in from a new device: Safari on iOS")
+        ("sign_in_new_device", "warning", "Sign-in from a new device: Safari on iOS")
     ]
 
 
@@ -198,3 +217,36 @@ def test_verifying_the_sign_in_code_records_the_sign_in(db, monkeypatch):
     ).all()
     assert event.event_payload["method"] == "password_and_email_code"
     assert event.event_payload["browser"] == "Chrome"
+
+
+def test_copying_the_browser_and_address_does_not_hide_a_new_device(db):
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    _signed_in(db, owner)
+
+    # Someone with the password and code, the same browser string and a forged
+    # forwarded address, but not the owner's device cookie.
+    response = _Response()
+    assert _signed_in(db, owner, device=None, response=response) is True
+    issued = response.cookies[security_activity.DEVICE_COOKIE]
+    assert len(issued) == 32 and issued != LAPTOP
+
+
+def test_many_sign_ins_cannot_push_security_events_out_of_the_feed(db):
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    _signed_in(db, owner)
+    write_workflow_event(
+        db,
+        event_type="api_key_created",
+        actor_role="owner_director",
+        actor_ref="owner",
+        resource_type="api_key",
+        resource_id="abc123abc123",
+        event_payload={"scope": "read"},
+        tenant_id=str(TENANT_A),
+    )
+    for _ in range(520):
+        _signed_in(db, owner)
+    db.commit()
+
+    kinds = [e["kind"] for e in _client(db).get("/security/activity").json()["events"]]
+    assert kinds == ["api_key_created"]

@@ -211,7 +211,7 @@ def demo_sign_in(request: Request, response: Response, db: Session = Depends(get
         event_payload={"aal": row.aal},
         tenant_id=assignment.tenant_id,
     )
-    security_activity.record_sign_in(db, row, request, method="demo")
+    security_activity.record_sign_in(db, row, request, response, method="demo")
     db.commit()
     return _view(db, row, csrf)
 
@@ -259,7 +259,9 @@ def invitation(
 
 
 @router.post("/email/verify", response_model=SessionResponse)
-def verify_email(body: CodeRequest, request: Request, db: Session = Depends(get_db)):
+def verify_email(
+    body: CodeRequest, request: Request, response: Response, db: Session = Depends(get_db)
+):
     row = resolve_session(db, request)
     if row.email_verified:
         raise HTTPException(409, "email_already_verified")
@@ -273,7 +275,7 @@ def verify_email(body: CodeRequest, request: Request, db: Session = Depends(get_
     accept_tokens(row, result, email=email)
     row.email_verified = True
     bind_membership(db, row)
-    security_activity.record_sign_in(db, row, request, method="password_and_email_code")
+    security_activity.record_sign_in(db, row, request, response, method="password_and_email_code")
     db.commit()
     return _view(db, row)
 
