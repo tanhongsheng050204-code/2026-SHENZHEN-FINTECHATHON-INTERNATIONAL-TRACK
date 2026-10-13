@@ -1007,8 +1007,8 @@ models, or call an AI provider. Coverage spans:
 Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 54
 scripted tasks (25 functional, 29 adversarial) offline and writes `output/eval-report.md`.
 
-Latest local results (2026-10-11):
-- backend: **803 passed, 11 skipped** (the skipped tests need PostgreSQL, which CI provides; the 10 PostgreSQL tests also pass against a local migrated database);
+Latest local results (2026-10-13):
+- backend: **805 passed, 13 skipped** (the skipped tests need PostgreSQL, which CI provides; the 12 PostgreSQL tests also pass against a local migrated database);
 - evaluation: **54 of 54**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
@@ -1025,7 +1025,7 @@ All settings live in `backend/app/config.py` with mirrors in `backend/.env.examp
 | Group | Variables |
 | --- | --- |
 | Secrets | `TOKEN_ROOT_SECRET`, `TOKEN_HASH_SECRET`, `VAULT_MASTER_KEY` (three distinct values required for production readiness) |
-| Database | `DATABASE_URL`, `DATABASE_POOL_SIZE`, `DATABASE_MAX_OVERFLOW`, `DATABASE_POOL_TIMEOUT` |
+| Database | `DATABASE_URL`, `DATABASE_POOL_SIZE`, `DATABASE_MAX_OVERFLOW`, `DATABASE_POOL_TIMEOUT`, `DATABASE_TRUSTED_POOL_SIZE`, `DATABASE_TRUSTED_MAX_OVERFLOW` (the audit-chain reader's own pool) |
 | Reasoning | `MORPHEUS_API_KEY`, `MORPHEUS_BASE_URL`, `MORPHEUS_MODEL`, `MORPHEUS_TIMEOUT_SECONDS`, `GEMINI_API_KEY`, `GEMINI_REASONING_MODEL`, `GEMINI_EMBEDDING_MODEL`, `GEMINI_TIMEOUT_SECONDS` |
 | Vault rotation | `VAULT_AUTO_ROTATION_ENABLED`, `VAULT_ROTATION_INTERVAL_DAYS`, `VAULT_ROTATION_CHECK_SECONDS`, `VAULT_ROTATION_BATCH_SIZE` |
 | Detection | `ENABLE_GLINER`, `GLINER_MODEL_NAME`, `GLINER_DEVICE`, `PREWARM_GLINER_ON_STARTUP` |

@@ -73,13 +73,18 @@ _DEMO_RULES = (
 )
 
 
-def _demo_alert_rules(db, tenant_id: str) -> None:
+def _demo_alert_rules(db, tenant_id: str) -> bool:
+    """Save the rules as the company's owner; False when it has no owner yet.
+
+    A rule records who created it, and that must be a real signed-up user, so the
+    rules wait until an owner account is attached (run this script again then).
+    """
     from decimal import Decimal
     from uuid import UUID
 
     from app.auth.principal import AuthPrincipal
     from app.contracts.customization import AlertRuleRequest
-    from app.models import TenantCustomization
+    from app.models import AuthUserRole, TenantCustomization
     from app.schemas import UserRole
     from app.services.customization import create_rule
 
@@ -90,9 +95,21 @@ def _demo_alert_rules(db, tenant_id: str) -> None:
         )
     )
     if exists is not None:
-        return
+        return True
+    owner_id = db.scalar(
+        select(AuthUserRole.user_id)
+        .where(
+            AuthUserRole.tenant_id == tenant_id,
+            AuthUserRole.user_role == UserRole.OWNER_DIRECTOR.value,
+            AuthUserRole.active.is_(True),
+        )
+        .order_by(AuthUserRole.created_at)
+        .limit(1)
+    )
+    if owner_id is None:
+        return False
     owner = AuthPrincipal(
-        user_id=UUID("00000000-0000-0000-0000-000000000003"),
+        user_id=UUID(str(owner_id)),
         email=None,
         role=UserRole.OWNER_DIRECTOR,
         tenant_id=UUID(tenant_id),
@@ -109,9 +126,11 @@ def _demo_alert_rules(db, tenant_id: str) -> None:
                 channel=channel,
             ),
         )
+    return True
 
 
-def seed_original_fixtures(db, tenant_id: str) -> None:
+def seed_original_fixtures(db, tenant_id: str) -> bool:
+    """Seed the fixtures; False when the alert rules still wait for an owner."""
     tenant = _synthetic_tenant(db, str(tenant_id))
     tenant_id = str(tenant.id)
     marker = db.get(SyntheticTenantSeed, tenant_id)
@@ -127,7 +146,7 @@ def seed_original_fixtures(db, tenant_id: str) -> None:
         invoices.append(record)
     seed_einvoice_records(db, invoices)
     _declare_registration(db, tenant_id)
-    _demo_alert_rules(db, tenant_id)
+    rules_saved = _demo_alert_rules(db, tenant_id)
 
     for record in SAMPLE_RECORDS:
         canonical = adapt_seed_record(record).model_copy(
@@ -143,6 +162,7 @@ def seed_original_fixtures(db, tenant_id: str) -> None:
         )
         if exists is None:
             ingest_canonical_record(db, canonical)
+    return rules_saved
 
 
 def main() -> None:
@@ -154,8 +174,10 @@ def main() -> None:
     # restricted worker role may not write e-invoices or protected content, and
     # seed_original_fixtures itself refuses any tenant that is not synthetic.
     with SessionLocal() as db:
-        seed_original_fixtures(db, args.tenant_id)
+        rules_saved = seed_original_fixtures(db, args.tenant_id)
     print(f"original fixtures ready in synthetic tenant {args.tenant_id}")
+    if not rules_saved:
+        print("alert rules skipped: attach an owner account, then run this again")
 
 
 if __name__ == "__main__":

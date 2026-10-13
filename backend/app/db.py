@@ -25,15 +25,35 @@ elif ":6543/" in database_url:
 else:
     connect_args = {}
 
-engine = create_engine(
-    database_url,
-    connect_args=connect_args,
-    pool_pre_ping=True,
-    pool_size=settings.database_pool_size,
-    max_overflow=settings.database_max_overflow,
-    pool_timeout=settings.database_pool_timeout,
+def _engine(pool_size: int, max_overflow: int):
+    return create_engine(
+        database_url,
+        connect_args=connect_args,
+        pool_pre_ping=True,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_timeout=settings.database_pool_timeout,
+    )
+
+
+engine = _engine(settings.database_pool_size, settings.database_max_overflow)
+# Chain reads, and chain writes made for someone else, run on a short second session
+# in the worker role while the person's request still holds its own connection
+# (app.services.workflow_audit). From one shared pool, a few requests at once could
+# each hold a connection while waiting for a second one, and all time out together.
+# Their own pool removes that wait: a trusted session never waits on a request.
+trusted_engine = (
+    engine
+    if settings.database_backend == "sqlite"
+    else _engine(settings.database_trusted_pool_size, settings.database_trusted_max_overflow)
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+
+
+def trusted_bind(db: Session):
+    """Where a second, worker-role session for this request should connect."""
+    bind = db.get_bind()
+    return trusted_engine if bind is engine else bind
 
 
 @event.listens_for(Session, "after_begin")

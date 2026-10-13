@@ -47,6 +47,22 @@ NON_PERSON_ROLE_TERMS = {
     "team",
     "unassigned",
 }
+# A "person" made only of these words is a role, not someone's name: "assigned
+# approval owner", "the finance manager". A real name has at least one other word.
+NON_PERSON_ROLE_WORDS = {
+    word for term in NON_PERSON_ROLE_TERMS for word in term.split()
+} | {"a", "an", "the", "no", "our", "your", "their", "approval", "finance"}
+# Words that end a company's name. The model sometimes stops one word short
+# ("Sample Horizon" of "Sample Horizon Retail"), which would leave part of the
+# name in clear text next to its token.
+COMPANY_NAME_ENDINGS = {
+    "berhad", "bhd", "co", "company", "corp", "corporation", "engineering", "enterprise",
+    "enterprises", "group", "holdings", "inc", "industries", "limited", "llp", "logistics",
+    "ltd", "manufacturing", "mart", "plc", "plt", "resources", "retail", "sdn", "services",
+    "solutions", "store", "stores", "supplies", "supply", "technologies", "trading", "traders",
+    "ventures",
+}
+_NEXT_WORD = re.compile(r"[ \t]+([A-Za-z]+)\.?")
 
 PII_LABELS = [
     "person",
@@ -96,6 +112,20 @@ def _regex_detect(text: str) -> list[Span]:
     return spans
 
 
+def _is_role(value: str) -> bool:
+    words = re.findall(r"[a-z]+", value.casefold())
+    return bool(words) and all(word in NON_PERSON_ROLE_WORDS for word in words)
+
+
+def _company_end(text: str, end: int) -> int:
+    """Extend a company name over the name-ending words that follow it."""
+    while (match := _NEXT_WORD.match(text, end)) and (
+        match.group(1).casefold() in COMPANY_NAME_ENDINGS
+    ):
+        end = match.end()
+    return end
+
+
 def _gliner_detect(text: str, threshold: float = 0.4) -> list[Span]:
     if not get_settings().enable_gliner or not (model := _get_model()):
         return []
@@ -103,12 +133,15 @@ def _gliner_detect(text: str, threshold: float = 0.4) -> list[Span]:
     for entity in model.predict_entities(text, PII_LABELS, threshold=threshold):
         value = str(entity["text"]).strip()
         label = str(entity["label"]).casefold()
-        normalized = re.sub(r"\s+", " ", value.casefold())
         if label == "email" and not EMAIL_VALUE_PATTERN.fullmatch(value):
             continue
-        if label == "person" and normalized in NON_PERSON_ROLE_TERMS:
+        if label == "person" and _is_role(value):
             continue
-        output.append(Span(entity["start"], entity["end"], value, str(entity["label"]), "gliner"))
+        start, end = entity["start"], entity["end"]
+        if label == "company name":
+            end = _company_end(text, end)
+            value = text[start:end].strip()
+        output.append(Span(start, end, value, str(entity["label"]), "gliner"))
     return output
 
 

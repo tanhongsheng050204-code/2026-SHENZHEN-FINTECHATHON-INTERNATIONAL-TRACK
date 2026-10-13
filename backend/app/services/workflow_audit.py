@@ -183,10 +183,10 @@ def _trusted_session(db: Session) -> Session | None:
         or context.get("database_role") != "finbrain_app"
     ):
         return None
-    from app.db import set_worker_context
+    from app.db import set_worker_context, trusted_bind
 
-    # The same database as the person's session; one read-only transaction.
-    session = Session(bind=db.get_bind(), expire_on_commit=False)
+    # The same database as the person's session, from its own pool; one transaction.
+    session = Session(bind=trusted_bind(db), expire_on_commit=False)
     set_worker_context(session, actor_ref="chain-reader", tenant_id=context.get("tenant_id"))
     return session
 

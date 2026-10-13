@@ -9,4 +9,8 @@
 .dd-demo-auth p{margin:0;color:#A7B8B2}
 .dd-demo-auth button:focus-visible{outline:2px solid #E0B23A;outline-offset:2px}
 @media (prefers-reduced-motion: reduce){.dd-demo-auth-bar span{transition:none}}
-@media (max-width:600px){.dd-demo-auth{left:8px;right:8px;bottom:8px;width:auto}}
+/* Beside the app's sidebar, not over its last links. */
+body:has(.fb-sidebar) .dd-demo-auth{left:268px}
+@media (max-width:900px){body:has(.fb-sidebar) .dd-demo-auth{left:92px}}
+@media (max-width:640px){body:has(.fb-sidebar) .dd-demo-auth{left:8px}}
+@media (max-width:600px){.dd-demo-auth{left:8px;right:8px;bottom:8px;width:auto}.dd-demo-auth.is-closed{right:auto}}

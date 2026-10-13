@@ -10,7 +10,8 @@ import "./DemoAuthenticator.css";
 export function DemoAuthenticator() {
   const [code, setCode] = useState<string | null>(null);
   const [left, setLeft] = useState(0);
-  const [open, setOpen] = useState(true);
+  // On a phone it would cover the page, so it starts as a small button there.
+  const [open, setOpen] = useState(() => !window.matchMedia?.("(max-width: 600px)").matches);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {

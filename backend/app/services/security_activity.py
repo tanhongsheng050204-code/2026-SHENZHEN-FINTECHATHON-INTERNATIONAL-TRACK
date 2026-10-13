@@ -123,9 +123,9 @@ def _previous(db: Session, tenant_id: str, user_id: str) -> list[WorkflowAuditEn
         .order_by(WorkflowAuditEntry.id.desc())
     )
     if db.bind is not None and db.bind.dialect.name == "postgresql":
-        from app.db import set_worker_context
+        from app.db import set_worker_context, trusted_bind
 
-        with Session(bind=db.get_bind()) as worker:
+        with Session(bind=trusted_bind(db)) as worker:
             set_worker_context(worker, actor_ref="sign-in-history")
             rows = list(worker.scalars(query).all())
             worker.expunge_all()

@@ -3,6 +3,9 @@ import hmac
 import re
 from decimal import Decimal, InvalidOperation
 
+from sqlalchemy import insert
+from sqlalchemy import inspect as sa_inspect
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -39,6 +42,7 @@ ACL_POLICY = {
 }
 
 AMOUNT_BANDS = [500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
+UNIQUE_VIOLATION = "23505"
 
 
 def _pending_token(db: Session, model: type, token: str) -> bool:
@@ -184,9 +188,30 @@ def tokenize_record(
 
 def persist_vault_entries(db: Session, entries: list[TokenVaultEntry]) -> None:
     """Persist ciphertext and safe public token metadata idempotently."""
+    postgres = db.bind is not None and db.bind.dialect.name == "postgresql"
+    if postgres:
+        db.flush()  # the registry rows tokenize_record added go in first
     for entry in entries:
-        if not _has_token(db, TokenVaultEntry, entry.token):
+        if _has_token(db, TokenVaultEntry, entry.token):
+            continue
+        if not postgres:
             db.add(entry)
+            continue
+        # Row-level security hides a vault row from roles outside its allowed list
+        # (a general employee cannot read a bank account's row), so "not visible"
+        # is not "not stored". Insert in a savepoint and keep the stored row when the
+        # token is already there. (ON CONFLICT would need the role to read the row.)
+        values = {
+            attribute.columns[0].name: getattr(entry, attribute.key)
+            for attribute in sa_inspect(TokenVaultEntry).column_attrs
+            if getattr(entry, attribute.key) is not None
+        }
+        try:
+            with db.begin_nested():
+                db.execute(insert(TokenVaultEntry.__table__).values(**values))
+        except IntegrityError as error:
+            if getattr(error.orig, "sqlstate", None) != UNIQUE_VIOLATION:
+                raise
 
 
 def protect_scalar(

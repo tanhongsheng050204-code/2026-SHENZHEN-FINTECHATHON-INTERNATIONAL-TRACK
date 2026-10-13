@@ -12,19 +12,22 @@ from dataclasses import replace
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, func, select, text
 from sqlalchemy.orm import Session
 
+from app import db as app_db
 from app.contracts.agents import ReviewDecisionRequest
 from app.contracts.collaboration import AutomationRequest, SavedViewFilters, SavedViewRequest
 from app.contracts.common import AutonomyLevel, JobFunction
 from app.db import set_rls_context
-from app.models import AuthUserRole, Tenant
+from app.models import AuthUserRole, Tenant, TokenVaultEntry, WorkflowAuditEntry
 from app.schemas import UserRole
+from app.security.detect import Span
 from app.security.keyring import ensure_active_key
+from app.security.tokenize import persist_vault_entries, tokenize_record
 from app.services import automations, review_comments, review_inbox, saved_views
 from app.services.tenant_settings import initialize_settings
-from app.services.workflow_audit import write_workflow_event
+from app.services.workflow_audit import chain_scalars, write_workflow_event
 from tests.auth_support import principal
 
 DSN = os.environ.get("FINBRAIN_REVIEW_POSTGRES_URL")
@@ -341,4 +344,57 @@ def test_two_first_requests_at_once_store_one_release():
             )
         )
     assert len(results) == 4 and len(set(results)) == 1
+    assert stored == 1
+
+
+def test_a_request_holding_its_only_connection_still_reads_the_chain(monkeypatch):
+    # Every request holds a connection while its chain read opens a second, worker-role
+    # session. From one pool, a few requests at once each held one and waited for
+    # another until they all timed out (500s on every screen). The chain sessions
+    # now have their own pool.
+    request_engine = create_engine(DSN, pool_size=1, max_overflow=0, pool_timeout=3)
+    chain_engine = create_engine(DSN, pool_size=1, max_overflow=0, pool_timeout=3)
+    monkeypatch.setattr(app_db, "engine", request_engine)
+    monkeypatch.setattr(app_db, "trusted_engine", chain_engine)
+    owner = _team()[UserRole.OWNER_DIRECTOR]
+    with Session(request_engine, expire_on_commit=False) as db:
+        _as(db, owner)
+        rows = chain_scalars(
+            db,
+            select(WorkflowAuditEntry).where(
+                WorkflowAuditEntry.tenant_id == str(owner.tenant_id)
+            ),
+        )
+    assert rows == []
+
+def test_a_role_that_cannot_read_a_vault_row_can_still_mention_its_value():
+    # A general employee cannot read a bank account's vault row. Asking about the
+    # same account after Finance had made the vault re-inserted the row and the
+    # request failed on the primary key (500 in Ask DuitDuit).
+    engine = create_engine(DSN)
+    team = _team()
+    finance, staff = team[UserRole.FINANCE_OPS], team[UserRole.GENERAL_EMPLOYEE]
+    tid = str(finance.tenant_id)
+    question = "Was bank account 1234 5678 9012 paid?"
+    start = question.index("1234")
+    spans = [Span(start, start + 14, question[start : start + 14], "bank account number", "regex")]
+    with Session(engine, expire_on_commit=False) as db:
+        db.add(Tenant(id=tid, name="SYNTHETIC vault review", slug=f"review-{tid}"))
+        db.flush()
+        initialize_settings(db, tid, "SYNTHETIC vault review")
+        ensure_active_key(db)
+        db.commit()
+        for person in (finance, staff):
+            _as(db, person)
+            _, entries = tokenize_record(question, spans, f"query-{uuid4()}", tid, db=db)
+            persist_vault_entries(db, entries)
+            db.commit()
+        token = entries[0].token
+        _as(db, staff)
+        assert db.get(TokenVaultEntry, token) is None
+        db.commit()
+    with Session(engine) as db:
+        stored = db.scalar(
+            select(func.count()).select_from(TokenVaultEntry).where(TokenVaultEntry.token == token)
+        )
     assert stored == 1

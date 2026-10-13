@@ -143,23 +143,60 @@ def test_the_synthetic_company_declares_its_registration_date_once():
     assert _count(db, TenantSettingsVersion, SYNTHETIC_ID) == 2
 
 
-def test_the_synthetic_company_has_three_demo_alert_rules_once():
+OWNER_ID = "00000000-0000-4000-8000-0000000000a1"
+
+
+def _with_owner(db):
+    from app.models import AuthUserRole
+
+    db.add(
+        AuthUserRole(
+            user_id=OWNER_ID,
+            tenant_id=SYNTHETIC_ID,
+            user_role="owner_director",
+            job_functions=["owner"],
+            active=True,
+        )
+    )
+    db.commit()
+
+
+def _rules(db):
     from app.models import TenantCustomization
 
-    db = _db()
-    _with_seed_marker(db)
-
-    seed_original_fixtures(db, SYNTHETIC_ID)
-    seed_original_fixtures(db, SYNTHETIC_ID)
-
-    rules = db.scalars(
+    return db.scalars(
         select(TenantCustomization).where(
             TenantCustomization.tenant_id == SYNTHETIC_ID,
             TenantCustomization.kind == "alert_rule",
         )
     ).all()
+
+
+def test_the_synthetic_company_has_three_demo_alert_rules_once():
+    db = _db()
+    _with_seed_marker(db)
+    _with_owner(db)
+
+    assert seed_original_fixtures(db, SYNTHETIC_ID) is True
+    assert seed_original_fixtures(db, SYNTHETIC_ID) is True
+
+    rules = _rules(db)
     assert sorted(r.document["metric"] for r in rules) == [
         "overdue_amount_per_customer",
         "projected_balance",
         "stock_below_reorder",
     ]
+    # Saved as the company's real owner: the column references a signed-up user.
+    assert {str(r.created_by) for r in rules} == {OWNER_ID}
+
+
+def test_without_an_owner_the_rules_wait_and_the_records_still_arrive():
+    # The rules once named a made-up user, which a real database refuses; the seed
+    # then stopped before the protected records, leaving Ask DuitDuit empty.
+    db = _db()
+    _with_seed_marker(db)
+
+    assert seed_original_fixtures(db, SYNTHETIC_ID) is False
+
+    assert _rules(db) == []
+    assert _count(db, TokenizedContent, SYNTHETIC_ID) >= len(SAMPLE_RECORDS)

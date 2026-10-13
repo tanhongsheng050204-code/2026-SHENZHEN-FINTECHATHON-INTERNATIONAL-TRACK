@@ -392,3 +392,32 @@ def test_gliner_rejects_bare_email_and_structural_or_organizational_roles(monkey
         ("Ahmad Faizal", "person"),
         ("lim@example.com", "email"),
     ]
+
+
+def test_gliner_skips_role_phrases_and_keeps_whole_company_names(monkeypatch):
+    text = (
+        "The RM 4,500 payment has no assigned approval owner. "
+        "Customer: Sample Horizon Retail, paid by Maple Supplies Sdn. Bhd. via Lim Wei Ming."
+    )
+
+    def at(value, label):
+        start = text.index(value)
+        return {"start": start, "end": start + len(value), "text": value, "label": label}
+
+    entities = [
+        at("assigned approval owner", "person"),
+        at("Sample Horizon", "company name"),
+        at("Maple Supplies", "company name"),
+        at("Lim Wei Ming", "person"),
+    ]
+    monkeypatch.setattr(detect, "get_settings", lambda: SimpleNamespace(enable_gliner=True))
+    monkeypatch.setattr(detect, "_get_model", lambda: _FakeDetector(entities))
+
+    spans = detect._gliner_detect(text)
+
+    assert [(span.text, span.label) for span in spans] == [
+        ("Sample Horizon Retail", "company name"),
+        ("Maple Supplies Sdn. Bhd.", "company name"),
+        ("Lim Wei Ming", "person"),
+    ]
+    assert all(text[span.start : span.end] == span.text for span in spans)

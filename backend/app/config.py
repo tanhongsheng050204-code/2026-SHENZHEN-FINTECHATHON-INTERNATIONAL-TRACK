@@ -29,9 +29,12 @@ class Settings(BaseSettings):
     morpheus_timeout_seconds: int = 20
     conversation_planner_enabled: bool = True
     conversation_planner_timeout_seconds: int = 6
-    database_pool_size: int = 1
-    database_max_overflow: int = 1
-    database_pool_timeout: int = 10
+    database_pool_size: int = 2
+    database_max_overflow: int = 3
+    database_pool_timeout: int = 30
+    # A separate pool for the worker-role chain sessions opened during a request.
+    database_trusted_pool_size: int = 1
+    database_trusted_max_overflow: int = 3
     enable_gliner: bool = True
     gliner_model_name: str = "urchade/gliner_multi_pii-v1"
     gliner_device: str = "cpu"
@@ -186,6 +189,8 @@ class Settings(BaseSettings):
         "database_pool_size",
         "database_max_overflow",
         "database_pool_timeout",
+        "database_trusted_pool_size",
+        "database_trusted_max_overflow",
         "gliner_cpu_threads",
         "auth_session_hours",
         "auth_step_up_seconds",

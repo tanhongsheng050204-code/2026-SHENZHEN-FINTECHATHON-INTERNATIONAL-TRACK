@@ -59,20 +59,32 @@ export function TodayHero({ greeting }: { greeting: string }) {
   const [waiting, setWaiting] = useState<ReviewAction[] | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [alerts, setAlerts] = useState<string[] | null>(null);
+  // What could not be loaded: never shown as "all clear" or "none".
+  const [failed, setFailed] = useState<Set<"forecast" | "analysis" | "waiting" | "alerts">>(new Set());
+  const [attempt, setAttempt] = useState(0);
   const [question, setQuestion] = useState("");
 
   useEffect(() => {
     let active = true;
-    if (seesCash) fetchForecast(90).then((f) => active && setForecast(f)).catch(() => undefined);
-    if (seesAnalysis) fetchAnalysis(3).then((a) => active && setAnalysis(a)).catch(() => undefined);
+    const fail = (part: "forecast" | "analysis" | "waiting" | "alerts") => () => {
+      if (active) setFailed((current) => new Set(current).add(part));
+    };
+    if (seesCash) fetchForecast(90).then((f) => active && setForecast(f)).catch(fail("forecast"));
+    if (seesAnalysis) fetchAnalysis(3).then((a) => active && setAnalysis(a)).catch(fail("analysis"));
     fetchReviewInbox()
       .then((r) => active && setWaiting(r.actions.filter((a) => a.can_decide && OPEN.has(a.status))))
-      .catch(() => active && setWaiting([]));
+      .catch(fail("waiting"));
     fetchBriefing()
       .then((b) => active && setAlerts(b.lines.filter((l) => l.kind === "alerts").map((l) => l.text)))
-      .catch(() => active && setAlerts([]));
+      .catch(fail("alerts"));
     return () => { active = false; };
-  }, [seesCash, seesAnalysis]);
+  }, [seesCash, seesAnalysis, attempt]);
+
+  const retry = () => {
+    setFailed(new Set());
+    setAttempt((n) => n + 1);
+  };
+  const notLoaded = tx("Couldn't load");
 
   const shortfall = forecast?.shortfall ?? null;
   const last = analysis?.months[analysis.months.length - 1] ?? null;
@@ -90,8 +102,20 @@ export function TodayHero({ greeting }: { greeting: string }) {
   } else if (forecast) {
     headline = tx("Cash stays above your minimum for the next 90 days.");
     detail = tx("Lowest likely point: {amount}.", { amount: ringgit(String(Math.min(...forecast.points.map((p) => Number(p.likely))))) });
+  } else if (failed.has("forecast")) {
+    headline = tx("The cash forecast didn't load.");
+    detail = tx("Your numbers are safe. Try again in a moment.");
+  } else if (seesCash) {
+    headline = tx("Checking your cash outlook…");
+    detail = tx("The 90-day forecast from your records.");
   } else if (count > 0) {
     headline = count === 1 ? tx("1 thing is waiting for your decision.") : tx("{n} things are waiting for your decision.", { n: count });
+    detail = tx("Drafts and proposals your role can approve or reject.");
+  } else if (failed.has("waiting")) {
+    headline = tx("Your review inbox didn't load.");
+    detail = tx("Your numbers are safe. Try again in a moment.");
+  } else if (waiting === null) {
+    headline = tx("Checking what is waiting for you…");
     detail = tx("Drafts and proposals your role can approve or reject.");
   } else {
     headline = tx("Nothing needs your decision right now.");
@@ -145,6 +169,9 @@ export function TodayHero({ greeting }: { greeting: string }) {
             ) : (
               <button type="button" className="fb-btn fb-btn-solid" onClick={() => show("inbox")}>{tx("Open review inbox")}</button>
             )}
+            {failed.size > 0 && (
+              <button type="button" className="fb-btn fb-btn-outline" onClick={retry}>{tx("Try again")}</button>
+            )}
           </div>
         </div>
         {forecast && <div className="th-lead-chart"><Runway forecast={forecast} /></div>}
@@ -153,21 +180,29 @@ export function TodayHero({ greeting }: { greeting: string }) {
       <div className="th-tiles">
         <button type="button" className="th-tile" onClick={() => show("inbox")}>
           <span className="th-tile-label">{tx("Waiting for you")}</span>
-          <span className="th-tile-value">{waiting === null ? "…" : count === 0 ? tx("All clear") : count}</span>
+          <span className={"th-tile-value" + (failed.has("waiting") && waiting === null ? " is-attn" : "")}>
+            {waiting === null ? (failed.has("waiting") ? notLoaded : "…") : count === 0 ? tx("All clear") : count}
+          </span>
           <span className="th-tile-sub">
-            {waiting && waiting.length > 0 ? waiting.slice(0, 2).map((a) => tx(a.title)).join("; ") : tx("Nothing to approve")}
+            {waiting === null
+              ? (failed.has("waiting") ? tx("Open the review inbox to check") : tx("Checking your review inbox"))
+              : waiting.length > 0 ? waiting.slice(0, 2).map((a) => tx(a.title)).join("; ") : tx("Nothing to approve")}
           </span>
         </button>
         {seesAnalysis && (
           <button type="button" className="th-tile" onClick={() => show("analysis")}>
             <span className="th-tile-label">{last ? tx("Net result, {month}", { month: last.label }) : tx("Last month")}</span>
-            <span className={"th-tile-value" + (last && Number(last.net_result) < 0 ? " is-down" : "")}>{last ? ringgit(last.net_result) : "…"}</span>
+            <span className={"th-tile-value" + (last && Number(last.net_result) < 0 ? " is-down" : "") + (!last && failed.has("analysis") ? " is-attn" : "")}>
+              {last ? ringgit(last.net_result) : failed.has("analysis") ? notLoaded : "…"}
+            </span>
             <span className="th-tile-sub">{last ? tx("{margin}% of {revenue} revenue", { margin: last.net_margin ?? "—", revenue: ringgit(last.revenue) }) : tx("Profit and loss from your records")}</span>
           </button>
         )}
         <button type="button" className="th-tile" onClick={() => show(seesCash ? "cashflow" : "inbox")}>
           <span className="th-tile-label">{tx("Alerts today")}</span>
-          <span className={"th-tile-value" + (alertCount ? " is-attn" : "")}>{alerts === null ? "…" : alertCount === 0 ? tx("None") : alertCount}</span>
+          <span className={"th-tile-value" + (alertCount || (alerts === null && failed.has("alerts")) ? " is-attn" : "")}>
+            {alerts === null ? (failed.has("alerts") ? notLoaded : "…") : alertCount === 0 ? tx("None") : alertCount}
+          </span>
           <span className="th-tile-sub">{alertText ?? tx("Rules you set in Company settings")}</span>
         </button>
       </div>

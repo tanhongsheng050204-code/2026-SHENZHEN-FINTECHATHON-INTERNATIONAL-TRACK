@@ -105,12 +105,14 @@ function writeLocalPref(key: string, value: string) {
   }
 }
 
-// A link or a refresh on a public page opens that page; signed-in screens still
-// start from the landing page and are reached after sign-in.
+// A link or a refresh opens the page in the address bar. A signed-in page asked for
+// without a session goes to sign-in (Screens in App.tsx). An invoice's detail page
+// needs the invoice chosen on the list, so it reopens the list.
 
 function screenFromPath(): Screen {
   const pathname = window.location.pathname.replace(/^\/|\/$/g, "");
-  return (PUBLIC_SCREENS as readonly string[]).includes(pathname) ? (pathname as Screen) : "landing";
+  if (pathname === "einvoice-detail") return "einvoice";
+  return (SCREENS as readonly string[]).includes(pathname) ? (pathname as Screen) : "landing";
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {

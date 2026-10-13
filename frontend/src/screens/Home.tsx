@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { TodayHero } from "../components/TodayHero";
 import { PERSONAS } from "../lib/personas";
+import { canOpen } from "../lib/access";
 import { displayCase, formatRm, isPlaceholderName } from "../lib/customerAggregation";
 import {
   fetchAuditLog,
@@ -116,14 +117,16 @@ const RING_RADIUS = 25;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 function EinvoiceCard() {
-  const { show } = useAppState();
+  const { show, askRole } = useAppState();
   const { tx } = useI18n();
+  const allowed = canOpen("einvoice", askRole);
   const [data, setData] = useState<EinvoiceReadinessResponse | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
   const retry = () => setReloadToken((t) => t + 1);
 
   useEffect(() => {
+    if (!allowed) return;
     let active = true;
     const run = async () => {
       setState("loading");
@@ -136,7 +139,7 @@ function EinvoiceCard() {
     };
     void run();
     return () => { active = false; };
-  }, [reloadToken]);
+  }, [allowed, reloadToken]);
 
   const pct = data ? Math.round(data.score * 100) : 0;
 
@@ -148,12 +151,13 @@ function EinvoiceCard() {
       onClick={() => show("einvoice")}
       icon={<path d="M6 2h9l3 3v17H6z M9 8h6M9 12h6M9 16h4" />}
     >
-      {state === "loading" && <CardSkeleton />}
-      {state === "error" && <ErrorWithRetry message="Couldn't load e-Invoicing data." onRetry={retry} />}
-      {state === "loaded" && data && data.total_records === 0 && (
+      {!allowed && <RestrictedNote label="Finance, owner or compliance role required" />}
+      {allowed && state === "loading" && <CardSkeleton />}
+      {allowed && state === "error" && <ErrorWithRetry message="Couldn't load e-Invoicing data." onRetry={retry} />}
+      {allowed && state === "loaded" && data && data.total_records === 0 && (
         <div className="fb-home-card-sub">{tx("No invoices yet — readiness will show once you have some.")}</div>
       )}
-      {state === "loaded" && data && data.total_records > 0 && (
+      {allowed && state === "loaded" && data && data.total_records > 0 && (
         <div className="fb-home-ring-row">
           <div className="fb-home-ring-wrap">
             <svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
@@ -298,8 +302,9 @@ function ApprovalsCard() {
 }
 
 function CaptureCard() {
-  const { show } = useAppState();
+  const { show, askRole } = useAppState();
   const { tx } = useI18n();
+  const allowed = canOpen("ingestion", askRole);
   const [state, setState] = useState<LoadState>("loading");
   const [emailConfigured, setEmailConfigured] = useState(false);
   const [telegramConfigured, setTelegramConfigured] = useState(false);
@@ -309,6 +314,7 @@ function CaptureCard() {
   const retry = () => setReloadToken((t) => t + 1);
 
   useEffect(() => {
+    if (!allowed) return;
     let active = true;
     const run = async () => {
       setState("loading");
@@ -329,7 +335,7 @@ function CaptureCard() {
     };
     void run();
     return () => { active = false; };
-  }, [reloadToken]);
+  }, [allowed, reloadToken]);
 
   const connected = [emailConfigured && "Email", telegramConfigured && "Telegram"].filter(Boolean) as string[];
 
@@ -341,9 +347,10 @@ function CaptureCard() {
       onClick={() => show("ingestion")}
       icon={<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 9l5-5 5 5M12 4v13" />}
     >
-      {state === "loading" && <CardSkeleton />}
-      {state === "error" && <ErrorWithRetry message="Couldn't load capture status." onRetry={retry} />}
-      {state === "loaded" && (
+      {!allowed && <RestrictedNote label="Owner / finance role required" />}
+      {allowed && state === "loading" && <CardSkeleton />}
+      {allowed && state === "error" && <ErrorWithRetry message="Couldn't load capture status." onRetry={retry} />}
+      {allowed && state === "loaded" && (
         <>
           <div className="fb-home-card-headline">
             <span className="num">{totalCount}</span>
@@ -382,14 +389,16 @@ function MiniSparkline({ points }: { points: { total_amount: string }[] }) {
 }
 
 function FinanceCard() {
-  const { show } = useAppState();
+  const { show, askRole } = useAppState();
   const { tx } = useI18n();
+  const allowed = canOpen("finance", askRole);
   const [data, setData] = useState<FinanceSummaryResponse | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
   const retry = () => setReloadToken((t) => t + 1);
 
   useEffect(() => {
+    if (!allowed) return;
     let active = true;
     const run = async () => {
       setState("loading");
@@ -402,7 +411,7 @@ function FinanceCard() {
     };
     void run();
     return () => { active = false; };
-  }, [reloadToken]);
+  }, [allowed, reloadToken]);
 
   return (
     <CardShell
@@ -412,9 +421,10 @@ function FinanceCard() {
       onClick={() => show("finance")}
       icon={<path d="M4 19V9M10 19V5M16 19v-7M22 19H2" />}
     >
-      {state === "loading" && <CardSkeleton />}
-      {state === "error" && <ErrorWithRetry message="Couldn't load financial data." onRetry={retry} />}
-      {state === "loaded" && data && (
+      {!allowed && <RestrictedNote label="Finance, owner or compliance role required" />}
+      {allowed && state === "loading" && <CardSkeleton />}
+      {allowed && state === "error" && <ErrorWithRetry message="Couldn't load financial data." onRetry={retry} />}
+      {allowed && state === "loaded" && data && (
         <>
           <div className="fb-home-card-headline"><span className="num">{formatRm(Number(data.outstanding_ar) || 0)}</span></div>
           <div className="fb-home-card-sub">{tx("Outstanding receivables")}</div>

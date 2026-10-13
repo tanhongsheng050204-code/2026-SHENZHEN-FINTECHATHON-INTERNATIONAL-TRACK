@@ -201,9 +201,9 @@ def authenticate(db: Session, key: str) -> tuple[AuthPrincipal, str, frozenset[s
         .order_by(WorkflowAuditEntry.id)
     )
     if db.bind is not None and db.bind.dialect.name == "postgresql":
-        from app.db import set_worker_context
+        from app.db import set_worker_context, trusted_bind
 
-        with Session(bind=db.get_bind()) as worker:
+        with Session(bind=trusted_bind(db)) as worker:
             set_worker_context(worker, actor_ref="api-key-lookup")
             rows = list(worker.scalars(query).all())
             worker.expunge_all()

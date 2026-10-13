@@ -58,9 +58,9 @@ def _rows(db: Session):
         EInvoiceRecord.paid_at.is_not(None),
     )
     if db.bind is not None and db.bind.dialect.name == "postgresql":
-        from app.db import set_worker_context
+        from app.db import set_worker_context, trusted_bind
 
-        with Session(bind=db.get_bind()) as worker:
+        with Session(bind=trusted_bind(db)) as worker:
             set_worker_context(worker, actor_ref="benchmarks")
             return list(worker.execute(query).all())
     return list(db.execute(query).all())
@@ -79,9 +79,9 @@ def _per_company(db: Session) -> dict[str, float]:
 def _worker(db: Session):
     """A worker session on PostgreSQL (the release lives with the default company)."""
     if db.bind is not None and db.bind.dialect.name == "postgresql":
-        from app.db import set_worker_context
+        from app.db import set_worker_context, trusted_bind
 
-        worker = Session(bind=db.get_bind())
+        worker = Session(bind=trusted_bind(db))
         set_worker_context(worker, actor_ref="benchmarks")
         return worker
     return None
