@@ -159,7 +159,7 @@ function IncidentPanel({ incident, onClose, onChanged }: { incident: Incident; o
       <section className="rc-section">
         <h3>{tx("Details")}</h3>
         <dl className="rc-attrs">
-          <dt>{tx("Status")}</dt><dd><span className={"rc-chip " + (incident.status === "open" ? "is-red" : "is-green")}>{incident.status === "open" ? tx("Open") : tx("Closed")}</span></dd>
+          <dt>{tx("Status")}</dt><dd><span className={"rc-chip " + (incident.status === "open" ? "is-red" : "is-green")}>{incident.status === "open" ? tx("Still open") : tx("Closed")}</span></dd>
           <dt>{tx("Detected on")}</dt><dd>{day(incident.detected_on)}</dd>
           <dt>{tx("Data involved")}</dt><dd><div className="rc-chips">{incident.data_kinds.map((k) => <span key={k} className="rc-chip is-plain">{tx(DATA[k])}</span>)}</div></dd>
           <dt>{tx("People affected")}</dt><dd>{incident.people_affected.toLocaleString("en-MY")}</dd>
@@ -312,7 +312,7 @@ export default function SecurityActivity() {
                     <li key={i.id}>
                       <div className="rc-list-main">
                         <strong>{tx(KINDS[i.kind])}</strong>
-                        <span><span className={"rc-chip " + (i.status === "open" ? "is-red" : "is-green")}>{i.status === "open" ? tx("Open") : tx("Closed")}</span> {tx("{done} of {n} steps", { done, n: required })} · {day(i.detected_on)}</span>
+                        <span><span className={"rc-chip " + (i.status === "open" ? "is-red" : "is-green")}>{i.status === "open" ? tx("Still open") : tx("Closed")}</span> {tx("{done} of {n} steps", { done, n: required })} · {day(i.detected_on)}</span>
                       </div>
                       <button type="button" className="rc-mini" onClick={() => setPanel(i.id)}>{tx("Open")}</button>
                     </li>
