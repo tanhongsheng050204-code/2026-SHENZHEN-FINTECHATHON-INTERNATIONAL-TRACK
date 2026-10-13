@@ -12,6 +12,10 @@ import { Desks } from "../components/landing/Desks";
 import { ChainProof } from "../components/landing/ChainProof";
 import { FeatureGrid } from "../components/landing/FeatureGrid";
 import { PlatformTabs } from "../components/landing/PlatformTabs";
+import { AgentRoute } from "../components/landing/AgentRoute";
+import { PrivacyScan } from "../components/landing/PrivacyScan";
+import { PhotoBanner, PhotoStrip } from "../components/landing/Photos";
+import "../components/landing/Story.css";
 import "./Landing.css";
 import { CookieConsentBanner, SupportWidget } from "../components/MarketingWidgets";
 
@@ -147,9 +151,15 @@ export default function Landing() {
         </div>
       </header>
 
+      <section className="lv-frame" aria-labelledby="lv-who-title">
+        <h2 id="lv-who-title" className="lv-two-tone"><span>Made for the businesses on every street.</span> Shops, online sellers and importers that run on invoices, stock and a thin cash buffer.</h2>
+        <PhotoStrip />
+      </section>
+
       <section className="lv-frame" aria-labelledby="lv-sources-title">
         <h2 id="lv-sources-title" className="lv-two-tone"><span>Reads what you already have.</span> Bank files, bills, payroll and e-invoices, with names and amounts protected before any AI sees them.</h2>
         <SourcesGrid />
+        <PrivacyScan />
       </section>
 
       <section className="lv-frame" id="landing-product" aria-labelledby="lx-product-title">
@@ -159,7 +169,14 @@ export default function Landing() {
 
       <section className="lv-frame" id="landing-platform" aria-labelledby="lv-platform-title">
         <h2 id="lv-platform-title" className="lv-two-tone"><span>Work together on the money.</span> Collections, approvals, automations and your own AI tool, all on the same records.</h2>
+        <img className="lv-wide-photo" src="/photos/team-review.webp" alt="Two colleagues look at a laptop together in an office" loading="lazy" decoding="async" style={{ objectPosition: "50% 35%" }} />
+        <p className="lv-wide-credit">Illustrative photo from Unsplash by Vitaly Gariev.</p>
         <PlatformTabs />
+      </section>
+
+      <section className="lv-frame" id="landing-agents" aria-labelledby="lv-agents-title">
+        <h2 id="lv-agents-title" className="lv-two-tone"><span>Ask once. The right agents answer.</span> A supervisor sends each question to the agents that cover it, and everything they prepare waits in your review inbox.</h2>
+        <AgentRoute />
       </section>
 
       <section className="lv-frame" aria-labelledby="lv-grid-title">
@@ -171,6 +188,11 @@ export default function Landing() {
         <h2 id="lv-desks-title" className="lv-two-tone"><span>Every position has a desk.</span> Agents prepare the work for each role. People decide, and money always needs two of them.</h2>
         <Desks />
       </section>
+
+      <PhotoBanner src="/photos/petaling-street.webp" alt="Petaling Street market in Kuala Lumpur at night, under red lanterns" credit="Petaling Street, Kuala Lumpur. Photo: Ravin Rau, Unsplash" pos="50% 40%">
+        <h2>Built for Malaysian small businesses.</h2>
+        <p>Ringgit, LHDN e-invoice checks, PDPA and EPF dates built in. Menus in English, Bahasa Melayu and 中文.</p>
+      </PhotoBanner>
 
       <section className="lx-band" id="landing-security" aria-labelledby="lx-security-title">
         <Guilloche className="lx-band-guilloche" />
