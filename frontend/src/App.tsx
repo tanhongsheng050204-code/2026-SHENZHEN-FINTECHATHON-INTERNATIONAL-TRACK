@@ -1,3 +1,5 @@
+import { useCompanyRecords } from "./lib/companyRecords";
+import { NoRecordsYet } from "./components/NoRecordsYet";
 import { lazy, Suspense, useEffect } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { AppStateProvider, useAppState } from "./lib/appState";
@@ -67,10 +69,15 @@ const Signals = lazy(() => fresh(() => import("./screens/Signals")));
 const CompanySettings = lazy(() => fresh(() => import("./screens/CompanySettings")));
 const SharedView = lazy(() => fresh(() => import("./screens/SharedView")));
 
+// Money pages that would otherwise show the demo company's figures to a company
+// that has none of its own yet.
+const NEEDS_RECORDS = new Set(["home", "cashflow", "analysis", "collections", "signals", "financing", "positions", "inbox", "finance"]);
+
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
   const { identity, loading } = useAuth();
   const isPublic = PUBLIC_SCREENS.includes(screen);
+  const records = useCompanyRecords(identity?.user_id, identity?.role);
 
   useEffect(() => {
     if (identity) setAskRole(identity.role);
@@ -92,6 +99,8 @@ function Screens() {
   if (loading) {
     return <div className="fb-root"><div className="fb-callout">Checking secure session…</div></div>;
   }
+
+  if (identity && records === "none" && NEEDS_RECORDS.has(screen)) return <NoRecordsYet current={screen} />;
 
   switch (screen) {
     case "landing": return <Landing />;

@@ -1,3 +1,4 @@
+import { forgetCompanyRecords } from "../lib/companyRecords";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { ApiError, friendlyLoadError } from "../api/client";
@@ -138,6 +139,8 @@ export function BusinessCsvImportCard() {
     try {
       const result = await commitBusinessCsv(schema, csvText, mappingId);
       if (current !== generation.current) return;
+      // The money pages may now have the company's own figures to show.
+      if (!result.replayed) forgetCompanyRecords();
       setNotice(result.replayed
         ? "This file was already imported. No new records were added."
         : `${result.imported_rows} records imported. ${result.duplicate_rows} existing records skipped.${result.synthetic ? " Synthetic data." : ""}`);

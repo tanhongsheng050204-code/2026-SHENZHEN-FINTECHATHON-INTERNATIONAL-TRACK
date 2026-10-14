@@ -2177,3 +2177,13 @@ html{scroll-behavior:smooth;}
 .fb-recent-menu-delete{flex:none;width:36px;border:0;border-radius:8px;background:transparent;color:var(--ink-soft);cursor:pointer;display:grid;place-items:center}
 .fb-recent-menu-delete:hover{background:var(--danger-soft);color:var(--danger)}
 .fb-recent-menu-delete:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* A company with no records yet: one plain card with the next steps. */
+.dd-norecords{max-width:760px;margin:clamp(1rem,4vh,2.5rem) auto;padding:clamp(1.25rem,3vw,2rem);background:var(--card);border:1px solid var(--line);border-radius:14px}
+.dd-norecords h1{margin:0 0 .5rem;font-size:clamp(1.4rem,2.4vw,1.8rem);letter-spacing:-.03em}
+.dd-norecords>p{margin:0 0 1.1rem;color:var(--ink-soft);line-height:1.6;max-width:62ch}
+.dd-norecords ol{margin:0 0 1.2rem;padding-left:1.2rem;display:flex;flex-direction:column;gap:.7rem}
+.dd-norecords li strong{display:block;color:var(--ink)}
+.dd-norecords li span{color:var(--ink-soft);font-size:.92rem;line-height:1.5}
+.dd-norecords-actions{display:flex;flex-wrap:wrap;gap:.6rem}
+.dd-norecords-note{margin:1.1rem 0 0!important;font-size:.85rem}
