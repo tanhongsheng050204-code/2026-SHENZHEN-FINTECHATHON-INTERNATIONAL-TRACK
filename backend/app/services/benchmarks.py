@@ -52,8 +52,11 @@ def laplace(scale: float, seed: str) -> float:
 
 
 def _rows(db: Session):
+    # Sales invoices only: a validated e-invoice with no customer is the company's own
+    # supplier bill, and when the company paid it says nothing about its customers.
     query = select(EInvoiceRecord.tenant_id, EInvoiceRecord.due_date, EInvoiceRecord.paid_at).where(
         EInvoiceRecord.status == "validated",
+        EInvoiceRecord.buyer_customer_id.is_not(None),
         EInvoiceRecord.due_date.is_not(None),
         EInvoiceRecord.paid_at.is_not(None),
     )

@@ -273,3 +273,57 @@ def test_public_endpoints_are_rate_limited(db):
     limited = public.get("/lender/passports/grant_0000000000000000.0")
     assert limited.status_code == 429
     assert limited.headers["retry-after"].isdigit()
+
+
+def test_facts_on_record_counts_only_the_financing_facts(db, monkeypatch):
+    from app.services import financing_profile
+    from app.stubs.financing import _METRICS, Profile
+
+    real = financing_profile.compute
+
+    def with_extras(*args, **kwargs):
+        profile = real(*args, **kwargs)
+        values = {"annual_revenue": 1, "bank_lines_matched_share": 1, "anchor_programme": 1}
+        return Profile(profile.data_mode, values)
+
+    monkeypatch.setattr(financing_profile, "compute", with_extras)
+    issued = _issue(db)
+    facts = next(m for m in issued["metrics"] if m["key"] == "data_completeness")
+    assert facts["value"] == f"1 of {len(_METRICS)}"
+
+
+def test_audit_pack_reports_bank_matching_for_its_period(db):
+    from decimal import Decimal
+
+    from app.models import BankTransaction, Payable
+
+    def row(model, n, **fields):
+        return model(
+            tenant_id=str(TENANT_A),
+            source_record_id=f"{model.__name__}-{n}",
+            record_hash=f"{n:064d}",
+            batch_id="batch",
+            **fields,
+        )
+
+    def bank(n, day, amount):
+        return row(
+            BankTransaction, n, posted_on=day, description_token="TOK", direction="out",
+            amount=Decimal(amount), balance=None,
+        )
+
+    db.add_all(
+        [
+            bank(1, dt.date(2026, 8, 7), "1480.00"),
+            bank(2, dt.date(2026, 9, 27), "125.00"),
+            row(
+                Payable, 1, supplier_id=1, bill_no="B1", amount=Decimal("1480.00"),
+                currency="MYR", fx_rate=Decimal("1"), amount_myr=Decimal("1480.00"),
+                due_date=dt.date(2026, 8, 7), status="paid",
+            ),
+        ]
+    )
+    db.commit()
+    pack = _client(db, UserRole.FINANCE_OPS).post("/audit-packs", json={"period": "2026-Q3"})
+    item = next(i for i in pack.json()["pack"]["items"] if i["key"] == "reconciliation_status")
+    assert item["description"].startswith("1 of 2 bank lines match a record")

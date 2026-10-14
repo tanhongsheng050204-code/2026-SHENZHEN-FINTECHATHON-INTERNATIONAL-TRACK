@@ -29,6 +29,7 @@ from app.schemas import UserRole
 from app.services import (
     agent_runtime,
     bank_matching,
+    business_day,
     cashflow,
     cashflow_engine,
     einvoice_readiness,
@@ -57,10 +58,12 @@ _ROLES = {
 _PHRASES = {
     "bank_meeting": r"\b(prepare (me |us )?for (the |a )?bank meeting|bank pack|loan meeting)\b"
     r"|银行会谈|银行会议|贷款会谈",
-    "chase_late_payers": r"\b(chase (the )?late payers|chase (the )?overdue|who owes us)\b"
+    "chase_late_payers": r"\b(chase (the )?late payers|chase (the )?overdue|who owes us"
+    r"|which customers (are|is) (overdue|late)|overdue customers|who (is|are) (overdue|late)"
+    r"|who has(n't| not) paid)\b"
     r"|催收|催款|谁欠我们",
     "pay_everyone": r"\b(can (i|we) pay everyone this month|can (i|we) make payroll)\b"
-    r"|付清所有款项|发得出工资|能付工资",
+    r"|付清所有款项|发得出工资|能付工资|能发工资|发工资",
     "month_end": r"\b(close the month|month[ -]end( checklist)?)\b|月结|月末结账",
 }
 _ZERO = Decimal("0.00")
@@ -84,7 +87,7 @@ def _money(amount: Decimal) -> str:
 
 
 def _forecast(db, principal, *, horizon=90):
-    today = dt.date.today()
+    today = _today(db, principal.tenant_id)
     basis = cashflow.basis_for(db, principal, today)
     return basis, cashflow_engine.build_forecast(basis, horizon_days=horizon, as_of=today)
 
@@ -390,12 +393,12 @@ def _pay_everyone(db, principal):
     return steps, [], "cashflow", forecast.data_mode
 
 
-def _today() -> dt.date:
-    return dt.date.today()
+def _today(db=None, tenant_id=None) -> dt.date:
+    return business_day.today(db, tenant_id)
 
 
 def _reconciliation_step(db, tenant_id: str):
-    result = bank_matching.match(db, tenant_id, _today())
+    result = bank_matching.match(db, tenant_id, _today(db, tenant_id))
     if not result.lines:
         return _step(
             "Bank reconciliation",

@@ -143,7 +143,7 @@ def test_matching_feeds_the_scorecard_and_the_month_end_check(db, monkeypatch):
     )
     db.commit()
     owner = principal(UserRole.OWNER_DIRECTOR, tenant_id=__import__("uuid").UUID(TENANT))
-    monkeypatch.setattr(playbooks, "_today", lambda: AS_OF)
+    monkeypatch.setattr(playbooks, "_today", lambda *args: AS_OF)
 
     values = financing_profile.compute(
         db, TENANT, type("F", (), {"data_mode": "live", "as_of": AS_OF, "shortfall": None})()

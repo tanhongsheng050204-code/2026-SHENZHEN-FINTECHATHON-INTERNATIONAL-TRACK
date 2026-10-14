@@ -1,5 +1,3 @@
-import datetime as dt
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -16,7 +14,7 @@ from app.contracts.financing import (
 from app.db import get_db
 from app.models import SyntheticTenantSeed
 from app.schemas import UserRole
-from app.services import cashflow_engine, financing_profile
+from app.services import business_day, cashflow_engine, financing_profile
 from app.services.cashflow import basis_for
 from app.stubs import financing as stub
 
@@ -27,7 +25,7 @@ _PACK_ROLES = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR)
 
 
 def _profile(db, principal: AuthPrincipal) -> stub.Profile:
-    today = dt.date.today()
+    today = business_day.today(db, principal.tenant_id)
     forecast = cashflow_engine.build_forecast(
         basis_for(db, principal, today), horizon_days=90, as_of=today
     )
@@ -63,7 +61,7 @@ def financing_scorecard(
     db: Session = Depends(get_db),
 ) -> ScorecardResponse:
     """A points scorecard a lender can read line by line, on the same facts as the matches."""
-    today = dt.date.today()
+    today = business_day.today(db, principal.tenant_id)
     forecast = cashflow_engine.build_forecast(
         basis_for(db, principal, today), horizon_days=90, as_of=today
     )

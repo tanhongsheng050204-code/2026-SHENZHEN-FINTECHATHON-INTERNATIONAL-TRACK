@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
-from app.models import Base, EInvoiceRecord, Tenant
+from app.models import Base, Customer, EInvoiceRecord, Tenant
 from app.services import benchmarks
 from tests.auth_support import TENANT_A
 
@@ -28,10 +28,17 @@ def db():
     return session
 
 
-def _company(db, days_late: list[int], tenant: str | None = None) -> str:
+def _company(db, days_late: list[int], tenant: str | None = None, *, bills: bool = False) -> str:
+    """Paid sales e-invoices to one customer; bills=True records them as the company's own
+    supplier bills instead (no customer), which say nothing about how customers pay."""
     tenant = tenant or str(uuid.uuid4())
     if db.get(Tenant, tenant) is None:
         db.add(Tenant(id=tenant, slug=f"t-{tenant[:8]}", name="SYNTHETIC peer"))
+    customer = None
+    if not bills:
+        customer = Customer(tenant_id=tenant, canonical_name="Buyer", normalized_name="buyer")
+        db.add(customer)
+        db.flush()
     for n, late in enumerate(days_late):
         due = TODAY - dt.timedelta(days=60 + n)
         db.add(
@@ -42,6 +49,7 @@ def _company(db, days_late: list[int], tenant: str | None = None) -> str:
                 status="validated",
                 due_date=due,
                 paid_at=due + dt.timedelta(days=late),
+                buyer_customer_id=customer.id if customer else None,
             )
         )
     db.commit()
@@ -127,3 +135,12 @@ def test_the_release_is_kept_on_the_chain_as_figures_only(db):
     )
     assert event.resource_id == TODAY.isoformat()
     assert set(event.event_payload) == {"metric", "peer_value", "noise_scale", "epsilon"}
+
+
+def test_the_company_s_own_paid_bills_are_not_its_customers_paying(db):
+    _company(db, [3, 40, 40], str(TENANT_A), bills=True)
+    for late in (5, 15, 20, 25, 30):
+        _company(db, [late])
+
+    report = benchmarks.report(db, str(TENANT_A), TODAY)
+    assert report.metrics[0].your_value is None

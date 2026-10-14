@@ -101,6 +101,11 @@ def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal]]]:
 
 def match(db, tenant_id: str, as_of: dt.date) -> Result:
     start, end = last_month(as_of)
+    return match_between(db, tenant_id, start, end)
+
+
+def match_between(db, tenant_id: str, start: dt.date, end: dt.date) -> Result:
+    """Bank lines posted from start up to (not including) end, matched to records."""
     lines = db.scalars(
         select(models.BankTransaction)
         .where(

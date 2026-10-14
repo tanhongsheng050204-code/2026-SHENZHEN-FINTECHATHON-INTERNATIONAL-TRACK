@@ -16,7 +16,6 @@ import {
   type EInvoiceUpdatePayload,
 } from "../api/client";
 import { isOverdue, openEinvoiceDocument } from "./Einvoice";
-import { QrCode } from "../components/QrCode";
 
 function RealEinvoiceDetail({ recordId }: { recordId: number }) {
   const { askRole, show } = useAppState();
@@ -334,11 +333,10 @@ function RealEinvoiceDetail({ recordId }: { recordId: number }) {
 
       {showUinPanel && (
         <div className="fb-uin-panel" style={{ maxWidth: "920px", margin: "1.4rem auto 0" }}>
-          <QrCode value={`https://myinvois.hasil.gov.my/${displayUin}`} label="MyInvois verification QR code" />
           <div>
-            <div className="fb-eyebrow" style={{ marginBottom: ".3rem" }}>Verified by LHDN MyInvois (Sandbox)</div>
+            <div className="fb-eyebrow" style={{ marginBottom: ".3rem" }}>MyInvois UIN on record</div>
             <div className="fb-uin-code">UIN {displayUin}</div>
-            <div className="fb-sans" style={{ fontSize: ".68rem", color: "var(--ink-soft)", marginTop: ".3rem" }}>Validated and cryptographically signed by IRBM MyInvois &bull; Scan QR code to verify.</div>
+            <div className="fb-sans" style={{ fontSize: ".68rem", color: "var(--ink-soft)", marginTop: ".3rem" }}>Recorded with this invoice. DuitDuit does not submit to MyInvois; check the UIN on the MyInvois portal.</div>
           </div>
         </div>
       )}
@@ -757,11 +755,10 @@ export default function EinvoiceDetail() {
 
       {showUinPanel && (
         <div className="fb-uin-panel" style={{ maxWidth: "920px", margin: "1.4rem auto 0" }}>
-          <QrCode value={`https://myinvois.hasil.gov.my/${displayUin}`} label="MyInvois verification QR code" />
           <div>
-            <div className="fb-eyebrow" style={{ marginBottom: ".3rem" }}>Verified by LHDN MyInvois (Sandbox)</div>
+            <div className="fb-eyebrow" style={{ marginBottom: ".3rem" }}>MyInvois UIN on record</div>
             <div className="fb-uin-code">UIN {displayUin}</div>
-            <div className="fb-sans" style={{ fontSize: ".68rem", color: "var(--ink-soft)", marginTop: ".3rem" }}>Validated and cryptographically signed by IRBM MyInvois &bull; Scan QR code to verify.</div>
+            <div className="fb-sans" style={{ fontSize: ".68rem", color: "var(--ink-soft)", marginTop: ".3rem" }}>Recorded with this invoice. DuitDuit does not submit to MyInvois; check the UIN on the MyInvois portal.</div>
           </div>
         </div>
       )}

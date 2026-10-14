@@ -16,7 +16,7 @@ from app.contracts.cashflow import (
 from app.contracts.common import JobFunction
 from app.db import get_db
 from app.schemas import UserRole
-from app.services import cashflow_engine, forecast_check, payment_model
+from app.services import business_day, cashflow_engine, forecast_check, payment_model
 from app.services.cashflow import basis_for
 from app.services.cashflow_engine import UnknownEventError
 
@@ -39,7 +39,7 @@ def cashflow_forecast(
     db: Session = Depends(get_db),
 ) -> ForecastResponse:
     _check_horizon(horizon_days)
-    day = as_of or dt.date.today()
+    day = as_of or business_day.today(db, principal.tenant_id)
     forecast = cashflow_engine.build_forecast(
         basis_for(db, principal, day), horizon_days=horizon_days, as_of=day
     )
@@ -54,7 +54,7 @@ def cashflow_forecast_check(
     principal: AuthPrincipal = Depends(require_roles(*_READ_ROLES)),
     db: Session = Depends(get_db),
 ) -> ForecastCheckResponse:
-    data_mode = basis_for(db, principal, dt.date.today()).data_mode
+    data_mode = basis_for(db, principal, business_day.today(db, principal.tenant_id)).data_mode
     return forecast_check.report(db, str(principal.tenant_id), data_mode)
 
 
@@ -64,7 +64,7 @@ def cashflow_payment_model(
     db: Session = Depends(get_db),
 ) -> PaymentModelResponse:
     """How late each customer usually pays, learned from paid e-invoices."""
-    data_mode = basis_for(db, principal, dt.date.today()).data_mode
+    data_mode = basis_for(db, principal, business_day.today(db, principal.tenant_id)).data_mode
     return payment_model.report(db, str(principal.tenant_id), data_mode)
 
 
@@ -74,7 +74,7 @@ def cashflow_scenario(
     principal: AuthPrincipal = Depends(require_roles(*_SCENARIO_ROLES)),
     db: Session = Depends(get_db),
 ) -> ForecastResponse:
-    day = request.as_of or dt.date.today()
+    day = request.as_of or business_day.today(db, principal.tenant_id)
     try:
         return cashflow_engine.build_forecast(
             basis_for(db, principal, day),
@@ -94,5 +94,5 @@ def cashflow_signals(
     db: Session = Depends(get_db),
 ) -> CashSignalsResponse:
     _check_horizon(horizon_days)
-    basis = basis_for(db, principal, dt.date.today())
+    basis = basis_for(db, principal, business_day.today(db, principal.tenant_id))
     return cashflow_engine.list_signals(basis, horizon_days=horizon_days, job_function=job_function)

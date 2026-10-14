@@ -77,6 +77,21 @@ _GOAL = re.compile(
     r"make\s+sure|find)\b",
     re.IGNORECASE,
 )
+# Questions whose full answer is a page: the financing matches with their reasons, and
+# the e-invoice readiness checks. A search of the records finds unrelated text for them.
+_TOPIC_SCREENS = (
+    (
+        re.compile(
+            r"^\s*(which|what)\b.*\b(loans?|financing|credit lines?)\b|哪些贷款|哪些融资",
+            re.IGNORECASE,
+        ),
+        "financing",
+    ),
+    (
+        re.compile(r"^\s*(which|what)\b.*\b(myinvois|e-?invoices?)\b", re.IGNORECASE),
+        "einvoice",
+    ),
+)
 _BRIEFING = re.compile(
     r"\b(briefing|brief me|what needs me|needs? my attention|what should i do|"
     r"what do i need to do|on my plate|good morning)\b",
@@ -243,6 +258,9 @@ def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
             message=f"Preparing {playbooks.TITLES[playbook].lower()}. "
             "External actions will wait for review in the inbox.",
         )
+    for pattern, screen in _TOPIC_SCREENS:
+        if pattern.search(text):
+            return _navigate(principal, screen, "rules")
     if _GOAL.search(text) and not agent_runtime.plan(text).empty:
         return _run_goal(principal, text, "rules")
     return None

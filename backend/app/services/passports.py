@@ -42,7 +42,7 @@ from app.contracts.passports import (
     passport_digest,
 )
 from app.models import EInvoiceRecord, Tenant, WorkflowAuditEntry
-from app.services import cashflow_engine, financing_profile
+from app.services import bank_matching, business_day, cashflow_engine, financing_profile
 from app.services.cashflow import basis_for
 from app.services.workflow_audit import verify_workflow_chain, write_workflow_event
 from app.stubs.financing import _METRICS as FINANCING_FACTS
@@ -84,10 +84,13 @@ def _company(db, tenant_id: str, data_mode: DataMode) -> str:
 
 def _metrics(db, principal: AuthPrincipal) -> tuple[DataMode, list[PassportMetric]]:
     tenant_id = str(principal.tenant_id)
-    today = dt.date.today()
+    today = business_day.today(db, tenant_id)
     basis = basis_for(db, principal, today)
     forecast = cashflow_engine.build_forecast(basis, horizon_days=90, as_of=today)
     facts = financing_profile.compute(db, tenant_id, forecast).values
+    # The profile also carries working figures (bank matching, programmes on record);
+    # count only the facts the financing rules read.
+    on_record = sum(1 for key in FINANCING_FACTS if facts.get(key) is not None)
     shortfall = forecast.shortfall
     invoices = db.scalar(select(func.count()).where(EInvoiceRecord.tenant_id == tenant_id)) or 0
     validated = (
@@ -146,7 +149,7 @@ def _metrics(db, principal: AuthPrincipal) -> tuple[DataMode, list[PassportMetri
         metric(
             "data_completeness",
             "Financing facts on record",
-            f"{len(facts)} of {len(FINANCING_FACTS)}",
+            f"{on_record} of {len(FINANCING_FACTS)}",
             "financing:profile",
             "Financing profile",
         ),
@@ -322,6 +325,23 @@ def _item(key: str, label: str, description: str, data: dict) -> AuditPackItem:
     )
 
 
+def _reconciliation(db, tenant_id: str, start: dt.date, end: dt.date) -> AuditPackItem:
+    result = bank_matching.match_between(db, tenant_id, start, end + dt.timedelta(days=1))
+    if not result.lines:
+        text = "Not measured: no bank lines in the period"
+    else:
+        text = (
+            f"{result.matched} of {result.lines} bank lines match a record "
+            f"(same amount, within {bank_matching.WINDOW_DAYS} days)"
+        )
+    return _item(
+        "reconciliation_status",
+        "Reconciliation status",
+        text,
+        {"lines": result.lines, "matched": result.matched},
+    )
+
+
 def _pack_items(db, tenant_id: str, start: dt.date, end: dt.date) -> list[AuditPackItem]:
     bank = getattr(models, "BankTransaction", None)
     lines = []
@@ -371,12 +391,7 @@ def _pack_items(db, tenant_id: str, start: dt.date, end: dt.date) -> list[AuditP
                 )
             },
         ),
-        _item(
-            "reconciliation_status",
-            "Reconciliation status",
-            "Not measured: bank-to-record matching is not built yet",
-            {},
-        ),
+        _reconciliation(db, tenant_id, start, end),
         _item(
             "audit_chain_proof",
             "Audit-chain proof",

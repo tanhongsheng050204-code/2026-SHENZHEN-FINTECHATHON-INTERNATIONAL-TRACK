@@ -25,7 +25,7 @@ from app.contracts.common import AutonomyLevel, DataMode, EvidenceRef, JobFuncti
 from app.contracts.positions import CashContribution, PositionWorkspace, SkillResult
 from app.models import WorkflowAuditEntry
 from app.schemas import UserRole
-from app.services import cashflow, cashflow_engine, financing_profile, review_inbox
+from app.services import business_day, cashflow, cashflow_engine, financing_profile, review_inbox
 from app.services.workflow_audit import chain_scalars, write_workflow_event
 from app.stubs import agents as manifests
 from app.stubs import inbox as stub_inbox
@@ -45,7 +45,8 @@ class AutonomyError(ValueError):
 def is_live(db, principal: AuthPrincipal) -> bool:
     if db is None:
         return False
-    return cashflow.basis_for(db, principal, dt.date.today()).data_mode == DataMode.LIVE
+    day = business_day.today(db, principal.tenant_id)
+    return cashflow.basis_for(db, principal, day).data_mode == DataMode.LIVE
 
 
 def inbox_for(db, principal: AuthPrincipal, job_function: JobFunction | None):
@@ -343,7 +344,7 @@ def _computed(db, principal: AuthPrincipal, forecast: ForecastResponse) -> dict[
 
 def workspace(db, principal: AuthPrincipal, job_function: JobFunction) -> PositionWorkspace:
     tenant_id = str(principal.tenant_id)
-    today = dt.date.today()
+    today = business_day.today(db, tenant_id)
     basis = cashflow.basis_for(db, principal, today)
     forecast = cashflow_engine.build_forecast(basis, horizon_days=90, as_of=today)
     signals = cashflow_engine.list_signals(basis, horizon_days=90, job_function=job_function)

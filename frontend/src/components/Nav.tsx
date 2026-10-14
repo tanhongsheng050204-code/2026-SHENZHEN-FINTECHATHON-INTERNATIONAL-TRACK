@@ -267,7 +267,7 @@ export function AppTopBar({ current }: { current: Screen }) {
   const { show, askRole, displayName } = useAppState();
   const { openAsk, openPalette } = useUiChrome();
   const { identity, signOut } = useAuth();
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const [profileOpen, setProfileOpen] = useState(false);
   const activeRole = identity?.role ?? askRole;
   const email = identity?.email ?? "Authenticated user";
@@ -284,14 +284,14 @@ export function AppTopBar({ current }: { current: Screen }) {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7" /><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" /></svg>
             </span>
             <span className="fb-topbar-sep">/</span>
-            <span className="fb-topbar-current">{PAGE_TITLES[current] ?? current}</span>
+            <span className="fb-topbar-current">{tx(PAGE_TITLES[current] ?? current)}</span>
           </>
         )}
       </div>
 
       <button className="fb-topbar-search" type="button" onClick={openPalette}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-        <span>Search pages and actions…</span>
+        <span>{tx("Search pages and actions…")}</span>
         <span className="fb-topbar-kbd">⌘K</span>
       </button>
 

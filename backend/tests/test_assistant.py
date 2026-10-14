@@ -154,3 +154,12 @@ def test_each_command_is_audited_without_its_words():
     )
     assert row.event_payload["kind"] == "decide"
     assert "Customer C" not in str(row.event_payload)
+
+
+def test_the_suggested_questions_reach_the_right_place():
+    # The chips on Ask DuitDuit and Today must never fall through to an unrelated search.
+    assert _ask("Which loans can we apply for?")["screen"] == "financing"
+    assert _ask("Which invoices need fixes before MyInvois submission?")["screen"] == "einvoice"
+    assert _ask("Which customers are overdue?")["playbook"] == "chase_late_payers"
+    assert _ask("这个月能发工资吗？")["playbook"] == "pay_everyone"
+    assert _ask("What is overdue for Luma Retail?")["kind"] == "answer"

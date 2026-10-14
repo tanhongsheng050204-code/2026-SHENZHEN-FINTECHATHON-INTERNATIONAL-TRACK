@@ -1,8 +1,6 @@
 """Team work around the review inbox and receivables: comments and @mentions, the
 collections board, automations, saved views and chat notifications."""
 
-import datetime as dt
-
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -41,6 +39,7 @@ from app.schemas import UserRole
 from app.services import (
     api_keys,
     automations,
+    business_day,
     chat_notify,
     collections,
     receivable_holds,
@@ -57,6 +56,10 @@ _MONEY_WORK = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR)
 
 def _refuse(error) -> HTTPException:
     return HTTPException(status_code=error.status_code, detail=error.code)
+
+
+def _day(db, principal: AuthPrincipal):
+    return business_day.today(db, principal.tenant_id)
 
 
 @router.get("/review-inbox/{action_id}/comments", response_model=CommentsResponse)
@@ -100,7 +103,7 @@ def collections_board(
     principal: AuthPrincipal = Depends(require_roles(*_MONEY_READ)),
     db: Session = Depends(get_db),
 ) -> CollectionsBoardResponse:
-    return collections.board(db, principal, dt.date.today())
+    return collections.board(db, principal, _day(db, principal))
 
 
 @router.post("/collections/{ref}/reminder", response_model=ReminderProposalResponse)
@@ -110,7 +113,7 @@ def collections_reminder(
     db: Session = Depends(get_db),
 ) -> ReminderProposalResponse:
     try:
-        action_id = collections.propose_reminder(db, principal, ref, dt.date.today())
+        action_id = collections.propose_reminder(db, principal, ref, _day(db, principal))
     except collections.BoardError as error:
         raise _refuse(error) from error
     return ReminderProposalResponse(data_mode=DataMode.LIVE, action_id=action_id)
@@ -122,7 +125,7 @@ def collections_holds(
     db: Session = Depends(get_db),
 ) -> HoldsResponse:
     return HoldsResponse(
-        data_mode=DataMode.LIVE, holds=collections.holds(db, principal, dt.date.today())
+        data_mode=DataMode.LIVE, holds=collections.holds(db, principal, _day(db, principal))
     )
 
 
@@ -134,7 +137,7 @@ def set_collections_hold(
     db: Session = Depends(get_db),
 ) -> dict:
     try:
-        collections.set_hold(db, principal, target, request, dt.date.today())
+        collections.set_hold(db, principal, target, request, _day(db, principal))
     except (collections.BoardError, receivable_holds.HoldError) as error:
         raise _refuse(error) from error
     return {"target": target, "kind": request.kind}
@@ -194,7 +197,7 @@ def run_automations(
 ) -> AutomationRunResponse:
     return AutomationRunResponse(
         data_mode=DataMode.LIVE,
-        proposals=automations.run(db, str(principal.tenant_id), dt.date.today()),
+        proposals=automations.run(db, str(principal.tenant_id), _day(db, principal)),
     )
 
 

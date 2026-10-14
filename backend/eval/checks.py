@@ -1380,7 +1380,7 @@ def benchmark_needs_five_companies() -> Result:
     companies that one company's figure could be worked out."""
     import uuid
 
-    from app.models import EInvoiceRecord
+    from app.models import Customer, EInvoiceRecord
     from app.services import benchmarks
 
     db = _database()
@@ -1389,6 +1389,9 @@ def benchmark_needs_five_companies() -> Result:
         tenant = tenant or str(uuid.uuid4())
         if db.get(Tenant, tenant) is None:
             db.add(Tenant(id=tenant, slug=f"t-{tenant[:8]}", name="SYNTHETIC peer"))
+        buyer = Customer(tenant_id=tenant, canonical_name="Buyer", normalized_name="buyer")
+        db.add(buyer)
+        db.flush()
         due = TODAY - dt.timedelta(days=60)
         db.add(
             EInvoiceRecord(
@@ -1398,6 +1401,7 @@ def benchmark_needs_five_companies() -> Result:
                 status="validated",
                 due_date=due,
                 paid_at=due + dt.timedelta(days=late),
+                buyer_customer_id=buyer.id,
             )
         )
         db.commit()

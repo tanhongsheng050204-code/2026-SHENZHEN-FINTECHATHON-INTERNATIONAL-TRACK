@@ -14,7 +14,7 @@ from app import models
 from app.auth.principal import AuthPrincipal
 from app.contracts.assistant import Briefing, BriefingLine
 from app.schemas import UserRole
-from app.services import cashflow, cashflow_engine, external_grants
+from app.services import business_day, cashflow, cashflow_engine, external_grants
 from app.services.live_agents import _sees_exact
 
 _CASH_ROLES = (UserRole.FINANCE_OPS, UserRole.OWNER_DIRECTOR, UserRole.COMPLIANCE)
@@ -51,7 +51,7 @@ def _inbox_line(db, principal: AuthPrincipal, exact: bool) -> BriefingLine:
 def _cash_line(db, principal: AuthPrincipal, exact: bool) -> BriefingLine | None:
     if principal.role not in _CASH_ROLES:
         return None
-    today = dt.date.today()
+    today = business_day.today(db, principal.tenant_id)
     basis = cashflow.basis_for(db, principal, today)
     forecast = cashflow_engine.build_forecast(basis, horizon_days=90, as_of=today)
     shortfall = forecast.shortfall
@@ -143,7 +143,9 @@ def _alerts_line(db, principal: AuthPrincipal, exact: bool) -> BriefingLine | No
     jobs = set(getattr(principal, "job_functions", ()) or ())
     if principal.role == UserRole.OWNER_DIRECTOR:
         jobs.add("owner")
-    fired = alerts.fired_today(db, str(principal.tenant_id), jobs, dt.date.today())
+    fired = alerts.fired_today(
+        db, str(principal.tenant_id), jobs, business_day.today(db, principal.tenant_id)
+    )
     if not fired:
         return None
     texts = [

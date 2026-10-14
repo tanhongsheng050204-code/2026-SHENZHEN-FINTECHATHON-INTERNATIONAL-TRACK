@@ -101,7 +101,7 @@ function ProtectedFilePanel() {
       setPreview(await previewUpload(selected));
       setState("protected");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Preview failed.");
+      setMessage(uploadError(error, "Preview failed."));
       setState("idle");
     }
   };
@@ -117,7 +117,7 @@ function ProtectedFilePanel() {
       setState("done");
       if (inputRef.current) inputRef.current.value = "";
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Ingestion failed.");
+      setMessage(uploadError(error, "Ingestion failed."));
       setState("protected");
     }
   };
@@ -170,6 +170,19 @@ function ProtectedFilePanel() {
       {state === "done" && <button className="fb-btn fb-btn-outline" type="button" onClick={clear}>Upload another</button>}
     </section>
   );
+}
+
+// The server answers with short codes; say what happened and what to do instead.
+const UPLOAD_ERRORS: Record<string, string> = {
+  unsupported_csv_schema: "This CSV isn't an invoice export. For bank lines, bills, payroll or sales, use Business CSV import below.",
+  file_too_large: "The file is too large. Upload a smaller file.",
+  empty_file: "The file is empty.",
+  invalid_record_type: "This kind of file can't be read here.",
+};
+
+function uploadError(error: unknown, fallback: string): string {
+  const code = error instanceof Error ? error.message : "";
+  return UPLOAD_ERRORS[code] ?? (code && !/^[a-z_]+$/.test(code) ? code : fallback);
 }
 
 const STATUS_PILL_CLASS: Record<ProcessingStatus, string> = {

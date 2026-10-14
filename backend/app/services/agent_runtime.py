@@ -17,7 +17,6 @@ only) and, where Plan 2's guardrails are deployed, its kill switch and budget.
 """
 
 import base64
-import datetime as dt
 import hashlib
 import hmac
 import re
@@ -32,7 +31,14 @@ from app.contracts.agents import AgentRunCreated, AgentRunEvent
 from app.contracts.cashflow import CashSignal, EventShift, ForecastResponse
 from app.contracts.common import DataMode, EvidenceRef
 from app.schemas import UserRole
-from app.services import agent_skills, cashflow, cashflow_engine, financing_profile, review_inbox
+from app.services import (
+    agent_skills,
+    business_day,
+    cashflow,
+    cashflow_engine,
+    financing_profile,
+    review_inbox,
+)
 from app.stubs import agents as manifests
 from app.stubs.financing import matches
 
@@ -333,7 +339,7 @@ def run_events(db, principal: AuthPrincipal, run_id: str) -> list[AgentRunEvent]
     emit("run_started", "supervisor", f"Goal received; routing to {', '.join(chosen)}.")
 
     authorize(db, principal, "cashflow", "forecast")
-    today = dt.date.today()
+    today = business_day.today(db, principal.tenant_id)
     basis = cashflow.basis_for(db, principal, today)
     demo = basis.data_mode == DataMode.STUB
 

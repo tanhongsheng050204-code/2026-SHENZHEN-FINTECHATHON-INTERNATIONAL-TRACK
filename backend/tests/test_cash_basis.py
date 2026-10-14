@@ -264,8 +264,10 @@ def test_live_profile_is_computed_from_the_tenants_records():
 def test_live_agent_run_asks_for_early_payment_and_saves_proposals_once(monkeypatch):
     db = _synthetic_tenant()
     monkeypatch.setattr(agent_runtime, "_external_guard", lambda *a, **k: None)
+    from app.services import business_day
+
     monkeypatch.setattr(
-        agent_runtime.dt, "date", type("D", (dt.date,), {"today": staticmethod(lambda: AS_OF)})
+        business_day.dt, "date", type("D", (dt.date,), {"today": staticmethod(lambda: AS_OF)})
     )
     owner = principal(UserRole.OWNER_DIRECTOR, tenant_id=__import__("uuid").UUID(TENANT))
 
