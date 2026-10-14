@@ -4,6 +4,7 @@ import { useAppState } from "../lib/appState";
 import { useAuth } from "../auth/AuthProvider";
 import { Sidebar, AppTopBar } from "../components/Nav";
 import { TodayHero } from "../components/TodayHero";
+import { FinanceDashboard } from "../components/FinanceDashboard";
 import { PERSONAS } from "../lib/personas";
 import { canOpen } from "../lib/access";
 import { displayCase, formatRm, isPlaceholderName } from "../lib/customerAggregation";
@@ -540,8 +541,10 @@ function greetingLine(t: (key: "home.greeting.morning" | "home.greeting.afternoo
 
 export default function Home() {
   const { t, tx } = useI18n();
-  const { show, sampleBanner, dismissSampleBanner, displayName, askAbout, approvalsCount } = useAppState();
+  const { show, sampleBanner, dismissSampleBanner, displayName, askAbout, approvalsCount, askRole } = useAppState();
   const { identity } = useAuth();
+  // The money roles get the dashboard; everyone else keeps the simpler Today.
+  const seesMoney = canOpen("cashflow", identity?.role ?? askRole);
   const emailFirstName = identity?.email ? identity.email.split("@")[0] : null;
   // A masked address ("d***") is not a name to greet anyone by.
   const derivedName = emailFirstName && !emailFirstName.includes("*") ? emailFirstName.charAt(0).toUpperCase() + emailFirstName.slice(1) : null;
@@ -593,6 +596,15 @@ export default function Home() {
         </div>
       )}
 
+      {seesMoney ? (
+        <div className="fb-page-body">
+          <FinanceDashboard
+            greeting={greetingLine(t, greetingName)}
+            customers={customersState === "loaded" ? customers : null}
+            customersFailed={customersState === "error"}
+          />
+        </div>
+      ) : (
       <div className="fb-page-body th-page">
         <TodayHero greeting={greetingLine(t, greetingName)} />
 
@@ -622,6 +634,7 @@ export default function Home() {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }
