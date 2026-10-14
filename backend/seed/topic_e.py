@@ -198,6 +198,17 @@ def datasets(as_of: date):
                     day(66),
                     "open",
                 ],
+                # The same logistics invoice entered a second time, five days later: the
+                # one thing Unusual activity should find. It falls after the cash gap.
+                [
+                    "SYNTHETIC-LOGISTICS-DUP",
+                    "SYNTHETIC local logistics",
+                    "48300.00",
+                    "MYR",
+                    "1",
+                    day(63),
+                    "open",
+                ],
             ],
         ),
         "purchase_orders_v1": (

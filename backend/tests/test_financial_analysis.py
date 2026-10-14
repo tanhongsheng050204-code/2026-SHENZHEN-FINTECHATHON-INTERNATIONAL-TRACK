@@ -102,7 +102,8 @@ def test_ratios_show_formula_value_and_sources(db):
     ratios = {r.key: r for r in _analysis(db).ratios}
 
     assert ratios["days_to_get_paid"].value == Decimal("46.0")
-    assert ratios["days_to_pay_suppliers"].value == Decimal("42.9")
+    # 53.7 with the duplicate logistics bill still open (it is what Unusual activity finds).
+    assert ratios["days_to_pay_suppliers"].value == Decimal("53.7")
     assert ratios["marketing_return"].value == Decimal("4.21")
     assert ratios["largest_customer_share"].value == Decimal("29.3")
     assert ratios["payroll_share"].value == Decimal("26.9")

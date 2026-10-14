@@ -129,6 +129,38 @@ def _demo_alert_rules(db, tenant_id: str) -> bool:
     return True
 
 
+# Sample items the review inbox shows for the demo story; the reminder send waits on
+# the drafts being approved, so it is not seeded.
+_NOT_SEEDED = {"act_send_reminders"}
+
+
+def _demo_inbox(db, tenant_id: str) -> None:
+    """Give the demo company the same open review items the sample inbox shows.
+
+    Each becomes a real proposal on the company's chain, so it can be approved,
+    edited, rejected and commented on. propose() skips an item that is already open,
+    and the daily demo reset reopens decided ones, so running this again adds nothing.
+    """
+    from app.services import review_inbox
+    from app.stubs.inbox import _INBOX
+
+    for action in _INBOX:
+        if action.id in _NOT_SEEDED:
+            continue
+        review_inbox.propose(
+            db,
+            tenant_id,
+            agent_id=action.agent_id,
+            reviewer=action.reviewer_job_function,
+            title=action.title,
+            summary=action.summary,
+            amount=action.amount,
+            evidence=action.evidence,
+            draft=action.draft,
+            level=action.autonomy_level,
+        )
+
+
 def seed_original_fixtures(db, tenant_id: str) -> bool:
     """Seed the fixtures; False when the alert rules still wait for an owner."""
     tenant = _synthetic_tenant(db, str(tenant_id))
@@ -162,6 +194,7 @@ def seed_original_fixtures(db, tenant_id: str) -> bool:
         )
         if exists is None:
             ingest_canonical_record(db, canonical)
+    _demo_inbox(db, tenant_id)
     return rules_saved
 
 

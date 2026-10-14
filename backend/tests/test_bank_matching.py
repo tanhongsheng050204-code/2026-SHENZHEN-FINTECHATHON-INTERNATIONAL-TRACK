@@ -157,3 +157,25 @@ def test_matching_feeds_the_scorecard_and_the_month_end_check(db, monkeypatch):
     assert bank.status == "attention"
     assert "September 2026: 1 of 2 bank lines match a record" in bank.text
     assert "RM1,250.00 out on 27 Sep" in bank.text
+
+
+def test_the_synthetic_company_has_one_duplicate_bill_to_find(db):
+    from app.services import anomalies, cashflow_engine
+
+    owner = principal(UserRole.OWNER_DIRECTOR, tenant_id=__import__("uuid").UUID(TENANT))
+    for schema, (headers, columns, text) in datasets(AS_OF).items():
+        mapping = save(
+            db,
+            owner,
+            ImportMappingRequest(
+                schema_name=schema, name="Synthetic", headers=headers, column_map=columns
+            ),
+        )
+        commit_import(db, owner, schema, text, mapping.id)
+
+    findings = anomalies.scan(db, TENANT).findings
+    assert [f.kind for f in findings] == ["possible_duplicate"]
+    # The duplicate falls after the gap, so the cash story is unchanged.
+    basis = cash_basis.load(db, TENANT, AS_OF)
+    shortfall = cashflow_engine.build_forecast(basis, horizon_days=90, as_of=AS_OF).shortfall
+    assert (shortfall.day, shortfall.gap) == (23, Decimal("29440.00"))

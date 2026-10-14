@@ -200,3 +200,24 @@ def test_without_an_owner_the_rules_wait_and_the_records_still_arrive():
 
     assert _rules(db) == []
     assert _count(db, TokenizedContent, SYNTHETIC_ID) >= len(SAMPLE_RECORDS)
+
+
+def test_the_demo_company_gets_its_review_inbox_story_once():
+    from app.models import WorkflowAuditEntry
+    from app.services import review_inbox
+
+    db = _db()
+    seed_original_fixtures(db, SYNTHETIC_ID)
+    seed_original_fixtures(db, SYNTHETIC_ID)
+
+    items = {i.action.title: i.action for i in review_inbox._replay(db, SYNTHETIC_ID).values()}
+    assert "Supplier bank-account change (quarantined)" in items
+    assert items["Approve the October payroll run"].autonomy_level.value == "L3"
+    assert items["Review 3 reminder drafts"].draft
+    proposals = db.scalars(
+        select(WorkflowAuditEntry).where(
+            WorkflowAuditEntry.tenant_id == SYNTHETIC_ID,
+            WorkflowAuditEntry.event_type == "agent_proposal_created",
+        )
+    ).all()
+    assert len(proposals) == len(items)  # the second run added nothing
