@@ -1,6 +1,6 @@
 import { useCompanyRecords } from "./lib/companyRecords";
 import { NoRecordsYet } from "./components/NoRecordsYet";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { AppStateProvider, useAppState } from "./lib/appState";
 import { I18nProvider } from "./lib/i18n";
@@ -103,13 +103,13 @@ function Screens() {
   if (identity && records === "none" && NEEDS_RECORDS.has(screen)) return <NoRecordsYet current={screen} />;
 
   switch (screen) {
-    case "landing": return <Landing />;
+    case "landing": return <EnglishOnly><Landing /></EnglishOnly>;
     case "login": return <Login />;
     case "signup": return <Signup />;
     case "onboarding": return <Onboarding />;
-    case "security": return <Security />;
-    case "legal": return <Legal />;
-    case "pricing": return <Pricing />;
+    case "security": return <EnglishOnly><Security /></EnglishOnly>;
+    case "legal": return <EnglishOnly><Legal /></EnglishOnly>;
+    case "pricing": return <EnglishOnly><Pricing /></EnglishOnly>;
     case "changelog": return <Changelog />;
     case "help": return <Help />;
     case "home": return <Home />;
@@ -134,8 +134,13 @@ function Screens() {
     case "activity": return <SecurityActivity />;
     case "signals": return <Signals />;
     case "company": return <CompanySettings />;
-    default: return <Landing />;
+    default: return <EnglishOnly><Landing /></EnglishOnly>;
   }
+}
+
+/** Marketing pages are written in English only; the in-app translator leaves them alone. */
+function EnglishOnly({ children }: { children: ReactNode }) {
+  return <div data-dd-english="" style={{ display: "contents" }}>{children}</div>;
 }
 
 const RouteFallback = (

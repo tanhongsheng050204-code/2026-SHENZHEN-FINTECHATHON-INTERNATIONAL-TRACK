@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import "./FinanceDashboard.css";
 import { useAppState } from "../lib/appState";
+import { dateLocale } from "../lib/dateLocale";
 import { useI18n } from "../lib/i18n";
 import { canOpen } from "../lib/access";
 import { JOB_LABELS } from "../lib/jobFunctions";
@@ -28,12 +29,12 @@ const OPEN = new Set(["pending", "awaiting_second_approval", "edited"]);
 const HORIZONS = [30, 60, 90] as const;
 type Part = "forecast" | "analysis" | "inbox" | "board" | "score";
 
-function shortDate(iso: string) {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+function shortDate(iso: string, locale = "en-GB") {
+  return new Date(iso + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short" });
 }
 
-function longDate(iso: string) {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+function longDate(iso: string, locale = "en-GB") {
+  return new Date(iso + "T00:00:00").toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "short", year: "numeric" });
 }
 
 function addDays(iso: string, days: number) {
@@ -47,7 +48,8 @@ function Loading() {
 }
 
 function CashChart({ forecast }: { forecast: ForecastResponse }) {
-  const { tx } = useI18n();
+  const { tx, lang } = useI18n();
+  const locale = dateLocale(lang);
   const [horizon, setHorizon] = useState<number>(90);
   const [hover, setHover] = useState<number | null>(null);
   const W = 760;
@@ -106,13 +108,13 @@ function CashChart({ forecast }: { forecast: ForecastResponse }) {
               style={{ left: `${(a / W) * 100}%`, width: `${((b - a) / W) * 100}%` }}
               onMouseEnter={() => setHover(i)}
               onFocus={() => setHover(i)}
-              aria-label={`${shortDate(p.date)}: ${tx("Likely")} ${ringgit(p.likely)}`}
+              aria-label={`${shortDate(p.date, locale)}: ${tx("Likely")} ${ringgit(p.likely)}`}
             />
           );
         })}
         {shown && (
           <div className="fd-tip" role="status" style={{ left: `${Math.min(Math.max(left, 3), 97)}%`, transform: left > 60 ? "translateX(calc(-100% - 10px))" : "translateX(10px)" }}>
-            <strong>{tx("Day {n} · {date}", { n: shown.day, date: shortDate(shown.date) })}</strong>
+            <strong>{tx("Day {n} · {date}", { n: shown.day, date: shortDate(shown.date, locale) })}</strong>
             <span>{tx("Likely")} {ringgit(shown.likely)}</span>
             <span className="fd-tip-soft">{tx("Worst")} {ringgit(shown.worst)}</span>
             {below > 0 && <span className="fd-tip-flag">{tx("Still {gap} below your minimum.", { gap: ringgit(String(below)) })}</span>}
@@ -131,7 +133,8 @@ function CashChart({ forecast }: { forecast: ForecastResponse }) {
 
 export function FinanceDashboard({ greeting, customers, customersFailed }: { greeting: string; customers: CustomerSummary[] | null; customersFailed: boolean }) {
   const { show, askAbout, askRole } = useAppState();
-  const { tx } = useI18n();
+  const { tx, lang } = useI18n();
+  const locale = dateLocale(lang);
   const { identity } = useAuth();
   const role = identity?.role ?? askRole;
   const [forecast, setForecast] = useState<ForecastResponse | null>(null);
@@ -200,7 +203,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
       <header className="fd-head">
         <div>
           <h1>{greeting}</h1>
-          <p>{forecast ? tx("Your cash, what needs you, and what comes next. As of {date}.", { date: longDate(forecast.as_of) }) : tx("Your cash, what needs you, and what comes next.")}</p>
+          <p>{forecast ? tx("Your cash, what needs you, and what comes next. As of {date}.", { date: longDate(forecast.as_of, locale) }) : tx("Your cash, what needs you, and what comes next.")}</p>
         </div>
         <form className="fd-ask" onSubmit={ask} role="search" aria-label={tx("Ask DuitDuit")}>
           <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={tx("Ask DuitDuit, or tell it what to prepare")} aria-label={tx("Ask DuitDuit, or tell it what to prepare")} maxLength={500} />
@@ -213,7 +216,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
           <span className="fd-kpi-label">{tx("Cash today")}</span>
           {forecast ? <strong>{ringgit(forecast.opening_balance)}</strong> : notLoaded("forecast") ? errorNote : <Loading />}
           {forecast && <span className="fd-badge">{tx("Opening balance")}</span>}
-          {forecast && <span className="fd-kpi-note">{tx("As of {date}", { date: shortDate(forecast.as_of) })}</span>}
+          {forecast && <span className="fd-kpi-note">{tx("As of {date}", { date: shortDate(forecast.as_of, locale) })}</span>}
         </button>
         <button type="button" className="fd-card fd-kpi" onClick={() => show("cashflow")}>
           <span className="fd-kpi-label">{tx("Lowest in 90 days")}</span>
@@ -221,7 +224,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
           {forecast && (forecast.shortfall
             ? <span className="fd-badge is-risk">{tx("{gap} below minimum", { gap: ringgit(forecast.shortfall.gap) })}</span>
             : <span className="fd-badge is-good">{tx("Above your minimum")}</span>)}
-          {lowest && <span className="fd-kpi-note">{tx("On {date}", { date: shortDate(lowest.date) })}</span>}
+          {lowest && <span className="fd-kpi-note">{tx("On {date}", { date: shortDate(lowest.date, locale) })}</span>}
         </button>
         <button type="button" className="fd-card fd-kpi" onClick={() => show("collections")}>
           <span className="fd-kpi-label">{tx("Owed to you")}</span>
@@ -297,7 +300,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
                 <tbody>
                   {upcoming.map((d) => (
                     <tr key={d.id}>
-                      <td className="fd-muted">{shortDate(addDays(forecast.as_of, d.likely_day ?? 0))}</td>
+                      <td className="fd-muted">{shortDate(addDays(forecast.as_of, d.likely_day ?? 0), locale)}</td>
                       <td>{tx(d.label)}</td>
                       <td><span className="fd-pill">{tx(JOB_LABELS[d.job_function] ?? d.job_function)}</span></td>
                       <td className={"is-num " + (d.kind === "inflow" ? "is-in" : "is-out")}>{d.kind === "inflow" ? "+" : "−"}{ringgit(d.amount_myr)}</td>

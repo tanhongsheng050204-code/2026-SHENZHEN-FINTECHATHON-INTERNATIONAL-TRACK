@@ -69,7 +69,7 @@ export default function Settings() {
         <section className="fb-settings-section">
           <h2>Language</h2>
           <div className="fb-settings-card">
-            <div className="fb-settings-lang-row">
+            <div className="fb-settings-lang-row" data-dd-english="">
               {LANG_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}

@@ -1,4 +1,6 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { translateDom } from "./domTranslate";
+import { msFor } from "./i18nMs";
 import { zhFor } from "./i18nZh";
 
 export type Lang = "en" | "ms" | "zh";
@@ -211,6 +213,10 @@ function readStoredLang(): Lang {
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => readStoredLang());
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    return translateDom(document.body, lang);
+  }, [lang]);
   const setLang = (next: Lang) => {
     setLangState(next);
     try {
@@ -225,7 +231,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLang,
       t: (key: string) => FB_I18N[key]?.[lang] ?? FB_I18N[key]?.en ?? key,
       tx: (english: string, vars?: Record<string, string | number>) => {
-        const text = lang === "zh" ? zhFor(english) ?? english : english;
+        const text = lang === "zh" ? zhFor(english) ?? english : lang === "ms" ? msFor(english) ?? english : english;
         return vars ? text.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match)) : text;
       },
     }),

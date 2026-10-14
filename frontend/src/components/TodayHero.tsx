@@ -3,6 +3,7 @@ import "./TodayHero.css";
 import { useAuth } from "../auth/AuthProvider";
 import { canOpen } from "../lib/access";
 import { useAppState } from "../lib/appState";
+import { dateLocale } from "../lib/dateLocale";
 import { useI18n } from "../lib/i18n";
 import {
   fetchAnalysis,
@@ -17,8 +18,8 @@ import {
 
 const OPEN = new Set(["pending", "awaiting_second_approval", "edited"]);
 
-function longDate(iso: string) {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-MY", { day: "numeric", month: "short" });
+function longDate(iso: string, locale = "en-GB") {
+  return new Date(iso + "T00:00:00").toLocaleDateString(locale, { day: "numeric", month: "short" });
 }
 
 /** The 90-day likely balance against the minimum, drawn once when it loads. */
@@ -50,7 +51,7 @@ function Runway({ forecast }: { forecast: ForecastResponse }) {
  */
 export function TodayHero({ greeting }: { greeting: string }) {
   const { show, askAbout, askRole } = useAppState();
-  const { tx } = useI18n();
+  const { tx, lang } = useI18n();
   const { identity } = useAuth();
   const role = identity?.role ?? askRole;
   const seesCash = canOpen("cashflow", role);
@@ -98,7 +99,7 @@ export function TodayHero({ greeting }: { greeting: string }) {
   let detail: string;
   if (shortfall) {
     headline = tx("Cash falls {gap} below your minimum in {n} days.", { gap: ringgit(shortfall.gap), n: shortfall.day });
-    detail = tx("On {date} the likely balance is {balance}, under your {minimum} minimum.", { date: longDate(shortfall.date), balance: ringgit(shortfall.likely_balance), minimum: ringgit(shortfall.minimum_balance) });
+    detail = tx("On {date} the likely balance is {balance}, under your {minimum} minimum.", { date: longDate(shortfall.date, dateLocale(lang)), balance: ringgit(shortfall.likely_balance), minimum: ringgit(shortfall.minimum_balance) });
   } else if (forecast) {
     headline = tx("Cash stays above your minimum for the next 90 days.");
     detail = tx("Lowest likely point: {amount}.", { amount: ringgit(String(Math.min(...forecast.points.map((p) => Number(p.likely))))) });
