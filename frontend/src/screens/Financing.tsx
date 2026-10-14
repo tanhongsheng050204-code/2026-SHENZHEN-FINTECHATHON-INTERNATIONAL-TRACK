@@ -262,14 +262,33 @@ function PassportCard({ passport, isOwner }: { passport: Passport; isOwner: bool
     }
   };
 
-  const download = () => {
-    const blob = new Blob([JSON.stringify(passport, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+  const save = (body: string, type: string, name: string) => {
+    const url = URL.createObjectURL(new Blob([body], { type }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${passport.id}-v${passport.version}.json`;
+    a.download = name;
     a.click();
     URL.revokeObjectURL(url);
+  };
+  // The JSON is the signed document a lender's system checks; the HTML is the same
+  // figures laid out for a person to read or print.
+  const download = () => save(JSON.stringify(passport, null, 2), "application/json", `${passport.id}-v${passport.version}.json`);
+  const downloadReadable = () => {
+    const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
+    const rows = passport.metrics
+      .map((m) => `<tr><th>${esc(m.label)}</th><td>${esc(m.value)}</td><td>${esc(m.evidence.map((e) => e.label).join(", "))}</td></tr>`)
+      .join("");
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Financing Readiness Passport v${passport.version}</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;color:#10241F;max-width:760px;margin:40px auto;padding:0 16px}h1{font-size:22px;margin:0 0 4px}
+p{color:#4F625C}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{text-align:left;padding:8px;border-bottom:1px solid #DCE4E0;vertical-align:top}
+th{width:38%}td:last-child{color:#4F625C;font-size:13px}code{font:12px ui-monospace,monospace;word-break:break-all}</style></head><body>
+<h1>Financing Readiness Passport · version ${passport.version}</h1>
+<p>${esc(passport.company_label)} · issued ${esc(when(passport.issued_at))}</p>
+<table><thead><tr><th>Measure</th><td><b>Value</b></td><td><b>Evidence</b></td></tr></thead><tbody>${rows}</tbody></table>
+<p>SHA-256 of the signed document: <code>${esc(passport.sha256)}</code></p>
+<p>To check it has not been changed, upload the JSON version to DuitDuit's lender check, or ask the company for a share link. This readable copy is for people; the JSON copy is what is verified.</p>
+</body></html>`;
+    save(html, "text/html", `${passport.id}-v${passport.version}.html`);
   };
 
   return (
@@ -292,7 +311,8 @@ function PassportCard({ passport, isOwner }: { passport: Passport; isOwner: bool
         <button className="fb-btn fb-btn-outline" type="button" disabled={checking} onClick={() => void check()}>
           {checking ? tx("Checking…") : tx("Check it like a lender would")}
         </button>
-        <button className="fb-btn fb-btn-outline" type="button" onClick={download}>{tx("Download document")}</button>
+        <button className="fb-btn fb-btn-outline" type="button" onClick={downloadReadable}>{tx("Download readable copy")}</button>
+        <button className="fb-btn fb-btn-outline" type="button" onClick={download} title={tx("The signed JSON a lender's system checks")}>{tx("Download for verification (JSON)")}</button>
       </div>
       {result && (
         <div className={"fb-fin-verify is-" + result.status} role="status">

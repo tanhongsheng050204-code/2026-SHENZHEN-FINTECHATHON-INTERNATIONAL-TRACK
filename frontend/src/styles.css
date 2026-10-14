@@ -2189,3 +2189,11 @@ html{scroll-behavior:smooth;}
 .dd-norecords-note{margin:1.1rem 0 0!important;font-size:.85rem}
 
 .fb-trust-how{display:block;margin-top:.6rem;font-size:.8rem;line-height:1.5;color:var(--ink-soft)}
+
+/* Under the Ask box: who sees protected details in full. */
+.dd-whocansee{margin:0 .9rem .9rem;font-size:.82rem;color:var(--ink-soft)}
+.dd-whocansee summary{cursor:pointer;font-weight:600;color:var(--ink);padding:.3rem 0}
+.dd-whocansee p{margin:.3rem 0 .5rem;line-height:1.5}
+.dd-whocansee table{width:100%;border-collapse:collapse}
+.dd-whocansee th,.dd-whocansee td{text-align:left;padding:.35rem .4rem;border-bottom:1px solid var(--line)}
+.dd-whocansee th{font-weight:600;color:var(--ink-soft);font-size:.76rem}

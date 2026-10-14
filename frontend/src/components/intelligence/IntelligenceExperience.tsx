@@ -585,6 +585,7 @@ export function IntelligenceExperience({
       {showComparison && (
         <Overlay title="Role Policy Comparison" onClose={() => setShowComparison(false)}>
           <p className="fb-intel-muted">One protected answer, disclosed through three policies. No additional AI call is made.</p>
+          <p className="fb-intel-muted">How to read it: pick a role in Policy view. Each column is the same answer as that role would see it; masked values show which details that role may not see.</p>
           {comparisonLoading && <p>Applying role policies…</p>}
           {comparisonError && <p className="fb-intel-error">{comparisonError}</p>}
           {comparison && (

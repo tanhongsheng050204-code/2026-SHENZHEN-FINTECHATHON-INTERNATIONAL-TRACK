@@ -417,3 +417,17 @@
 :root[data-theme="dark"] .lv-footer nav button,:root[data-theme="dark"] .lv-footer nav a{color:#A7B8B2}
 .lv-footer nav button:hover,.lv-footer nav a:hover{color:var(--a-ink)}
 @media (max-width:760px){.lv-footer{grid-template-columns:1fr 1fr}.lv-footer-brand{grid-column:1/-1}.lv-closing{border:0}}
+
+/* The replay shows today's Home: greeting and ask box, then the four key numbers. */
+.lv-app-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.8rem}
+.lv-app-head .lv-app-hello{margin:0}
+.lv-app-head .lv-app-ask{flex:1 1 220px;min-height:2.5rem;padding:.55rem .8rem;font-size:.9rem;box-shadow:none}
+.lv-app-typed{color:var(--a-ink)}
+.lv-app-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-bottom:.4rem}
+.lv-app-kpis span{display:flex;flex-direction:column;gap:.2rem;padding:.6rem .7rem;border:1px solid var(--a-line);border-radius:10px;background:var(--a-surface);min-width:0}
+.lv-app-kpis em{font-style:normal;font-size:.7rem;color:var(--a-ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-app-kpis b{font-size:1rem;letter-spacing:-.02em;color:var(--a-ink);font-variant-numeric:tabular-nums}
+.lv-app-kpis i{font-style:normal;font-size:.66rem;color:var(--a-ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-app-kpis i.is-risk{color:var(--a-red)}
+.lv-app-kpis i.is-good{color:var(--a-accent)}
+@media (max-width:760px){.lv-app-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}

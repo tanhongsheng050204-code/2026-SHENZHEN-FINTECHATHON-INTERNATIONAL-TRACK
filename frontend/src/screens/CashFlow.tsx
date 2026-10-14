@@ -336,6 +336,7 @@ export default function CashFlow() {
             {canRunScenarios && (
               <section className="fb-cash-card">
                 <h2>{tx("What if…")}</h2>
+                <p className="fb-inbox-muted">{tx("Pick one payment in or out and move it earlier (negative days) or later. DuitDuit redraws the forecast to show whether the gap closes. Try: a customer paying 10 days earlier, or a supplier bill paid 14 days later.")}</p>
                 <div className="fb-cash-whatif">
                   <label className="fb-cash-field">
                     <span>{tx("Event")}</span>
@@ -353,12 +354,31 @@ export default function CashFlow() {
                   {scenario && <button className="fb-btn fb-btn-outline" type="button" onClick={() => setScenario(null)}>{tx("Clear")}</button>}
                 </div>
                 {scenarioError && <div className="fb-inbox-error" role="alert">{scenarioError}</div>}
-                {scenario && scenarioLow && low && (
-                  <p className="fb-cash-compare" aria-live="polite">
-                    {tx("Lowest likely point moves from {from} (day {fromDay}) to {to} (day {toDay}).", { from: ringgit(low.likely), fromDay: low.day, to: ringgit(scenarioLow.likely), toDay: scenarioLow.day })}{" "}
-                    {scenario.shortfall ? tx("Still {gap} below your minimum.", { gap: ringgit(scenario.shortfall.gap) }) : tx("No shortfall in this scenario.")}
-                  </p>
-                )}
+                {scenario && scenarioLow && low && (() => {
+                  const moved = movable.find((d) => d.id === eventId);
+                  const from = moved ? signalDay(moved) : null;
+                  const before = forecast?.shortfall ?? null;
+                  const after = scenario.shortfall;
+                  const verdict = !before
+                    ? tx("There was no gap to close; this only shows how the low point moves.")
+                    : !after
+                      ? tx("This closes the gap: the balance stays above your minimum for the whole period. Making it happen is a real step, such as asking for early payment, which the agents can draft for you.")
+                      : Number(after.gap) < Number(before.gap)
+                        ? tx("This narrows the gap by {amount} but does not close it. Combine it with another move, or look at financing.", { amount: ringgit(String(Number(before.gap) - Number(after.gap))) })
+                        : tx("This does not help: the gap is the same or wider. Try moving a different payment.");
+                  return (
+                    <div className="fb-cash-compare" aria-live="polite">
+                      {moved && from !== null && (
+                        <p>{tx("You moved “{item}” ({amount}) from day {from} to day {to}.", { item: tx(moved.label), amount: (moved.kind === "inflow" ? "+" : "−") + ringgit(moved.amount_myr), from, to: Math.max(0, from + shiftDays) })}</p>
+                      )}
+                      <p>
+                        {tx("Lowest likely point moves from {from} (day {fromDay}) to {to} (day {toDay}).", { from: ringgit(low.likely), fromDay: low.day, to: ringgit(scenarioLow.likely), toDay: scenarioLow.day })}{" "}
+                        {after ? tx("Still {gap} below your minimum.", { gap: ringgit(after.gap) }) : tx("No shortfall in this scenario.")}
+                      </p>
+                      <p><strong>{tx("What it means:")}</strong> {verdict}</p>
+                    </div>
+                  );
+                })()}
                 <p className="fb-inbox-muted">{tx("Scenarios never change your books; they only show how the low point moves.")}</p>
               </section>
             )}

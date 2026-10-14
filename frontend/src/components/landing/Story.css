@@ -93,7 +93,11 @@
 @media (max-width:900px){
   .lv-route{grid-template-columns:1fr}
   .lv-route-panel{border-right:0;border-bottom:1px solid var(--a-line)}
-  .lv-route-map{display:none}
+  .lv-route-map{margin:1rem .8rem}
+  .lv-node{padding:.3rem .45rem;font-size:.62rem;border-radius:8px}
+  .lv-node strong{font-size:.66rem}
+  .lv-node span,.lv-node em{display:none}
+  .lv-node.is-agent{min-width:0}
   .lv-scan{grid-template-columns:1fr}
   .lv-scan-arrow{flex-direction:row;max-width:none;justify-content:flex-start}
   .lv-scan-arrow svg{transform:rotate(90deg)}

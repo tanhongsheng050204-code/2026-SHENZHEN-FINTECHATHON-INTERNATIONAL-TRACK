@@ -1,3 +1,4 @@
+import { WhoCanSee } from "../components/WhoCanSee";
 import { useEffect, useRef, useState } from "react";
 import { AssistantReply } from "../components/AssistantReply";
 import { BriefingCard } from "../components/BriefingCard";
@@ -694,6 +695,7 @@ export default function Agents() {
               </button>
             </div>
           </div>
+          <WhoCanSee />
         </div>
       </div>
       </div>

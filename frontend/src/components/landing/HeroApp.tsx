@@ -96,8 +96,8 @@ export function HeroApp() {
             <svg viewBox="0 0 12 12" width="10" height="10"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
           </span>
           <span className="lv-app-quick">Quick actions <kbd>⌘K</kbd></span>
-          <span>Today</span>
-          <span className="is-current">Ask DuitDuit</span>
+          <span className="is-current">Today</span>
+          <span>Ask DuitDuit</span>
           <span>
             Review inbox <b className={"lv-app-badge" + (step >= 3 && step < 4 ? " is-bump" : "")}>{step >= 3 && step < 4 ? 3 : 2}</b>
           </span>
@@ -107,10 +107,18 @@ export function HeroApp() {
         </nav>
 
         <div className="lv-app-main">
-          <p className="lv-app-hello">Good morning, Owner.</p>
-          <div className="lv-app-ask">
-            <span className="lv-app-typed">{typed}</span>
-            <span className={"lv-app-caret" + (step >= 1 && step < 2 ? " is-blinking" : "")} aria-hidden="true" />
+          <div className="lv-app-head">
+            <p className="lv-app-hello">Good morning, Owner.</p>
+            <div className="lv-app-ask">
+              <span className="lv-app-typed">{typed || "Ask DuitDuit…"}</span>
+              <span className={"lv-app-caret" + (step >= 1 && step < 2 ? " is-blinking" : "")} aria-hidden="true" />
+            </div>
+          </div>
+          <div className="lv-app-kpis" aria-hidden="true">
+            <span><em>Cash today</em><b>RM116,400</b><i>Opening balance</i></span>
+            <span><em>Lowest in 90 days</em><b>{rm(LOW)}</b><i className="is-risk">{rm(GAP)} below minimum</i></span>
+            <span><em>Owed to you</em><b>RM353,500</b><i className="is-good">None overdue</i></span>
+            <span><em>Net result, Sep</em><b>RM39,200</b><i>Revenue RM249,400</i></span>
           </div>
 
           <div className={"lv-app-answer" + at(2)}>
