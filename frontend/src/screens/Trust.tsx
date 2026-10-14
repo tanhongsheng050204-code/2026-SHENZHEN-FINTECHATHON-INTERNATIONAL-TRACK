@@ -63,6 +63,11 @@ export default function Trust() {
                   <span className="fb-cash-kpi-label">Security posture</span>
                   <span className="fb-cash-kpi-value">{posture.score}<small>/100</small></span>
                   <span className="fb-cash-kpi-sub">{attention === 0 ? "Every control is in place" : `${attention} control${attention === 1 ? " needs" : "s need"} attention`}</span>
+                  <span className="fb-trust-how">
+                    How it is worked out: start at 100, take off 10 for each control that needs attention and 25 for each at risk.
+                    {" "}Now: {posture.metrics.filter((m) => m.status === "attention").length} need attention, {posture.metrics.filter((m) => m.status === "risk").length} at risk.
+                    {" "}Each control below says what was checked.
+                  </span>
                 </div>
                 <section className="fb-cash-card fb-trust-metrics">
                   <h2>Controls</h2>

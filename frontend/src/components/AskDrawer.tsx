@@ -1,3 +1,4 @@
+import { friendlyLoadError } from "../api/client";
 import { useRef, useState, type ReactNode } from "react";
 import { useAppState } from "../lib/appState";
 import { useUiChrome } from "../lib/uiChrome";
@@ -66,8 +67,10 @@ export function AskDrawer() {
       finalText = response.answer;
       citations = response.citations;
     } catch (cause) {
-      const detail = cause instanceof Error ? cause.message : "The request failed unexpectedly.";
-      finalText = `DuitDuit could not answer this question: ${detail}`;
+      const code = cause instanceof Error ? cause.message : "";
+      finalText = code === "request_failed_504" || code === "request_failed_502"
+        ? "That answer took too long and the connection closed before it arrived. Ask again: a second try is usually faster, or open the page the question is about."
+        : friendlyLoadError(code);
       isError = true;
     }
 

@@ -2187,3 +2187,5 @@ html{scroll-behavior:smooth;}
 .dd-norecords li span{color:var(--ink-soft);font-size:.92rem;line-height:1.5}
 .dd-norecords-actions{display:flex;flex-wrap:wrap;gap:.6rem}
 .dd-norecords-note{margin:1.1rem 0 0!important;font-size:.85rem}
+
+.fb-trust-how{display:block;margin-top:.6rem;font-size:.8rem;line-height:1.5;color:var(--ink-soft)}

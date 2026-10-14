@@ -324,6 +324,17 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
                     </svg>
                     <strong className="fd-gauge-value">{score.score}</strong>
                     <span className="fd-kpi-note">{tx("Grade {g}", { g: score.grade })} · {tx("out of {min}–{max}", { min: score.min_score, max: score.max_score })}</span>
+                    <div className="fd-why">
+                      <span className="fd-why-title">{tx("Why this score")}</span>
+                      <span className="fd-why-row"><span>{tx("Base")}</span><b>+{score.base_points}</b></span>
+                      {[...score.factors].sort((x, y) => (y.max_points - y.points) - (x.max_points - x.points)).slice(0, 4).map((f) => (
+                        <span key={f.key} className="fd-why-row" title={tx(f.reason)}>
+                          <span>{tx(f.label)} <em>{f.value}</em></span>
+                          <b className={f.points < f.max_points ? "is-short" : undefined}>{f.points}/{f.max_points}</b>
+                        </span>
+                      ))}
+                      <span className="fd-why-note">{tx("Biggest gaps first. Points come from published bands, not a trained model. The full scorecard is on Financing.")}</span>
+                    </div>
                   </>
                 ) : notLoaded("score") ? errorNote : <Loading />}
               </section>
