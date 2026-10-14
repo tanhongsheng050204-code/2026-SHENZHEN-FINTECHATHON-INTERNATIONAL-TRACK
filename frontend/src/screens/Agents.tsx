@@ -18,6 +18,7 @@ import { matchEinvoiceReadinessEmbed, resolveChatReply, type ChatReply } from ".
 import {
   listRecentConversations,
   loadTranscript,
+  setConversationOwner,
   newLocalConversationId,
   removeConversation,
   saveConversation,
@@ -106,6 +107,7 @@ export default function Agents() {
     displayName,
   } = useAppState();
   const { identity } = useAuth();
+  setConversationOwner(identity?.user_id);
   const { lang, t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([
     { id: msgId++, from: "agent", text: "Hi, I’m DuitDuit. Ask me about your records, or tell me what to do: “open cash flow”, “can I cover payroll this month?”, “approve the reminder drafts”. I always check with you before changing anything.", timestamp: now() },

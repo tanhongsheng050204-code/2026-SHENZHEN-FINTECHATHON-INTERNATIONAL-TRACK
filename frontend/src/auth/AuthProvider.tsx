@@ -1,3 +1,4 @@
+import { clearAllConversations } from "../lib/recentConversations";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Role } from "../api/client";
@@ -173,6 +174,7 @@ function SupabaseAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    clearAllConversations();
     await supabase.auth.signOut();
     setUser(null);
     setIdentity(null);
@@ -235,6 +237,7 @@ function BackendAuthProvider({ children }: { children: ReactNode }) {
   }, [applySession]);
 
   const signOut = useCallback(async () => {
+    clearAllConversations();
     await signOutSession();
     setSession(null);
     setIdentity(null);

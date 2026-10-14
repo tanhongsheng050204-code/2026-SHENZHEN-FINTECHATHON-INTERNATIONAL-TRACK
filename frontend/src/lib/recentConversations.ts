@@ -1,10 +1,36 @@
 // The recent chats on this browser: a title, the plain text of each message (so a
 // chat reopens as it was) and, when the server confirmed one, its conversation id
 // so a follow-up question keeps the server-side context. Cards and charts inside a
-// reply are not kept; their text is. Stored on this device only, never synced.
+// reply are not kept; their text is. Stored on this device only, never synced,
+// under the signed-in person's id, and removed when anyone signs out, so the next
+// person on a shared browser never sees someone else's chats.
 
-const STORAGE_KEY = "fb-recent-conversations";
-const TRANSCRIPT_PREFIX = "fb-conversation-";
+const LEGACY_KEY = "fb-recent-conversations";
+const PREFIX = "fb-chats:";
+let owner = "signed-out";
+
+/** Whose chats are read and written; set from the signed-in identity. */
+export function setConversationOwner(userId: string | null | undefined) {
+  owner = userId ? userId.replace(/[^A-Za-z0-9-]/g, "") || "signed-out" : "signed-out";
+}
+
+const listKey = () => `${PREFIX}${owner}:list`;
+const transcriptKey = (id: string) => `${PREFIX}${owner}:chat:${id}`;
+
+/** Forget every stored chat on this browser, for every person. Called on sign-out. */
+export function clearAllConversations() {
+  try {
+    const doomed: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && (key.startsWith(PREFIX) || key === LEGACY_KEY || key.startsWith("fb-conversation-"))) doomed.push(key);
+    }
+    doomed.forEach((key) => window.localStorage.removeItem(key));
+  } catch {
+    // Storage disabled: nothing was stored.
+  }
+}
+
 const MAX_ENTRIES = 20;
 const MAX_MESSAGES = 60;
 const MAX_TEXT = 4000;
@@ -25,7 +51,7 @@ export interface SavedMessage {
 
 function readAll(): RecentConversation[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(listKey());
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -37,8 +63,8 @@ function readAll(): RecentConversation[] {
 function writeAll(entries: RecentConversation[]) {
   try {
     const sorted = [...entries].sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt));
-    for (const dropped of sorted.slice(MAX_ENTRIES)) window.localStorage.removeItem(TRANSCRIPT_PREFIX + dropped.id);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted.slice(0, MAX_ENTRIES)));
+    for (const dropped of sorted.slice(MAX_ENTRIES)) window.localStorage.removeItem(transcriptKey(dropped.id));
+    window.localStorage.setItem(listKey(), JSON.stringify(sorted.slice(0, MAX_ENTRIES)));
   } catch {
     // Private browsing or storage disabled: recent chats just won't persist.
   }
@@ -69,7 +95,7 @@ export function saveConversation(id: string, serverId: string | null, messages: 
   writeAll([entry, ...entries.filter((e) => e.id !== id)]);
   try {
     const trimmed = messages.slice(-MAX_MESSAGES).map((m) => ({ ...m, text: m.text.slice(0, MAX_TEXT) }));
-    window.localStorage.setItem(TRANSCRIPT_PREFIX + id, JSON.stringify(trimmed));
+    window.localStorage.setItem(transcriptKey(id), JSON.stringify(trimmed));
   } catch {
     // Storage full or disabled: the chat still works, it just won't reopen.
   }
@@ -77,7 +103,7 @@ export function saveConversation(id: string, serverId: string | null, messages: 
 
 export function loadTranscript(id: string): SavedMessage[] {
   try {
-    const raw = window.localStorage.getItem(TRANSCRIPT_PREFIX + id);
+    const raw = window.localStorage.getItem(transcriptKey(id));
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -88,7 +114,7 @@ export function loadTranscript(id: string): SavedMessage[] {
 export function removeConversation(id: string) {
   writeAll(readAll().filter((e) => e.id !== id));
   try {
-    window.localStorage.removeItem(TRANSCRIPT_PREFIX + id);
+    window.localStorage.removeItem(transcriptKey(id));
   } catch {
     // Nothing stored to remove.
   }
