@@ -170,13 +170,14 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
     };
   }, [board]);
   const last = analysis?.months[analysis.months.length - 1] ?? null;
-  const upcoming = useMemo(() => {
+  const [allItems, setAllItems] = useState(false);
+  const dated = useMemo(() => {
     if (!forecast) return [];
     return forecast.drivers
       .filter((d) => d.kind !== "risk" && d.likely_day !== null)
-      .sort((a, b) => (a.likely_day ?? 0) - (b.likely_day ?? 0))
-      .slice(0, 6);
+      .sort((a, b) => (a.likely_day ?? 0) - (b.likely_day ?? 0));
   }, [forecast]);
+  const upcoming = allItems ? dated : dated.slice(0, 6);
   const watch = (customers ?? []).filter((c) => c.priority !== "healthy").sort((a, b) => b.attention_score - a.attention_score).slice(0, 3);
 
   const ask = (event: FormEvent<HTMLFormElement>) => {
@@ -279,7 +280,11 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
         <section className="fd-card fd-table-card" aria-labelledby="fd-next-title">
           <div className="fd-card-head">
             <h2 id="fd-next-title">{tx("Coming up: money in and out")}</h2>
-            <button type="button" className="fd-link" onClick={() => show("cashflow")}>{forecast ? tx("Show all {n} items", { n: forecast.drivers.length }) : tx("See the forecast")}</button>
+            {dated.length > 6 ? (
+              <button type="button" className="fd-link" aria-expanded={allItems} onClick={() => setAllItems((v) => !v)}>{allItems ? tx("Show fewer") : tx("Show all {n} items", { n: dated.length })}</button>
+            ) : (
+              <button type="button" className="fd-link" onClick={() => show("cashflow")}>{tx("See the forecast")}</button>
+            )}
           </div>
           {!forecast ? (notLoaded("forecast") ? errorNote : <Loading />) : upcoming.length === 0 ? (
             <p className="fd-empty">{tx("Nothing is due in the next 90 days.")}</p>

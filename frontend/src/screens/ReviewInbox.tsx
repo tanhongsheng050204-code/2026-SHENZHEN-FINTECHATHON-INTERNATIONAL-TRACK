@@ -44,11 +44,15 @@ function isOpen(action: ReviewAction): boolean {
   return action.status === "pending" || action.status === "awaiting_second_approval";
 }
 
-function StatusPill({ action }: { action: ReviewAction }) {
+function StatusPill({ action, onDecide }: { action: ReviewAction; onDecide?: () => void }) {
   const { t, tx } = useI18n();
   if (!isOpen(action)) {
     const label = { approved: "Approved", edited: "Edited and approved", rejected: "Rejected" }[action.status as "approved" | "edited" | "rejected"];
     return <span className={"fb-inbox-pill is-" + action.status}>{tx(label)}</span>;
+  }
+  if (action.can_decide && onDecide) {
+    // In the detail pane the label is also the way to the decision buttons.
+    return <button type="button" className="fb-inbox-pill is-can is-button" onClick={onDecide}>{t("inbox.canApprove")} ↓</button>;
   }
   if (action.can_decide) return <span className="fb-inbox-pill is-can">{t("inbox.canApprove")}</span>;
   if (action.status === "awaiting_second_approval") return <span className="fb-inbox-pill is-muted">{t("inbox.waitingOwner")}</span>;
@@ -221,7 +225,14 @@ export default function ReviewInbox() {
                       <span className={"fb-inbox-level is-" + selected.autonomy_level.toLowerCase()}>
                         {selected.autonomy_level} · {tx(LEVEL_HINT[selected.autonomy_level])}
                       </span>
-                      <StatusPill action={selected} />
+                      <StatusPill
+                        action={selected}
+                        onDecide={() => {
+                          const approve = document.getElementById("fb-inbox-approve");
+                          approve?.scrollIntoView({ behavior: "smooth", block: "center" });
+                          approve?.focus({ preventScroll: true });
+                        }}
+                      />
                     </div>
                     <h2>{tx(selected.title)}</h2>
                     <p className="fb-inbox-summary">{tx(selected.summary)}</p>
@@ -278,7 +289,7 @@ export default function ReviewInbox() {
                           </>
                         ) : (
                           <>
-                            <button className="fb-btn fb-btn-solid" type="button" disabled={busy || !selected.can_decide} onClick={() => void decide({ decision: "approve" })}>
+                            <button id="fb-inbox-approve" className="fb-btn fb-btn-solid" type="button" disabled={busy || !selected.can_decide} onClick={() => void decide({ decision: "approve" })}>
                               {approveLabel}
                             </button>
                             <button className="fb-btn fb-btn-outline" type="button" disabled={busy} onClick={() => void decide({ decision: "reject" })}>

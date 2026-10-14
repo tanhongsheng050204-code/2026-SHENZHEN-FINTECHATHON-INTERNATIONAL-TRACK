@@ -156,7 +156,8 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
   const [days, setDays] = useState(7);
   const [exact, setExact] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [newLink, setNewLink] = useState<string | null>(null);
+  const [newLink, setNewLink] = useState<{ grantId: string; url: string } | null>(null);
+  const [revokedNote, setRevokedNote] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -177,7 +178,8 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
     try {
       const grant = await createGrant(kind, scopeId, { grantee_email: email, expires_in_days: days, allow_exact_values: exact });
       setGrants((g) => [grant, ...g]);
-      setNewLink(window.location.origin + grant.share_path);
+      setNewLink({ grantId: grant.id, url: window.location.origin + grant.share_path });
+      setRevokedNote(null);
       setEmail("");
     } catch (e) {
       setError(errorText(e));
@@ -187,9 +189,13 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
   };
 
   const revoke = async (grantId: string) => {
+    setError(null);
     try {
       const revoked = await revokeGrant(kind, scopeId, grantId);
       setGrants((g) => g.map((x) => (x.id === grantId ? revoked : x)));
+      // The link shown after sharing is dead now: stop offering it.
+      setNewLink((current) => (current?.grantId === grantId ? null : current));
+      setRevokedNote(tx("Revoked. The link no longer opens, including in a tab that is already open once it reloads."));
     } catch (e) {
       setError(errorText(e));
     }
@@ -227,9 +233,10 @@ function Grants({ kind, scopeId }: { kind: GrantKind; scopeId: string }) {
       </form>
       {newLink && (
         <div className="fb-fin-done" role="status">
-          {tx("Shared. Send this link:")} <a href={newLink} target="_blank" rel="noreferrer"><code>{newLink}</code></a>. {tx("Access ends automatically and you can revoke it at any time.")}
+          {tx("Shared. Send this link:")} <a href={newLink.url} target="_blank" rel="noreferrer"><code>{newLink.url}</code></a>. {tx("Access ends automatically and you can revoke it at any time.")}
         </div>
       )}
+      {revokedNote && <div className="fb-fin-done" role="status">{revokedNote}</div>}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}
     </div>
   );

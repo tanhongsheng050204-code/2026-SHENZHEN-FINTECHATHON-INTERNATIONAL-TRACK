@@ -105,6 +105,7 @@ export function AiConnectionsPanel({ isOwner }: { isOwner: boolean }) {
     try {
       await revokeApiKey(id);
       setKeys((list) => list.map((k) => (k.id === id ? { ...k, revoked: true } : k)));
+      closeKey();
     } catch (e) {
       setError(friendlyLoadError(e instanceof ApiError ? e.code : ""));
     }
@@ -124,8 +125,8 @@ export function AiConnectionsPanel({ isOwner }: { isOwner: boolean }) {
       {isOwner && (
         <>
           <ul className="rc-list">
-            {keys.length === 0 && <li className="rc-list-empty">{tx("No keys yet.")}</li>}
-            {keys.map((k) => {
+            {keys.filter((k) => !k.revoked).length === 0 && <li className="rc-list-empty">{tx("No active keys.")}</li>}
+            {keys.filter((k) => !k.revoked).map((k) => {
               const [tone, label] = status(k);
               return (
                 <li key={k.id}>
@@ -141,6 +142,22 @@ export function AiConnectionsPanel({ isOwner }: { isOwner: boolean }) {
               );
             })}
           </ul>
+          {keys.some((k) => k.revoked) && (
+            <details className="dd-key-revoked">
+              <summary>{tx("Revoked keys ({n})", { n: keys.filter((k) => k.revoked).length })}</summary>
+              <p className="fb-inbox-muted">{tx("Revoked keys no longer work. They stay listed so the audit trail can name them.")}</p>
+              <ul className="rc-list">
+                {keys.filter((k) => k.revoked).map((k) => (
+                  <li key={k.id}>
+                    <div className="rc-list-main">
+                      <strong><code>ddk_{k.id}_…</code></strong>
+                      <span><span className="rc-chip">{tx("Revoked")}</span> {k.last_used_at ? tx("last used {when}", { when: moment(k.last_used_at) }) : tx("never used")}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
           <fieldset className="dd-key-form">
             <legend>{tx("New key")}</legend>
             <div className="rc-chips" role="group" aria-label={tx("Tools this key may read")}>

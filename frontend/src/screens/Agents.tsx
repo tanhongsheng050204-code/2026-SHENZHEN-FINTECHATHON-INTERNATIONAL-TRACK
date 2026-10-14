@@ -15,7 +15,16 @@ import {
   StructuredCitationResults,
 } from "../components/intelligence/IntelligenceExperience";
 import { matchEinvoiceReadinessEmbed, resolveChatReply, type ChatReply } from "../components/embeds/ChatEmbeds";
-import { listRecentConversations, recordConversationTurn, type RecentConversation } from "../lib/recentConversations";
+import {
+  listRecentConversations,
+  loadTranscript,
+  newLocalConversationId,
+  removeConversation,
+  saveConversation,
+  serverIdOf,
+  type RecentConversation,
+} from "../lib/recentConversations";
+import { deleteConversation } from "../api/client";
 import { OutreachComposerCard } from "../components/outreach/OutreachComposerCard";
 import { GroundingChip } from "../components/GroundingChip";
 import {
@@ -109,6 +118,8 @@ export default function Agents() {
   const [uploadResult, setUploadResult] = useState<UploadCommitResponse | null>(null);
   const [uploadError, setUploadError] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  // This chat's key in the recent list on this device, for every kind of reply.
+  const [chatKey, setChatKey] = useState(() => newLocalConversationId());
   const [protectedTurnCount, setProtectedTurnCount] = useState(0);
   const [recentConversations, setRecentConversations] = useState<RecentConversation[]>(() => listRecentConversations());
   const [recentOpen, setRecentOpen] = useState(false);
@@ -188,10 +199,6 @@ export default function Agents() {
       try {
         const response = await askQuestion(trimmed, conversationId, scopedCustomerId);
         setConversationId(response.conversation_id);
-        if (response.conversation_id) {
-          recordConversationTurn(response.conversation_id, trimmed);
-          setRecentConversations(listRecentConversations());
-        }
         setProtectedTurnCount((count) => count + 1);
         finalText = response.answer;
         protectedText = response.model_answer;
@@ -253,7 +260,26 @@ export default function Agents() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAskPrompt, clearPendingAskPrompt]);
 
+  // Every message, from a question, a command or a playbook, keeps the chat in the
+  // recent list with its text, so it reopens as it was.
+  useEffect(() => {
+    const saved = messages
+      .filter((m) => !m.thinking && m.text.trim())
+      .map((m) => ({ from: m.from, text: m.text, timestamp: m.timestamp }));
+    if (!saved.some((m) => m.from === "user")) return;
+    saveConversation(chatKey, conversationId, saved);
+  }, [messages, chatKey, conversationId]);
+
+  const forgetConversation = (entry: RecentConversation) => {
+    removeConversation(entry.id);
+    const serverId = serverIdOf(entry);
+    if (serverId) void deleteConversation(serverId).catch(() => undefined);
+    setRecentConversations(listRecentConversations());
+    if (entry.id === chatKey) startNewConversation();
+  };
+
   const startNewConversation = () => {
+    setChatKey(newLocalConversationId());
     setConversationId(null);
     setProtectedTurnCount(0);
     setChips([]);
@@ -272,18 +298,17 @@ export default function Agents() {
   // question gets answered with the right context, rather than pretending
   // to redisplay messages this browser never actually stored.
   const resumeConversation = (entry: RecentConversation) => {
-    setConversationId(entry.id);
+    setChatKey(entry.id);
+    setConversationId(serverIdOf(entry));
     setProtectedTurnCount(0);
     setChips([]);
     setRecentOpen(false);
-    setMessages([
-      {
-        id: msgId++,
-        from: "agent",
-        text: `Continuing "${entry.title}" — ask your next question and DuitDuit will pick up where that conversation left off.`,
-        timestamp: now(),
-      },
-    ]);
+    const transcript = loadTranscript(entry.id);
+    setMessages(
+      transcript.length > 0
+        ? transcript.map((m) => ({ id: msgId++, from: m.from, text: m.text, timestamp: m.timestamp }))
+        : [{ id: msgId++, from: "agent", text: `Continuing "${entry.title}". Ask your next question and DuitDuit will pick up where that conversation left off.`, timestamp: now() }],
+    );
   };
 
   const clearUpload = () => {
@@ -599,7 +624,10 @@ export default function Agents() {
                     <button
                       className="fb-btn fb-btn-outline"
                       type="button"
-                      onClick={() => setRecentOpen((v) => !v)}
+                      onClick={() => {
+                        setRecentConversations(listRecentConversations());
+                        setRecentOpen((v) => !v);
+                      }}
                       aria-expanded={recentOpen}
                       title="Recent conversations (stored on this device only)"
                     >
@@ -611,18 +639,28 @@ export default function Agents() {
                           <div className="fb-fine" style={{ padding: ".8rem" }}>No recent conversations yet.</div>
                         ) : (
                           recentConversations.map((entry) => (
-                            <button
-                              key={entry.id}
-                              className="fb-recent-menu-item"
-                              type="button"
-                              role="menuitem"
-                              onClick={() => resumeConversation(entry)}
-                            >
-                              <span className="fb-recent-menu-title">{entry.title}</span>
-                              <span className="fb-fine">
-                                {entry.turnCount} turn{entry.turnCount === 1 ? "" : "s"} · {new Date(entry.lastActivityAt).toLocaleDateString()}
-                              </span>
-                            </button>
+                            <div key={entry.id} className="fb-recent-menu-row">
+                              <button
+                                className="fb-recent-menu-item"
+                                type="button"
+                                role="menuitem"
+                                onClick={() => resumeConversation(entry)}
+                              >
+                                <span className="fb-recent-menu-title">{entry.title}</span>
+                                <span className="fb-fine">
+                                  {entry.turnCount} question{entry.turnCount === 1 ? "" : "s"} · {new Date(entry.lastActivityAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                                </span>
+                              </button>
+                              <button
+                                className="fb-recent-menu-delete"
+                                type="button"
+                                aria-label={"Delete conversation: " + entry.title}
+                                title="Delete conversation"
+                                onClick={() => forgetConversation(entry)}
+                              >
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg>
+                              </button>
+                            </div>
                           ))
                         )}
                         <div className="fb-recent-menu-footnote">Stored on this device only</div>

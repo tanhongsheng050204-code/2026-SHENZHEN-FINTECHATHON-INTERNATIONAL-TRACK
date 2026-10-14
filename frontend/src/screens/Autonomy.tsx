@@ -49,8 +49,20 @@ function Promote({ agent, onChange }: { agent: AgentCard; onChange: (a: AgentCar
   const [limit, setLimit] = useState("5000.00");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  if (!target || !agent.metrics?.promotion_recommended) return null;
+  if (!target) return null;
   if (agent.scoped_autonomy.some((s) => s.action === target.action)) return null;
+  if (!agent.metrics?.promotion_recommended) {
+    // Say how autonomy is earned instead of hiding the option.
+    const m = agent.metrics;
+    const decided = m ? m.approved_unedited + m.approved_edited + m.rejected : 0;
+    const rate = m?.unedited_approval_rate;
+    return (
+      <p className="fb-agent-promote is-locked">
+        Can {target.label} on its own once it has earned it: by default 30 of its proposals decided, with at least 90% approved unchanged (set in Company settings → Approvals).
+        {" "}So far: {decided} decided{rate !== null && rate !== undefined ? `, ${Math.round(rate * 100)}% unchanged` : ""}.
+      </p>
+    );
+  }
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

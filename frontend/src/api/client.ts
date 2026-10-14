@@ -384,6 +384,11 @@ export async function authenticatedFetch(path: string, init: RequestInit = {}): 
   return response;
 }
 
+export async function deleteConversation(conversationId: string): Promise<void> {
+  const response = await authenticatedFetch(`/conversations/${encodeURIComponent(conversationId)}`, { method: "DELETE" });
+  if (!response.ok && response.status !== 404) throw new ApiError(`request_failed_${response.status}`, response.status, null);
+}
+
 export async function askQuestion(
   question: string,
   conversationId?: string | null,

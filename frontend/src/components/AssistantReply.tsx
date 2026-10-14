@@ -179,7 +179,11 @@ function DecisionCard({ plan }: { plan: AssistantPlan }) {
         });
         setResults((r) => ({ ...r, [item.id]: { state: "done", note: response.action.status.replace(/_/g, " ") } }));
       } catch (e) {
-        setResults((r) => ({ ...r, [item.id]: { state: "failed", note: friendlyLoadError(errorCode(e)) } }));
+        const code = errorCode(e);
+        setResults((r) => ({ ...r, [item.id]: { state: "failed", note: friendlyLoadError(code) } }));
+        // A cancelled authenticator code stops the run: asking again for the next
+        // item would make Cancel look like it does nothing.
+        if (code === "step_up_required") break;
       }
     }
     setState("finished");
