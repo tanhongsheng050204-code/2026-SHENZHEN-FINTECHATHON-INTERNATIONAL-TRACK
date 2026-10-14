@@ -2197,3 +2197,7 @@ html{scroll-behavior:smooth;}
 .dd-whocansee table{width:100%;border-collapse:collapse}
 .dd-whocansee th,.dd-whocansee td{text-align:left;padding:.35rem .4rem;border-bottom:1px solid var(--line)}
 .dd-whocansee th{font-weight:600;color:var(--ink-soft);font-size:.76rem}
+.dd-customer-actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.dd-contact-steps{margin:.3rem 0 .9rem;padding-left:1.2rem;color:var(--ink-soft);font-size:.86rem;line-height:1.6}
+.dd-inbox-effect{margin:.2rem 0 .9rem;padding:.6rem .8rem;border-radius:8px;background:var(--bg-alt);border:1px solid var(--line);font-size:.86rem;color:var(--ink-soft)}
+.dd-inbox-effect strong{color:var(--ink);margin-right:.3rem}

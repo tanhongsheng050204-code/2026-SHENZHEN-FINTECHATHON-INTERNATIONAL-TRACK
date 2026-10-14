@@ -11,6 +11,7 @@ import type { Screen } from "../lib/screens";
 import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import { CheckerPanel } from "../components/CheckerPanel";
+import { takeInboxFocus } from "../lib/inboxFocus";
 import { ApiError, friendlyLoadError } from "../api/client";
 import {
   decidableCount,
@@ -22,6 +23,14 @@ import {
   type ReviewAction,
   type ReviewDecisionRequest,
 } from "../api/topicE";
+
+// What approving does at each level, as the approval rules in the backend enforce it.
+const APPROVE_EFFECT: Record<ReviewAction["autonomy_level"], string> = {
+  L0: "Nothing changes: this is information only.",
+  L1: "Your decision is recorded. Nothing leaves the company.",
+  L2: "It may go outside the company, for example an email to a customer. Nothing goes until this approval.",
+  L3: "Money moves only after a second person checks it with an authenticator code. The transfer itself happens in your bank, outside DuitDuit.",
+};
 
 const LEVEL_HINT: Record<ReviewAction["autonomy_level"], string> = {
   L0: "Read only",
@@ -110,7 +119,11 @@ export default function ReviewInbox() {
         setActions(inbox.actions);
         setJobFunctions(inbox.job_functions);
         setDataMode(inbox.data_mode);
-        setSelectedId(inbox.actions.find((a) => a.can_decide)?.id ?? inbox.actions[0]?.id ?? null);
+        const focus = takeInboxFocus();
+        setSelectedId(
+          (focus && inbox.actions.some((a) => a.id === focus) ? focus : null)
+            ?? inbox.actions.find((a) => a.can_decide)?.id ?? inbox.actions[0]?.id ?? null,
+        );
       })
       .catch((error: Error) => active && setLoadError(friendlyLoadError(error.message)))
       .finally(() => active && setLoading(false));
@@ -237,18 +250,26 @@ export default function ReviewInbox() {
                     <h2>{tx(selected.title)}</h2>
                     <p className="fb-inbox-summary">{tx(selected.summary)}</p>
 
-                    <div>
-                      <div className="fb-inbox-label">{tx("Activity")}</div>
-                      <ActivityTimeline action={selected} />
+                    <div className="dd-inbox-effect">
+                      <strong>{tx("If you approve")}</strong> {tx(APPROVE_EFFECT[selected.autonomy_level])}
                     </div>
 
-                    <CheckerPanel key={`checks-${selected.id}`} actionId={selected.id} />
-
-                    <ReviewComments key={selected.id} actionId={selected.id} />
+                    {selected.draft === null && !editing && (
+                      <div>
+                        <div className="fb-inbox-label">{tx("What the agent prepared")}</div>
+                        <p className="fb-inbox-muted">{tx("No message to send: this item asks for your decision on the summary above.")}</p>
+                      </div>
+                    )}
+                    {selected.draft !== null && !editing && (
+                      <div>
+                        <div className="fb-inbox-label">{tx("What the agent prepared")}</div>
+                        <blockquote className="fb-inbox-draft">{selected.draft}</blockquote>
+                      </div>
+                    )}
 
                     {selected.evidence.length > 0 && (
                       <div>
-                        <div className="fb-inbox-label">{t("inbox.evidence")}</div>
+                        <div className="fb-inbox-label">{tx("Why: the records it used")}</div>
                         <div className="fb-inbox-chips">
                           {selected.evidence.map((e) => {
                             const target = evidenceScreen(e.source);
@@ -262,12 +283,14 @@ export default function ReviewInbox() {
                       </div>
                     )}
 
-                    {selected.draft !== null && !editing && (
-                      <div>
-                        <div className="fb-inbox-label">{t("inbox.draft")}</div>
-                        <blockquote className="fb-inbox-draft">{selected.draft}</blockquote>
-                      </div>
-                    )}
+                    <CheckerPanel key={`checks-${selected.id}`} actionId={selected.id} />
+
+                    <div>
+                      <div className="fb-inbox-label">{tx("Activity")}</div>
+                      <ActivityTimeline action={selected} />
+                    </div>
+
+                    <ReviewComments key={selected.id} actionId={selected.id} />
 
                     {editing && (
                       <label className="fb-inbox-edit">

@@ -1,3 +1,4 @@
+import { focusInboxItem } from "../lib/inboxFocus";
 import { useEffect, useRef, useState } from "react";
 import { useAppState } from "../lib/appState";
 import { BriefingCard } from "./BriefingCard";
@@ -119,7 +120,7 @@ export function PlaybookCard({ id, onNavigate }: { id: PlaybookId; onNavigate?: 
         ))}
       </ol>
       <div className="fb-assistant-actions">
-        {drafts > 0 && <button type="button" className="fb-btn fb-btn-solid" onClick={() => open("inbox")}>Review {drafts} draft{drafts === 1 ? "" : "s"} in the inbox →</button>}
+        {drafts > 0 && <button type="button" className="fb-btn fb-btn-solid" onClick={() => { focusInboxItem(result.inbox_item_ids[0]); open("inbox"); }}>Review {drafts} draft{drafts === 1 ? "" : "s"} in the inbox →</button>}
         {showNext && <button type="button" className="fb-btn fb-btn-outline" onClick={() => open(result.next_screen!)}>{SCREEN_LABEL[result.next_screen!] ?? "Open"} →</button>}
       </div>
     </div>
@@ -149,13 +150,16 @@ function GoalRun({ goal, message }: { goal: string; message: string }) {
         {events.map((e) => (
           <li key={e.sequence} className={"is-" + e.type}>
             <strong>{RUN_AGENT_NAMES[e.agent_id] ?? e.agent_id.replace(/_/g, " ")}</strong> · {e.message}
+            {e.action_id && e.type === "proposal_created" && (
+              <> <button type="button" className="fb-link-toggle" onClick={() => { focusInboxItem(e.action_id!); show("inbox"); }}>Open this proposal →</button></>
+            )}
           </li>
         ))}
       </ol>
       {!done && events.length === 0 && <p className="fb-inbox-muted">The agents are working…</p>}
       {error && <div className="fb-inbox-error" role="alert">{error}</div>}
       {done && inInbox > 0 && (
-        <button type="button" className="fb-cash-more" onClick={() => show("inbox")}>Review {inInbox} item{inInbox === 1 ? "" : "s"} →</button>
+        <button type="button" className="fb-cash-more" onClick={() => { const first = events.find((e) => e.action_id)?.action_id; if (first) focusInboxItem(first); show("inbox"); }}>Review {inInbox} item{inInbox === 1 ? "" : "s"} →</button>
       )}
     </div>
   );

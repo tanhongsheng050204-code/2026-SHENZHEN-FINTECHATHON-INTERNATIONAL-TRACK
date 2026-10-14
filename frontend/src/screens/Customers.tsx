@@ -147,7 +147,7 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
     const endpoint = endpoints.find(
       (row) => row.channel === "email" && row.verification_status === "verified",
     );
-    if (!endpoint) { setMessage("A verified email endpoint is required."); return; }
+    if (!endpoint) { setMessage("Add an email address and have the owner verify it first."); return; }
     setBusy(true); setMessage("");
     try {
       const draft = await createOutreachAction(customer.id, {
@@ -180,7 +180,10 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
         <div className="fb-fine">Written by fixed rules from: {(customer.risk_sources ?? []).join(", ")}. No AI model writes this note.</div>
       </div>
     )}
-    <button className="fb-btn fb-btn-solid" type="button" onClick={() => show("agents")}>Ask about this customer</button>
+    <div className="dd-customer-actions">
+      <button className="fb-btn fb-btn-solid" type="button" onClick={() => show("agents")}>Ask about this customer</button>
+      {canManage && <button className="fb-btn fb-btn-outline" type="button" onClick={() => document.getElementById("dd-customer-contact")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Add a contact or email them</button>}
+    </div>
     <ExportCustomerData customerId={customer.id} />
     <h3 style={{ marginTop: "1.5rem" }}>Why this customer needs attention</h3>
     {customer.attention_signals.length ? (
@@ -213,24 +216,29 @@ function CustomerWorkspace({ customer: initialCustomer, onBack }: { customer: Cu
         ))}
       </div>
     ) : <div className="fb-callout">No verified protected records are linked yet.</div>}
-    {canManage && <section style={{ marginTop: "1.5rem" }}>
-      <h3>Governed email outreach</h3>
-      <p className="fb-fine">Email addresses and message content are protected at rest. Submission requires a verified endpoint; sending requires separate owner approval.</p>
+    {canManage && <section id="dd-customer-contact" style={{ marginTop: "1.5rem", scrollMarginTop: "5rem" }}>
+      <h3>Contact this customer</h3>
+      <ol className="dd-contact-steps">
+        <li>Add the customer's email address. It is stored encrypted.</li>
+        <li>The owner verifies the address once.</li>
+        <li>Draft a message. The owner approves it before anything is sent.</li>
+      </ol>
       {message && <div className="fb-callout" role="status">{message}</div>}
       <div className="fb-panel">
-        <strong>Protected endpoints</strong>
+        <strong>Email addresses on file</strong>
+        {!endpoints.length && <p className="fb-fine">No email address yet. Add one below.</p>}
         {endpoints.map((endpoint) => <div key={endpoint.id} style={{ display: "flex", gap: ".6rem", alignItems: "center", marginTop: ".5rem", flexWrap: "wrap" }}>
           <span>
-            {endpoint.authorized_value ?? <MaskedText text={endpoint.masked_value} />} · {endpoint.verification_status} · {endpoint.origin.replaceAll("_", " ")}
+            {endpoint.authorized_value ?? <MaskedText text={endpoint.masked_value} />} · {VERIFICATION_LABEL[endpoint.verification_status] ?? endpoint.verification_status} · {endpoint.origin.replaceAll("_", " ")}
             {endpoint.authorized_value && <span className="fb-fine"> · authorized owner view</span>}
           </span>
-          {endpoint.verification_status === "observed" && canVerify && <button className="fb-btn fb-btn-outline" type="button" disabled={busy} onClick={() => void verify(endpoint.id)}>Verify endpoint</button>}
-          {endpoint.verification_status !== "revoked" && canVerify && <button className="fb-btn fb-btn-outline" type="button" disabled={busy} onClick={() => void revoke(endpoint.id)}>Revoke endpoint</button>}
+          {endpoint.verification_status === "observed" && canVerify && <button className="fb-btn fb-btn-outline" type="button" disabled={busy} onClick={() => void verify(endpoint.id)}>Verify address</button>}
+          {endpoint.verification_status !== "revoked" && canVerify && <button className="fb-btn fb-btn-outline" type="button" disabled={busy} onClick={() => void revoke(endpoint.id)}>Stop using this address</button>}
           {endpoint.verification_status === "revoked" && <span className="fb-fine">Re-enter the same address to restore it as observed.</span>}
         </div>)}
         <div style={{ display: "flex", gap: ".6rem", marginTop: ".7rem", flexWrap: "wrap" }}>
           <input className="fb-input" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="customer@example.com" aria-label="Customer email" style={{ flex: "1 1 220px" }} />
-          <button className="fb-btn fb-btn-outline" type="button" disabled={busy || !email.trim()} onClick={() => void addEndpoint()}>Protect endpoint</button>
+          <button className="fb-btn fb-btn-outline" type="button" disabled={busy || !email.trim()} onClick={() => void addEndpoint()}>Add email address</button>
         </div>
       </div>
       {!!identityClaims.length && <div className="fb-panel">
@@ -320,6 +328,12 @@ function RiskBand({ band }: { band: "low" | "medium" | "high" }) {
   const { tx } = useI18n();
   return <span className={"rc-chip " + BAND_TONE[band]}>{tx(BAND_LABEL[band])}</span>;
 }
+
+const VERIFICATION_LABEL: Record<string, string> = {
+  observed: "not verified yet",
+  verified: "verified",
+  revoked: "no longer used",
+};
 
 export default function Customers() {
   const { currentCustomerKey, showCustomerDetail } = useAppState();
