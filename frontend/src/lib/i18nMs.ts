@@ -2083,6 +2083,14 @@ export const FB_MS: Record<string, string> = {
   "Marketplace payout": "Bayaran pasaran dalam talian",
   "Money in, no record": "Wang masuk, tiada rekod",
   "Money out, no record": "Wang keluar, tiada rekod",
+  "Pick one, or reply in your own words, for example \"the second one\".": "Pilih satu, atau balas dengan kata-kata anda sendiri, contohnya \"yang kedua\".",
+  "Understood as a correction of your last request.": "Difahami sebagai pembetulan permintaan anda yang lepas.",
+  "What would you like to do about cash?": "Apa yang anda mahu lakukan tentang tunai?",
+  "I can prepare these for you. Which one?": "Saya boleh sediakan ini untuk anda. Yang mana satu?",
+  "Can we pay everyone this month?": "Bolehkah kita bayar semua orang bulan ini?",
+  "See the 90-day forecast": "Lihat ramalan 90 hari",
+  "Find financing for the gap": "Cari pembiayaan untuk jurang",
+  "None of those items fits that. Say which one in other words.": "Tiada perkara itu yang sepadan. Nyatakan yang mana dengan perkataan lain.",
 };
 
 type Translate = (text: string) => string;
@@ -2163,6 +2171,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Last import: (\d{1,2} \w{3} \d{4})\.$/, (m) => `Import terakhir: ${m[1]}.`],
   [/^(\d+) items? still open in your review inbox\.$/, (m) => `${m[1]} perkara masih terbuka dalam peti semakan anda.`],
   [/^Explain a bank line: (RM[\d,.]+) (in|out) on (\d{1,2} \w{3})$/, (m) => `Terangkan baris bank: ${m[1]} ${m[2] === "in" ? "masuk" : "keluar"} pada ${m[3]}`],
+  [/^(\d+) items fit that\. Which one do you want to (approve|reject)\?$/, (m) => `${m[1]} perkara sepadan. Yang mana satu anda mahu ${m[2] === "approve" ? "luluskan" : "tolak"}?`],
   // Several sentences: translate each one, keep the ones there is no Malay for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr).join(" ")],
 ];

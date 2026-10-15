@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from app.contracts.common import AutonomyLevel
 
 AssistantKind = Literal[
-    "navigate", "run_goal", "decide", "briefing", "playbook", "answer", "refuse"
+    "navigate", "run_goal", "decide", "briefing", "playbook", "answer", "refuse", "clarify"
 ]
 PlaybookId = Literal["bank_meeting", "chase_late_payers", "pay_everyone", "month_end"]
 
@@ -29,6 +29,16 @@ class PlaybookResult(BaseModel):
 
 class AssistantCommand(BaseModel):
     text: str = Field(min_length=1, max_length=500)
+    previous: str | None = Field(
+        default=None,
+        max_length=500,
+        description="The person's previous command, so a correction or a choice can refer to it",
+    )
+
+
+class ClarifyOption(BaseModel):
+    label: str
+    command: str = Field(description="What to send if the person picks this option")
 
 
 class VoiceAvailability(BaseModel):
@@ -61,6 +71,12 @@ class AssistantPlan(BaseModel):
     items: list[AssistantItem] = Field(default_factory=list)
     needs_confirmation: bool = False
     needs_step_up: bool = False
+    options: list[ClarifyOption] = Field(
+        default_factory=list, description="For clarify: the choices to offer"
+    )
+    corrected: bool = Field(
+        default=False, description="Understood as a correction of the previous command"
+    )
     answer_here: bool = Field(
         default=False,
         description="A question about a page: show its summary in the chat, then offer to open it",

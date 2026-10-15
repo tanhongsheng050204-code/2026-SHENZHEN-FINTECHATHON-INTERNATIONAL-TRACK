@@ -21,7 +21,7 @@ import secrets
 from app.auth.principal import AuthPrincipal
 from app.config import get_settings
 from app.contracts.agents import ReviewAction
-from app.contracts.assistant import AssistantItem, AssistantPlan
+from app.contracts.assistant import AssistantItem, AssistantPlan, ClarifyOption
 from app.contracts.common import AutonomyLevel
 from app.schemas import UserRole
 from app.services import agent_runtime, live_agents, playbooks
@@ -77,6 +77,57 @@ _QUESTION = re.compile(
 )
 _DECIDE = re.compile(r"\b(approve|accept|sign\s+off|reject|decline)\b", re.IGNORECASE)
 _ALL = re.compile(r"\b(all|everything|every|each)\b", re.IGNORECASE)
+# "approve the reminder drafts" means every reminder; "approve the reminder" means one.
+_PLURAL = re.compile(
+    r"\b(drafts|items|reminders|payments|bills|invoices|proposals|ones|them|these|those)\b",
+    re.IGNORECASE,
+)
+_CORRECTION = re.compile(
+    r"^\s*(no|nope|not that( one)?|wrong( one)?|i meant|i mean|actually|sorry|"
+    r"bukan|tidak|silap|不是|不对|我是说|我的意思是)\b[\s,.!:;-]*",
+    re.IGNORECASE,
+)
+_ORDINAL = {
+    "first": 0, "1st": 0, "1": 0, "pertama": 0, "第一": 0,
+    "second": 1, "2nd": 1, "two": 1, "2": 1, "kedua": 1, "第二": 1,
+    "third": 2, "3rd": 2, "three": 2, "3": 2, "ketiga": 2, "第三": 2,
+    "fourth": 3, "4th": 3, "4": 3, "keempat": 3, "第四": 3,
+    "last": -1, "terakhir": -1, "最后": -1,
+}
+_FILLER = {
+    "the", "one", "for", "about", "that", "this", "a", "an", "i", "meant", "mean", "no",
+    "not", "it", "item", "please", "to", "of", "on", "with", "yang", "itu", "untuk",
+}
+# One or two words naming a broad area: ask what the person wants done there.
+_VAGUE = (
+    (
+        re.compile(
+            r"^\s*(help( me)?( with)?\s*)?(cash|money|duit|wang|tunai|钱|现金|资金)\s*\??\s*$",
+            re.IGNORECASE,
+        ),
+        "What would you like to do about cash?",
+        (
+            ("Can we pay everyone this month?", "Can I pay everyone this month?"),
+            ("See the 90-day forecast", "Open cash flow"),
+            ("Chase the late payers", "Chase the late payers"),
+            ("Find financing for the gap", "Which loans can we apply for?"),
+        ),
+    ),
+    (
+        re.compile(
+            r"^\s*(help|what can you do|bantu|tolong|帮助|帮忙|你能做什么)\s*\??\s*$",
+            re.IGNORECASE,
+        ),
+        "I can prepare these for you. Which one?",
+        (
+            ("Can we pay everyone this month?", "Can I pay everyone this month?"),
+            ("Prepare me for the bank meeting", "Prepare me for the bank meeting"),
+            ("Chase the late payers", "Chase the late payers"),
+            ("Close the month", "Close the month"),
+            ("What needs me today?", "What needs me today?"),
+        ),
+    ),
+)
 _GOAL = re.compile(
     r"^\s*(please\s+)?(can|could|will|prepare|plan|chase|check|help|run|get|work\s+out|"
     r"make\s+sure|find)\b",
@@ -165,13 +216,34 @@ def _matches(action: ReviewAction, keywords: set[str]) -> bool:
     return any(word in haystack for word in keywords)
 
 
-def _decide(db, principal: AuthPrincipal, text: str, decision: str, by: str) -> AssistantPlan:
+def _narrowed(action: ReviewAction, phrase: str) -> bool:
+    haystack = f"{action.title} {action.agent_id} {action.summary}".casefold()
+    words = [w for w in re.findall(r"[a-z0-9]+", phrase.casefold()) if w not in _FILLER]
+    if not words:
+        return False
+    return " ".join(words) in haystack or all(
+        w in haystack for w in words if len(w) >= 3
+    ) and any(len(w) >= 3 for w in words)
+
+
+def _decide(
+    db,
+    principal: AuthPrincipal,
+    text: str,
+    decision: str,
+    by: str,
+    narrow: str | None = None,
+) -> AssistantPlan:
     if principal.role == UserRole.COMPLIANCE:
         return _refuse("Compliance reviews every item but does not decide them.", by)
     actions = _inbox(db, principal)
     mine = [a for a in actions if a.can_decide]
     keywords = _keywords(text)
-    if _ALL.search(text) and not keywords:
+    named = re.search(r'"([^"]+)"', text)
+    exact = [a for a in mine if named and a.title == named.group(1)]
+    if exact:
+        chosen = exact
+    elif _ALL.search(text) and not keywords:
         chosen = mine
     else:
         # "all payments" still means only the items about payments.
@@ -185,6 +257,22 @@ def _decide(db, principal: AuthPrincipal, text: str, decision: str, by: str) -> 
             "Nothing waiting in your review inbox is yours to "
             f"{decision}. Payments and other money items need finance and the owner.",
             by,
+        )
+    if narrow is not None:
+        # The items the last request named first, then anything this person may decide.
+        chosen = [a for a in chosen if _narrowed(a, narrow)] or [
+            a for a in mine if _narrowed(a, narrow)
+        ]
+        if not chosen:
+            return _refuse("None of those items fits that. Say which one in other words.", by)
+    if len(chosen) > 1 and not exact and not _ALL.search(text) and not _PLURAL.search(text):
+        return AssistantPlan(
+            kind="clarify",
+            message=f"{len(chosen)} items fit that. Which one do you want to {decision}?",
+            options=[
+                ClarifyOption(label=a.title, command=f'{decision} "{a.title}"') for a in chosen
+            ],
+            understood_by=by,
         )
     items = [
         AssistantItem(
@@ -275,6 +363,14 @@ def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
             return plan
     if _GOAL.search(text) and not agent_runtime.plan(text).empty:
         return _run_goal(principal, text, "rules")
+    for pattern, message, choices in _VAGUE:
+        if pattern.search(text):
+            return AssistantPlan(
+                kind="clarify",
+                message=message,
+                options=[ClarifyOption(label=label, command=cmd) for label, cmd in choices],
+                understood_by="rules",
+            )
     return None
 
 
@@ -325,8 +421,52 @@ def _by_model(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
     return None
 
 
-def interpret(db, principal: AuthPrincipal, text: str) -> AssistantPlan:
-    plan = _by_rules(db, principal, text) or _by_model(db, principal, text) or _answer()
+def _follow_up(db, principal: AuthPrincipal, text: str, previous: str) -> AssistantPlan | None:
+    """A choice from the last clarification, or a correction of the last command."""
+    asked = _by_rules(db, principal, previous)
+    rest = _CORRECTION.sub("", text, count=1).strip()
+    corrected = rest != text.strip()
+    decide = _DECIDE.search(previous)
+    narrowing = decide is not None and bool(rest) and not _DECIDE.search(rest)
+    if asked is not None and asked.kind == "decide" and narrowing:
+        verb = decide.group(1).casefold()
+        decision = "reject" if verb in ("reject", "decline") else "approve"
+        plan = _decide(db, principal, previous, decision, "rules", narrow=rest)
+        plan.corrected = corrected
+        return plan
+    if asked is not None and asked.kind == "clarify" and asked.options:
+        words = re.findall(r"[a-z0-9]+|[\u4e00-\u9fff]+", rest.casefold())
+        pick = next((_ORDINAL[w] for w in words if w in _ORDINAL), None)
+        if pick is not None and len(words) <= 4:
+            index = pick if pick >= 0 else len(asked.options) - 1
+            if index < len(asked.options):
+                return _by_rules(db, principal, asked.options[index].command)
+        decide = _DECIDE.search(previous)
+        if decide and rest and not _DECIDE.search(rest):
+            verb = decide.group(1).casefold()
+            decision = "reject" if verb in ("reject", "decline") else "approve"
+            plan = _decide(db, principal, previous, decision, "rules", narrow=rest)
+            plan.corrected = corrected
+            return plan
+    if corrected and rest:
+        plan = _by_rules(db, principal, rest)
+        if plan is None and len(rest.split()) <= 3:
+            plan = _by_rules(db, principal, f"open {rest}")
+        if plan is not None:
+            plan.corrected = True
+            return plan
+    return None
+
+
+def interpret(
+    db, principal: AuthPrincipal, text: str, previous: str | None = None
+) -> AssistantPlan:
+    plan = (
+        (_follow_up(db, principal, text, previous) if previous else None)
+        or _by_rules(db, principal, text)
+        or _by_model(db, principal, text)
+        or _answer()
+    )
     if db is not None:
         write_workflow_event(
             db,

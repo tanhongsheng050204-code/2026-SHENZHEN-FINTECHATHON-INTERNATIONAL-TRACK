@@ -918,7 +918,7 @@ export async function fetchScorecard(): Promise<ScorecardResponse> {
 
 // ── Assistant (front door) ──────────────────────────────────────────────────
 
-export type AssistantKind = "navigate" | "run_goal" | "decide" | "briefing" | "playbook" | "answer" | "refuse";
+export type AssistantKind = "navigate" | "run_goal" | "decide" | "briefing" | "playbook" | "answer" | "refuse" | "clarify";
 export type PlaybookId = "bank_meeting" | "chase_late_payers" | "pay_everyone" | "month_end";
 
 export interface PlaybookResult {
@@ -956,11 +956,15 @@ export interface AssistantPlan {
   needs_step_up: boolean;
   /** A question about a page: answer in the chat, then offer to open it. */
   answer_here?: boolean;
+  /** For clarify: the choices to offer; each sends its command. */
+  options?: { label: string; command: string }[];
+  /** Understood as a correction of the previous command. */
+  corrected?: boolean;
   understood_by: "rules" | "model";
 }
 
-export async function interpretCommand(text: string): Promise<AssistantPlan> {
-  return parse<AssistantPlan>(await authenticatedFetch("/assistant/interpret", json({ text })));
+export async function interpretCommand(text: string, previous?: string): Promise<AssistantPlan> {
+  return parse<AssistantPlan>(await authenticatedFetch("/assistant/interpret", json({ text, previous: previous ?? null })));
 }
 
 export async function voiceAvailable(): Promise<boolean> {

@@ -2135,6 +2135,14 @@ export const FB_ZH: Record<string, string> = {
   "Marketplace payout": "电商平台回款",
   "Money in, no record": "收入，无对应记录",
   "Money out, no record": "支出，无对应记录",
+  "Pick one, or reply in your own words, for example \"the second one\".": "请选择一项，或用自己的话回复，例如“第二个”。",
+  "Understood as a correction of your last request.": "已理解为对您上一条请求的更正。",
+  "What would you like to do about cash?": "关于现金，您想做什么？",
+  "I can prepare these for you. Which one?": "我可以为您准备以下事项。选哪一个？",
+  "Can we pay everyone this month?": "这个月我们能付清所有款项吗？",
+  "See the 90-day forecast": "查看 90 天预测",
+  "Find financing for the gap": "为缺口寻找融资",
+  "None of those items fits that. Say which one in other words.": "这些事项都不符合。请换个说法告诉我是哪一个。",
 };
 
 type Translate = (text: string) => string;
@@ -2239,6 +2247,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) items? still open in your review inbox\.$/, (m) => `审核收件箱中还有 ${m[1]} 项未处理。`],
   [/^Explain a bank line: (RM[\d,.]+) (in|out) on (\d{1,2} \w{3})$/, (m) => `说明一笔银行流水：${m[3]} ${m[2] === "in" ? "收入" : "支出"} ${m[1]}`],
   [/^Payroll (\d{4}-\d{2})$/, (m) => `${m[1]} 工资`],
+  [/^(\d+) items fit that\. Which one do you want to (approve|reject)\?$/, (m) => `有 ${m[1]} 项符合。您想${m[2] === "approve" ? "批准" : "拒绝"}哪一项？`],
   // Several sentences: translate each one, keep the ones there is no Chinese for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr)
     .reduce((text, part) => text + (text && (/[ -~]$/.test(text) || /^[ -~]/.test(part)) ? " " : "") + part, "")],

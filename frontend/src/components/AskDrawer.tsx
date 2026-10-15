@@ -34,6 +34,8 @@ export function AskDrawer() {
     });
   };
 
+  const lastCommand = useRef<string | undefined>(undefined);
+
   const send = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
@@ -44,11 +46,12 @@ export function AskDrawer() {
     scrollToBottom();
 
     try {
-      const plan = await interpretCommand(trimmed);
+      const plan = await interpretCommand(trimmed, lastCommand.current);
+      lastCommand.current = trimmed;
       if (plan.kind !== "answer") {
         setMessages((m) => m.map((msg) => (
           msg.id === thinkingId
-            ? { ...msg, thinking: false, text: "", node: <AssistantReply plan={plan} onNavigate={closeAsk} /> }
+            ? { ...msg, thinking: false, text: "", node: <AssistantReply plan={plan} onNavigate={closeAsk} onChoose={(command) => void send(command)} /> }
             : msg
         )));
         scrollToBottom();

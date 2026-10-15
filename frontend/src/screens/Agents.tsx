@@ -159,6 +159,9 @@ export default function Agents() {
     });
   };
 
+  // The last command, so the next message can pick a choice or correct it.
+  const lastCommand = useRef<string | undefined>(undefined);
+
   const send = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
@@ -179,11 +182,12 @@ export default function Agents() {
       // The front door: open a page, start the agents, or prepare a decision to
       // confirm. Anything else is a question for the protected records below.
       try {
-        const plan = await interpretCommand(trimmed);
+        const plan = await interpretCommand(trimmed, lastCommand.current);
+        lastCommand.current = trimmed;
         if (plan.kind !== "answer") {
           setMessages((list) => list.map((message) => (
             message.id === thinkingId
-              ? { ...message, thinking: false, timestamp: now(), text: "", embed: <AssistantReply plan={plan} />, rawQuestion: trimmed }
+              ? { ...message, thinking: false, timestamp: now(), text: "", embed: <AssistantReply plan={plan} onChoose={(command) => void send(command)} />, rawQuestion: trimmed }
               : message
           )));
           scrollToLastMessage();

@@ -34,7 +34,7 @@ const LEVEL_TEXT: Record<string, string> = {
  * explicit Confirm. Money items also go through the authenticator step-up
  * that the decision endpoint requires.
  */
-export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNavigate?: () => void }) {
+export function AssistantReply({ plan, onNavigate, onChoose }: { plan: AssistantPlan; onNavigate?: () => void; onChoose?: (command: string) => void }) {
   const { show } = useAppState();
   const started = useRef(false);
 
@@ -52,15 +52,33 @@ export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNa
   if (plan.kind === "navigate" && plan.answer_here && (plan.screen === "financing" || plan.screen === "einvoice")) {
     return <TopicAnswer screen={plan.screen} onNavigate={onNavigate} />;
   }
-  if (plan.kind === "run_goal" && plan.goal) return <GoalRun goal={plan.goal} message={plan.message} />;
-  if (plan.kind === "decide") return <DecisionCard plan={plan} />;
-  if (plan.kind === "briefing") return <BriefingCard onNavigate={onNavigate} />;
-  if (plan.kind === "playbook" && plan.playbook) return <PlaybookCard key={plan.playbook} id={plan.playbook} onNavigate={onNavigate} />;
-  return (
+  if (plan.kind === "clarify") {
+    return (
+      <div className="fb-assistant">
+        <p>{plan.message}</p>
+        <div className="dd-clarify" role="group" aria-label="Choices">
+          {(plan.options ?? []).map((option, index) => (
+            <button key={option.command} type="button" className="fb-btn fb-btn-outline" disabled={!onChoose} onClick={() => onChoose?.(option.command)}>
+              <span className="dd-clarify-n">{index + 1}</span>{option.label}
+            </button>
+          ))}
+        </div>
+        <p className="fb-inbox-muted">Pick one, or reply in your own words, for example "the second one".</p>
+      </div>
+    );
+  }
+  const corrected = plan.corrected ? <p className="fb-inbox-muted">Understood as a correction of your last request.</p> : null;
+  let body;
+  if (plan.kind === "run_goal" && plan.goal) body = <GoalRun goal={plan.goal} message={plan.message} />;
+  else if (plan.kind === "decide") body = <DecisionCard plan={plan} />;
+  else if (plan.kind === "briefing") body = <BriefingCard onNavigate={onNavigate} />;
+  else if (plan.kind === "playbook" && plan.playbook) body = <PlaybookCard key={plan.playbook} id={plan.playbook} onNavigate={onNavigate} />;
+  else body = (
     <div className="fb-assistant">
       <p>{plan.message}</p>
     </div>
   );
+  return corrected ? <>{corrected}{body}</> : body;
 }
 
 const STEP_STATUS = { done: "Done", attention: "Needs you", not_measured: "Not measured" };

@@ -177,3 +177,59 @@ def test_reconcile_opens_reconciliation_in_three_languages():
         plan = _ask(text)
         assert (plan["kind"], plan["screen"]) == ("navigate", "reconciliation"), text
     assert _ask("reconcile September", UserRole.GENERAL_EMPLOYEE)["kind"] == "refuse"
+
+
+def _ask_after(previous: str, text: str, role=UserRole.OWNER_DIRECTOR) -> dict:
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[get_db] = lambda: None
+    app.dependency_overrides[get_current_user] = lambda: _person(role)
+    response = TestClient(app).post(
+        "/assistant/interpret", json={"text": text, "previous": previous}
+    )
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+def test_a_singular_request_that_fits_several_items_asks_which_one():
+    plan = _ask("approve the reminder")
+
+    assert plan["kind"] == "clarify"
+    assert len(plan["options"]) >= 2
+    assert all(o["command"].startswith("approve ") for o in plan["options"])
+    assert _ask("approve the reminder drafts", role=UserRole.FINANCE_OPS)["kind"] == "decide"
+
+
+def test_a_vague_request_offers_choices_in_three_languages():
+    for text in ("cash", "help with money", "duit", "现金"):
+        plan = _ask(text)
+        assert plan["kind"] == "clarify", text
+        commands = [o["command"] for o in plan["options"]]
+        assert "Can I pay everyone this month?" in commands, text
+
+
+def test_the_next_message_can_pick_a_choice_or_correct_it():
+    options = _ask("approve the reminder")["options"]
+
+    second = _ask_after("approve the reminder", "the second one")
+    assert second["kind"] == "decide"
+    assert [i["title"] for i in second["items"]] == [options[1]["label"]]
+
+    email = _ask_after("approve the reminder", "no, the email one")
+    assert email["kind"] == "decide" and email["corrected"] is True
+    assert [i["id"] for i in email["items"]] == ["act_send_reminders"]
+
+    fresh = _ask_after("open cash flow", "no, I meant financing")
+    assert (fresh["kind"], fresh["screen"], fresh["corrected"]) == ("navigate", "financing", True)
+
+
+def test_a_correction_never_widens_what_a_role_may_do():
+    plan = _ask_after("open cash flow", "no, approve every payment", UserRole.GENERAL_EMPLOYEE)
+    assert plan["kind"] == "refuse"
+
+
+def test_a_correction_after_a_decision_looks_beyond_the_items_it_named():
+    plan = _ask_after('approve "Review 3 reminder drafts"', "no, the campaign one")
+    assert plan["corrected"] is True
+    assert plan["kind"] == "decide"
+    assert ["campaign" in i["title"].casefold() for i in plan["items"]] == [True]

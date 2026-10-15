@@ -68,6 +68,8 @@ def interpret(
     db: Session = Depends(get_db),
 ) -> AssistantPlan:
     """What DuitDuit understood. A plan to confirm, never an action already taken."""
+    if command.previous:
+        return assistant.interpret(db, principal, command.text, command.previous)
     return assistant.interpret(db, principal, command.text)
 
 
