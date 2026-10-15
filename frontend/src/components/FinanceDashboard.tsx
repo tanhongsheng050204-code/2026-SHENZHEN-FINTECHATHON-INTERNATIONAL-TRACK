@@ -7,6 +7,7 @@ import "./FinanceDashboard.css";
 import { useAppState } from "../lib/appState";
 import { dateLocale } from "../lib/dateLocale";
 import { useI18n } from "../lib/i18n";
+import { ValueCard } from "./ValueCard";
 import { canOpen } from "../lib/access";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import { displayCase, isPlaceholderName } from "../lib/customerAggregation";
@@ -137,6 +138,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
   const locale = dateLocale(lang);
   const { identity } = useAuth();
   const role = identity?.role ?? askRole;
+  const seesMoney = role === "owner_director" || role === "finance_ops" || role === "compliance";
   const [forecast, setForecast] = useState<ForecastResponse | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
   const [inbox, setInbox] = useState<ReviewAction[] | null>(null);
@@ -371,6 +373,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
         </section>
         </div>
       </div>
+      {seesMoney && <ValueCard />}
     </div>
   );
 }

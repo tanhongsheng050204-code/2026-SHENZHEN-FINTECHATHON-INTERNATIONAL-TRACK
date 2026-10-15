@@ -100,3 +100,22 @@ export async function explainBankLine(ref: string): Promise<string> {
   );
   return body.action_id;
 }
+
+export interface ValueMetric {
+  key: string;
+  label: string;
+  value: string;
+  detail: string;
+  kind: "measured" | "estimate" | "not_measured";
+}
+
+export interface ValueReport {
+  data_mode: DataMode;
+  as_of: string;
+  synthetic: boolean;
+  metrics: ValueMetric[];
+}
+
+export async function fetchValue(): Promise<ValueReport> {
+  return parse<ValueReport>(await authenticatedFetch("/value"));
+}

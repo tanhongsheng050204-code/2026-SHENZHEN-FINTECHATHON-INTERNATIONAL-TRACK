@@ -55,6 +55,7 @@ from app.routes import mcp as mcp_routes
 from app.routes import reconciliation as reconciliation_routes
 from app.routes import security as security_routes
 from app.routes import settings as settings_routes
+from app.routes import value as value_routes
 from app.security.detect import warm_detector
 
 settings = get_settings()
@@ -253,6 +254,7 @@ app.include_router(mcp_routes.router)
 app.include_router(security_routes.router)
 app.include_router(insights_routes.router)
 app.include_router(reconciliation_routes.router)
+app.include_router(value_routes.router)
 
 
 @app.exception_handler(RequestValidationError)
