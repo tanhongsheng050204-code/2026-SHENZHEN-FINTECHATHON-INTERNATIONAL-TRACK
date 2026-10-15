@@ -107,7 +107,12 @@ def load_demo_story(db, tenant_id: str, company_name: str, as_of: dt.date) -> No
         )
         commit_import(db, seeder, schema, text, mapping.id, commit=False)
     db.commit()
-    seed_original_fixtures(db, tenant_id)
+    # The imports ran as the restricted worker; e-invoices and protected records are
+    # written on the provisioning connection, as seed.topic_e_original_fixtures does.
+    from sqlalchemy.orm import Session
+
+    with Session(db.get_bind()) as fixtures:
+        seed_original_fixtures(fixtures, tenant_id)
 
 
 def main() -> None:
