@@ -112,7 +112,9 @@ function ProtectedFilePanel() {
     setMessage("");
     try {
       const result = await commitUpload(file, preview.preview_digest);
-      setMessage(`${result.ready_rows} of ${result.valid_rows} protected source(s) are ready.`);
+      setMessage(result.status === "enriching"
+        ? `${result.protected_rows} of ${result.valid_rows} protected and saved. The summary is being written and shows here within a minute.`
+        : `${result.ready_rows} of ${result.valid_rows} protected source(s) are ready.`);
       setFile(null);
       setState("done");
       if (inputRef.current) inputRef.current.value = "";

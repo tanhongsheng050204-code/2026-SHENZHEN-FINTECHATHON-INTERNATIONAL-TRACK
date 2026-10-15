@@ -1,6 +1,6 @@
 import re
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import require_roles
@@ -9,7 +9,7 @@ from app.config import get_settings
 from app.db import get_db
 from app.integrations.telegram.extractors import ExtractionError
 from app.schemas import UploadCommitResponse, UploadPreviewResponse, UserRole
-from app.services.upload_ingestion import commit_upload, preview_upload
+from app.services.upload_ingestion import commit_upload, finish_enrichment, preview_upload
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 RECORD_TYPE_PATTERN = re.compile(r"^[a-z0-9_.-]{1,64}$")
@@ -63,9 +63,21 @@ async def preview(
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
+def _summarise_later(bind, tenant_id: str, source_record_ids: list[str]) -> None:
+    """Runs after the response: the model summary can outlast the website's time limit."""
+    from sqlalchemy.orm import Session as OrmSession
+
+    from app.db import set_worker_context
+
+    with OrmSession(bind) as db:
+        set_worker_context(db, actor_ref="upload-enrichment", tenant_id=tenant_id)
+        finish_enrichment(db, source_record_ids)
+
+
 @router.post("/commit", response_model=UploadCommitResponse)
 async def commit(
     request: Request,
+    background: BackgroundTasks,
     filename: str = Header(alias="X-FinBrain-Filename", max_length=255),
     record_type: str = Header(default="uploaded_document", alias="X-FinBrain-Record-Type"),
     _principal: AuthPrincipal = Depends(
@@ -77,7 +89,7 @@ async def commit(
     _metadata(filename, record_type)
     data = await _bounded_body(request)
     try:
-        return commit_upload(
+        result = commit_upload(
             db,
             data,
             filename=filename,
@@ -85,9 +97,14 @@ async def commit(
             record_type=record_type,
             tenant_id=str(_principal.tenant_id),
             expected_digest=preview_digest,
+            defer_enrichment=True,
         )
     except ExtractionError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except ValueError as error:
         status = 409 if str(error) == "preview_digest_mismatch" else 422
         raise HTTPException(status_code=status, detail=str(error)) from error
+    waiting = [row.source_record_id for row in result.rows if row.processing_status == "protected"]
+    if waiting:
+        background.add_task(_summarise_later, db.get_bind(), str(_principal.tenant_id), waiting)
+    return result

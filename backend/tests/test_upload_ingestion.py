@@ -129,3 +129,42 @@ def test_generic_preview_rejects_unsupported_and_exposes_only_safe_codes():
         assert "archive.exe" not in str(error)
     else:
         raise AssertionError("Unsupported upload was previewed")
+
+
+def test_a_web_upload_is_protected_now_and_summarised_afterwards(monkeypatch):
+    # The model summary can take longer than the website allows a request, so the
+    # upload returns once the text is protected and the summary runs after it.
+    from app.services.upload_ingestion import finish_enrichment
+
+    engine, db = _database()
+    calls = []
+    _mock_enrichment(monkeypatch)
+    real = ingestion.summarize_protected_text
+    monkeypatch.setattr(
+        ingestion, "summarize_protected_text", lambda text: calls.append(text) or real(text)
+    )
+    document = b"Call 012-345 6789 about the delayed approval."
+    try:
+        csv_result = commit_upload(
+            db, CSV, filename="invoices.csv", mime_type="text/csv",
+            record_type="invoice_register", expected_digest=upload_digest(CSV),
+            defer_enrichment=True,
+        )
+        doc_result = commit_upload(
+            db, document, filename="notes.txt", mime_type="text/plain",
+            record_type="meeting_notes", expected_digest=upload_digest(document),
+            defer_enrichment=True,
+        )
+        assert calls == []
+        assert (csv_result.status, doc_result.status) == ("enriching", "enriching")
+        assert csv_result.protected_rows == doc_result.protected_rows == 1
+
+        finish_enrichment(db, [r.source_record_id for r in csv_result.rows + doc_result.rows])
+
+        records = db.scalars(select(TokenizedContent)).all()
+        assert len(calls) == 2
+        assert {r.processing_status for r in records} == {"ready"}
+        assert db.scalar(select(StructuredIngestionBatch)).status == "ready"
+    finally:
+        db.close()
+        engine.dispose()

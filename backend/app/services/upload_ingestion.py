@@ -3,6 +3,7 @@ import hmac
 from dataclasses import asdict
 from pathlib import PurePosixPath
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -122,12 +123,15 @@ def commit_upload(
     record_type: str,
     expected_digest: str,
     tenant_id: str | None = None,
+    defer_enrichment: bool = False,
 ) -> UploadCommitResponse:
     digest = upload_digest(data, tenant_id)
     if not hmac.compare_digest(digest, expected_digest):
         raise ValueError("preview_digest_mismatch")
     if _safe_suffix(filename) == ".csv":
-        result = ingest_structured_csv(db, data, tenant_id=tenant_id)
+        result = ingest_structured_csv(
+            db, data, tenant_id=tenant_id, defer_enrichment=defer_enrichment
+        )
         return UploadCommitResponse(
             preview_digest=digest,
             input_kind="structured_csv",
@@ -154,15 +158,16 @@ def commit_upload(
     record, input_kind = _document_record(
         data, filename=filename, mime_type=mime_type, record_type=record_type, tenant_id=tenant_id
     )
-    result = ingest_canonical_record(db, record)
+    result = ingest_canonical_record(db, record, enrich=not defer_enrichment)
     ready = result.processing_status is ProcessingStatus.READY
+    protected = result.processing_status is ProcessingStatus.PROTECTED
     return UploadCommitResponse(
         preview_digest=digest,
         input_kind=input_kind,
-        status="ready" if ready else "failed",
+        status="ready" if ready else "enriching" if protected and defer_enrichment else "failed",
         total_rows=1,
         valid_rows=1,
-        failed_rows=0 if ready else 1,
+        failed_rows=0 if ready or (protected and defer_enrichment) else 1,
         protected_rows=1,
         ready_rows=1 if ready else 0,
         rows=[
@@ -174,3 +179,30 @@ def commit_upload(
             )
         ],
     )
+
+
+def finish_enrichment(db: Session, source_record_ids: list[str]) -> None:
+    """Summarise uploads that were protected without waiting for the model."""
+    from collections import Counter
+
+    from app.integrations.structured_csv.service import finish_batch
+    from app.models import TokenizedContent
+    from app.services.ingestion import enrich_protected_record
+
+    ready: Counter[str] = Counter()
+    failed: Counter[str] = Counter()
+    for source_record_id in source_record_ids:
+        try:
+            result = enrich_protected_record(db, source_record_id, created=True)
+            ok = result.processing_status is ProcessingStatus.READY
+        except Exception:
+            db.rollback()
+            ok = False
+        row = db.scalar(
+            select(TokenizedContent).where(TokenizedContent.source_record_id == source_record_id)
+        )
+        batch_ref = (row.safe_metadata or {}).get("batch_ref") if row is not None else None
+        if batch_ref:
+            (ready if ok else failed)[batch_ref] += 1
+    for batch_ref in {*ready, *failed}:
+        finish_batch(db, batch_ref, ready=ready[batch_ref], failed=failed[batch_ref])

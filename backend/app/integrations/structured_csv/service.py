@@ -25,8 +25,13 @@ def ingest_structured_csv(
     refresh: bool = False,
     origin_channel: str = "web_upload",
     tenant_id: str | None = None,
+    defer_enrichment: bool = False,
 ) -> StructuredCsvBatchResult:
-    """Validate, protect every accepted row, then enrich protected rows only."""
+    """Validate, protect every accepted row, then enrich protected rows only.
+
+    With defer_enrichment the batch is returned once its rows are protected, still
+    "enriching"; finish_batch() records the outcome after they are summarised.
+    """
     context = db.info.get("finbrain_rls_context", {})
     if context.get("database_role") == "finbrain_worker":
         set_worker_context(
@@ -108,6 +113,20 @@ def ingest_structured_csv(
     batch.failure_code = "row_protection_failed" if protection_failures else None
     _persist_batch(db, batch)
 
+    if defer_enrichment and protected_results:
+        return StructuredCsvBatchResult(
+            batch_ref=batch_ref,
+            schema_name=SCHEMA_NAME,
+            status=batch.status,
+            total_rows=batch.total_rows,
+            valid_rows=batch.valid_rows,
+            failed_rows=batch.failed_rows,
+            protected_rows=batch.protected_rows,
+            ready_rows=0,
+            rows=protected_results,
+            issues=parsed.issues,
+        )
+
     final_results: list[StructuredCsvRowResult] = []
     ready_rows = 0
     enrichment_failures = 0
@@ -160,3 +179,22 @@ def ingest_structured_csv(
         rows=final_results,
         issues=parsed.issues,
     )
+
+
+def finish_batch(db: Session, batch_ref: str, *, ready: int, failed: int) -> None:
+    """Record how a deferred batch's rows came out once they have been summarised."""
+    batch = db.get(StructuredIngestionBatch, batch_ref)
+    if batch is None or batch.status != "enriching":
+        return
+    batch.ready_rows = ready
+    batch.failed_rows += failed
+    if ready == batch.total_rows:
+        batch.status = "ready"
+        batch.failure_code = None
+    elif ready:
+        batch.status = "partial"
+        batch.failure_code = "some_rows_failed"
+    else:
+        batch.status = "failed"
+        batch.failure_code = "enrichment_failed"
+    _persist_batch(db, batch)

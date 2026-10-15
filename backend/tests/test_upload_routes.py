@@ -72,7 +72,14 @@ def test_upload_preview_and_commit_routes(monkeypatch):
             headers=_headers(**{"X-FinBrain-Preview-Digest": digest}),
         )
         assert commit.status_code == 200
-        assert commit.json()["ready_rows"] == 1
+        # The response comes once the row is protected; the summary runs after it.
+        assert (commit.json()["status"], commit.json()["protected_rows"]) == ("enriching", 1)
+        from sqlalchemy import select
+
+        from app.models import TokenizedContent
+
+        db.expire_all()
+        assert db.scalar(select(TokenizedContent.processing_status)) == "ready"
     finally:
         client.close()
         db.close()
