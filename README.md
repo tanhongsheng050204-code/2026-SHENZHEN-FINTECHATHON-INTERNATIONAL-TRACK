@@ -13,7 +13,7 @@
 ![Tests](https://img.shields.io/badge/tests-pytest_offline-2496ED?logo=pytest&logoColor=white)
 [![Website](https://img.shields.io/badge/website-duitduit--umber.vercel.app-black?logo=vercel&logoColor=white)](https://duitduit-umber.vercel.app/)
 
-**Live site: <https://duitduit-umber.vercel.app/>** (the API behind it runs on a team member's Google Cloud server; see [Build status](#build-status))
+**Live site: <https://duitduit-umber.vercel.app/>** (see [Build status](#build-status))
 
 DuitDuit is our entry for the **2026 Shenzhen International FinTech Competition
 (FinTechathon), International Track — Topic E: SME Finance Copilot**. It gives a small
@@ -127,7 +127,7 @@ Status as of 2026-10-15. The demo company and its data are synthetic and labelle
 | AI techniques: a payment-delay model, calibrated forecast ranges (conformal prediction), anomaly detection on bills and payments, a checker agent on every review item, keyword reranking with a grounding check on answers and one more search when a sentence is not grounded (agentic retrieval), and benchmarks across companies with differential privacy | **Built and tested.** Described, with what each does not claim, in [docs/standards/ai-techniques.md](docs/standards/ai-techniques.md). On the synthetic demo company the payment model has no paid e-invoices to learn from and the forecast ranges need five scored days, so both say "not measured"; the benchmark needs five companies. Reinforcement learning and federated learning are roadmap, not built. |
 | Public site | **Built.** Attio-style Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
-| Hosted deployment | **Live.** The frontend is on Vercel at <https://duitduit-umber.vercel.app>; requests to `/api` are forwarded to the API, which runs in Docker on a team member's Google Cloud VM behind a tunnel. The proxy forwards record references such as `payable:12` (fixed 2026-10-15; actions naming one used to fail only on the live site). Uploads return once the file is protected and are summarised just after, and answers finish within the proxy's ~25 seconds. The server's free trial ends around 2026-11-17, before the finals. |
+| Hosted deployment | **Live.** The frontend is on Vercel at <https://duitduit-umber.vercel.app>; requests to `/api` are forwarded to the API, which runs in Docker. The proxy forwards record references such as `payable:12` (fixed 2026-10-15; actions naming one used to fail only on the live site). Uploads return once the file is protected and are summarised just after, and answers finish within the proxy's ~25 seconds. |
 | Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
 
 ### How the entry maps to the scoring criteria
