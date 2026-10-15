@@ -163,3 +163,10 @@ def test_the_suggested_questions_reach_the_right_place():
     assert _ask("Which customers are overdue?")["playbook"] == "chase_late_payers"
     assert _ask("这个月能发工资吗？")["playbook"] == "pay_everyone"
     assert _ask("What is overdue for Luma Retail?")["kind"] == "answer"
+
+
+def test_a_question_about_a_page_is_answered_before_it_opens():
+    # "Which loans…" is a question: the reply summarises the page and lets the person open it.
+    loans = _ask("Which loans can we apply for?")
+    assert (loans["kind"], loans["screen"], loans["answer_here"]) == ("navigate", "financing", True)
+    assert _ask("Open financing")["answer_here"] is False

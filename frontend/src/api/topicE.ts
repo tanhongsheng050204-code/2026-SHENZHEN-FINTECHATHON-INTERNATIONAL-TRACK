@@ -954,6 +954,8 @@ export interface AssistantPlan {
   items: AssistantItem[];
   needs_confirmation: boolean;
   needs_step_up: boolean;
+  /** A question about a page: answer in the chat, then offer to open it. */
+  answer_here?: boolean;
   understood_by: "rules" | "model";
 }
 

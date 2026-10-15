@@ -61,6 +61,10 @@ class AssistantPlan(BaseModel):
     items: list[AssistantItem] = Field(default_factory=list)
     needs_confirmation: bool = False
     needs_step_up: bool = False
+    answer_here: bool = Field(
+        default=False,
+        description="A question about a page: show its summary in the chat, then offer to open it",
+    )
     understood_by: Literal["rules", "model"] = "rules"
 
 

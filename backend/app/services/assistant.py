@@ -260,7 +260,11 @@ def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
         )
     for pattern, screen in _TOPIC_SCREENS:
         if pattern.search(text):
-            return _navigate(principal, screen, "rules")
+            plan = _navigate(principal, screen, "rules")
+            if plan.kind == "navigate":
+                plan.answer_here = True
+                plan.message = "Here is what your records say."
+            return plan
     if _GOAL.search(text) and not agent_runtime.plan(text).empty:
         return _run_goal(principal, text, "rules")
     return None

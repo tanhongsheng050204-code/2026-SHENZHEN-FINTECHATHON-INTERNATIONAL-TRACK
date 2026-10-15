@@ -2,6 +2,7 @@ import { focusInboxItem } from "../lib/inboxFocus";
 import { useEffect, useRef, useState } from "react";
 import { useAppState } from "../lib/appState";
 import { BriefingCard } from "./BriefingCard";
+import { TopicAnswer } from "./TopicAnswer";
 import { SCREENS, type Screen } from "../lib/screens";
 import { friendlyLoadError } from "../api/client";
 
@@ -38,7 +39,7 @@ export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNa
   const started = useRef(false);
 
   useEffect(() => {
-    if (plan.kind !== "navigate" || !plan.screen || started.current) return;
+    if (plan.kind !== "navigate" || !plan.screen || plan.answer_here || started.current) return;
     started.current = true;
     if (!(SCREENS as readonly string[]).includes(plan.screen)) return;
     const timer = window.setTimeout(() => {
@@ -48,6 +49,9 @@ export function AssistantReply({ plan, onNavigate }: { plan: AssistantPlan; onNa
     return () => window.clearTimeout(timer);
   }, [plan, show, onNavigate]);
 
+  if (plan.kind === "navigate" && plan.answer_here && (plan.screen === "financing" || plan.screen === "einvoice")) {
+    return <TopicAnswer screen={plan.screen} onNavigate={onNavigate} />;
+  }
   if (plan.kind === "run_goal" && plan.goal) return <GoalRun goal={plan.goal} message={plan.message} />;
   if (plan.kind === "decide") return <DecisionCard plan={plan} />;
   if (plan.kind === "briefing") return <BriefingCard onNavigate={onNavigate} />;
