@@ -61,9 +61,14 @@ def refine(
     *,
     answer: Callable[[str, list[RetrievalHit]], tuple[CitedAnswer, str]],
     search: Callable[[str], list[RetrievalHit]],
+    has_time: Callable[[], bool] = lambda: True,
 ) -> Refined:
-    """One answer, checked; at most one more search and answer if it is not grounded."""
-    if first.insufficient_evidence:
+    """One answer, checked; at most one more search and answer if it is not grounded.
+
+    has_time says whether a second model call still fits the request's time budget;
+    when it does not, the first answer is returned with its grounding as it is.
+    """
+    if first.insufficient_evidence or not has_time():
         return Refined(hits, first, 1, False)
     report = check(first.answer, _cited(hits, first))
     if report is None or not report.unsupported:

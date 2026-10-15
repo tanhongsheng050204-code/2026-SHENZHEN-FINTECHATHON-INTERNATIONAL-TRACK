@@ -1,4 +1,5 @@
 import logging
+import time
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -127,12 +128,16 @@ def _include_selected_customer_identity_evidence(
     return [*existing_hits, *anchors]
 
 
+SECOND_ROUND_BEFORE_SECONDS = 9
+
+
 @router.post("/query", response_model=QueryResponse)
 def query(
     payload: QueryRequest,
     principal: CurrentUser,
     db: Session = Depends(get_db),
 ) -> QueryResponse:
+    started = time.monotonic()
     inventory = source_inventory(db, str(principal.tenant_id))
     plan = plan_query(
         payload.question,
@@ -481,6 +486,9 @@ def query(
                 cited_answer,
                 answer=_answer_again,
                 search=_search_again,
+                # A second model call takes about as long as the first; past this point
+                # it would run beyond the website proxy's ~25 seconds and fail the answer.
+                has_time=lambda: time.monotonic() - started < SECOND_ROUND_BEFORE_SECONDS,
             )
             hits, cited_answer = refined.hits, refined.answer
             retrieval_rounds, retrieval_improved = refined.rounds, refined.improved

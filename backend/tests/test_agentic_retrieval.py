@@ -167,3 +167,25 @@ def test_the_query_route_searches_again_and_reports_two_rounds(monkeypatch):
     finally:
         db.close()
         engine.dispose()
+
+
+def test_no_second_round_once_the_time_budget_is_spent():
+    # The website's proxy gives an answer about 25 seconds; a second model call that
+    # would run past that is skipped, and the first answer is returned as it is.
+    answer, calls = _answers(
+        CitedAnswer(answer="The customer owes 98000 [SOURCE-1].", citations=["SOURCE-1"])
+    )
+    first, _ = answer("How much is owed?", FIRST)
+    searched = []
+
+    refined = refine(
+        "How much is owed?",
+        FIRST,
+        first,
+        answer=answer,
+        search=lambda q: searched.append(q) or [FOUND],
+        has_time=lambda: False,
+    )
+
+    assert (refined.rounds, refined.improved) == (1, False)
+    assert searched == [] and len(calls) == 1

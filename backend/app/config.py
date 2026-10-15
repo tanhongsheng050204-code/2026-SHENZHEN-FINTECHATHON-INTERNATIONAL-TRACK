@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     morpheus_api_key: str | None = None
     morpheus_base_url: str = "https://api.mor.org/api/v1"
     morpheus_model: str = "deepseek-v4-flash"
-    morpheus_timeout_seconds: int = 20
+    morpheus_timeout_seconds: int = 14
     conversation_planner_enabled: bool = True
     conversation_planner_timeout_seconds: int = 6
     database_pool_size: int = 2
