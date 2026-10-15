@@ -110,7 +110,10 @@ Status as of 2026-10-15. The demo company and its data are synthetic and labelle
 | Cash-flow forecast, scenarios, alert rules, morning briefing | **Built and tested** |
 | Forecast check: each day's forecast is kept on the audit chain and scored against the bank balance once a statement covers the day, with an accuracy per horizon and the largest differences | **Built and tested.** Accuracy is **not measured** yet: no real company's statements have covered a forecast day, and the synthetic demo company is deliberately never scored. |
 | Financing matching with reasons and next steps; credit scorecard; application packs; products modelled on public schemes | **Built and tested** |
-| Monthly profit and loss, ratios, "what changed", bank-line matching | **Built and tested** |
+| Monthly profit and loss, ratios, "what changed"; a Reconciliation tab with each bank line and the record it matches, unmatched lines sent to Finance to explain | **Built and tested** |
+| Clarification and correction: an unclear request gets numbered choices; the next message picks one ("the second one") or corrects the last request ("no, the email one"), in English, Malay and Chinese | **Built and tested.** Rule-based, so it works without the AI model, and a correction never widens what a role may do. |
+| Simulated bank: an L3 payment approved by a maker and a different checker, with a fresh authenticator code, executes once on a sandbox ledger and shows its reference | **Built and tested.** No real bank is connected; the ledger is events on the audit chain with ids and the amount only. |
+| Value panel on Home: the cash gap seen days ahead, how much of it the proposed actions close, work prepared and decided, bank lines reconciled, unusual bills caught, payments run after two approvals, records protected | **Built and tested.** Measured from the company's records; time saved is labelled an estimate. |
 | Ask DuitDuit assistant: four playbooks, questions about a page answered in the chat (which loans fit, which invoices need fixes), cited sources listed under each answer, voice input with transcript review, confirmation before every change | **Built and tested.** Voice input needs a speech key on the server and is off on the live site. |
 | Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested.** The Supervisor routes a goal (English, Malay or Chinese, by fixed keyword rules) to the cash-flow, collections, financing, HR & payroll, sales, payables and compliance agents. Working agents: cash flow, collections, financing, HR & payroll (payroll cash check, EPF/SOCSO/EIS/PCB due dates), sales (follow-ups on deals closing soon), payables (bill calendar, duplicate bills), compliance (incidents, notices), plus the checker agent. Agents are rule-based on purpose: they propose and a person decides. In the position workspaces, all 33 available skills compute from the company's records (a test checks none is left uncomputed) and say plainly when the records they need are missing. Production is designed only. |
 | Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
@@ -134,7 +137,7 @@ Status as of 2026-10-15. The demo company and its data are synthetic and labelle
 
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
-| Task completion | 40% | An offline evaluation harness of 54 tasks, 25 of them functional. The latest run passes all 54. Plus the live demo company and the demo video. |
+| Task completion | 40% | An offline evaluation harness of 57 tasks, 27 of them functional, including bank reconciliation and clarification and correction. The latest run passes all 57. Plus the live demo company and the demo video. |
 | Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 29 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
 | Innovation & interaction | 30% | An assistant that proposes and never acts on its own; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
 
@@ -1012,7 +1015,7 @@ scripted tasks (25 functional, 29 adversarial) offline and writes `output/eval-r
 
 Latest local results (2026-10-13):
 - backend: **805 passed, 13 skipped** (the skipped tests need PostgreSQL, which CI provides; the 12 PostgreSQL tests also pass against a local migrated database);
-- evaluation: **54 of 54**;
+- evaluation: **57 of 57**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,
