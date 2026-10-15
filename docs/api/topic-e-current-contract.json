@@ -3470,6 +3470,18 @@
             "title": "Id",
             "type": "string"
           },
+          "payment_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "L3, approved by two people: the simulated bank's reference for it",
+            "title": "Payment Reference"
+          },
           "reviewer_job_function": {
             "$ref": "#/components/schemas/JobFunction"
           },
