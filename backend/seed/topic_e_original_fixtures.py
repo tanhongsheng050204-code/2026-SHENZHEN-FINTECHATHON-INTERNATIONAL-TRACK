@@ -44,8 +44,10 @@ SYNTHETIC_REGISTERED_ON = dt.date(2023, 8, 1)
 
 
 def _synthetic_tenant(db, tenant_id: str) -> Tenant:
+    """The dedicated demo company, or one marked synthetic by seed/demo_into_company.py."""
     tenant = db.get(Tenant, tenant_id)
-    if tenant is None or not tenant.slug.startswith(SYNTHETIC_SLUG_PREFIX):
+    marked = tenant is not None and db.get(SyntheticTenantSeed, tenant_id) is not None
+    if tenant is None or not (tenant.slug.startswith(SYNTHETIC_SLUG_PREFIX) or marked):
         raise ValueError("not_a_synthetic_tenant")
     return tenant
 
