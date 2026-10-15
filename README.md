@@ -138,8 +138,8 @@ Status as of 2026-10-15. The demo company and its data are synthetic and labelle
 | Criterion | Weight | Evidence |
 | --- | --- | --- |
 | Task completion | 40% | An offline evaluation harness of 57 tasks, 27 of them functional, including bank reconciliation and clarification and correction. The latest run passes all 57. Plus the live demo company and the demo video. |
-| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 29 adversarial evaluation tasks, a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
-| Innovation & interaction | 30% | An assistant that proposes and never acts on its own; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
+| Security & compliance | 30% | Maker-checker with step-up for money; per-role data masking; row-level security per company; tool allow-lists and a kill switch; an injection guard; hash-chained audit. Sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, and data portability exports. Also 30 adversarial evaluation tasks (including an induced transfer against the simulated bank), a [mapping to the OWASP Top 10 for Agentic Applications](docs/standards/owasp-agentic-mapping.md), a [threat model](docs/standards/threat-model.md), [OWASP ZAP scans](docs/submission/evidence/zap-2026-10-11/) (0 failures), dependency and secret scans in CI, and the [security self-assessment](docs/submission/security-self-assessment.md). There has been no independent penetration test and there is no certification. |
+| Innovation & interaction | 30% | An assistant that proposes and never acts on its own, asks which one when a request is unclear and takes a correction in the next message; earned autonomy; the verifiable Passport; voice input with transcript review; a one-click demo with an on-screen authenticator. |
 
 ### Submission map
 
@@ -1010,11 +1010,11 @@ models, or call an AI provider. Coverage spans:
 - conversation context resolution and query intent planning;
 - RLS / authorization boundaries.
 
-Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 54
-scripted tasks (25 functional, 29 adversarial) offline and writes `output/eval-report.md`.
+Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 57
+scripted tasks (27 functional, 30 adversarial) offline and writes `output/eval-report.md`.
 
-Latest local results (2026-10-13):
-- backend: **805 passed, 13 skipped** (the skipped tests need PostgreSQL, which CI provides; the 12 PostgreSQL tests also pass against a local migrated database);
+Latest local results (2026-10-16):
+- backend: **841 passed, 13 skipped** (the skipped tests need PostgreSQL, which CI provides; the 12 PostgreSQL tests also pass against a local migrated database);
 - evaluation: **57 of 57**;
 - frontend: type-check and build pass, and lint shows 0 errors.
 
