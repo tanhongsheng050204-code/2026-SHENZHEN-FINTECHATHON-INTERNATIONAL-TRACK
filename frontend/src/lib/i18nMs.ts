@@ -2091,6 +2091,9 @@ export const FB_MS: Record<string, string> = {
   "See the 90-day forecast": "Lihat ramalan 90 hari",
   "Find financing for the gap": "Cari pembiayaan untuk jurang",
   "None of those items fits that. Say which one in other words.": "Tiada perkara itu yang sepadan. Nyatakan yang mana dengan perkataan lain.",
+  "Money moves only after a second person checks it with an authenticator code. The payment then runs in DuitDuit's simulated bank; no real money moves.": "Wang hanya bergerak selepas orang kedua menyemaknya dengan kod pengesah. Bayaran kemudian dijalankan dalam bank simulasi DuitDuit; tiada wang sebenar bergerak.",
+  "Paid in the simulated bank": "Dibayar dalam bank simulasi",
+  "Reference {ref}. No real money moved.": "Rujukan {ref}. Tiada wang sebenar bergerak.",
 };
 
 type Translate = (text: string) => string;

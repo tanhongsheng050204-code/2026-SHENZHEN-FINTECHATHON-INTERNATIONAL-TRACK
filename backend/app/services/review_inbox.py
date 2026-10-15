@@ -220,9 +220,15 @@ def inbox(
         if job_function not in readable:
             raise InboxError("not_your_job_function", 403)
         readable = [job_function]
+    from app.services import sandbox_bank
+
+    paid = sandbox_bank.references(db, str(principal.tenant_id))
     actions = [
         item.action.model_copy(
-            update={"can_decide": _refusal(item.action, "approve", principal) is None}
+            update={
+                "can_decide": _refusal(item.action, "approve", principal) is None,
+                "payment_reference": paid.get(item.action.id),
+            }
         )
         for item in _replay(db, str(principal.tenant_id)).values()
         if item.action.reviewer_job_function in readable
@@ -270,7 +276,13 @@ def decide(
         tenant_id=tenant_id,
     )
     db.commit()
-    return _replay(db, tenant_id)[action_id].action
+    from app.services import sandbox_bank
+
+    # A fully approved L3 payment executes now, in the simulated bank only.
+    reference = sandbox_bank.execute_if_due(db, tenant_id, action_id)
+    return _replay(db, tenant_id)[action_id].action.model_copy(
+        update={"payment_reference": reference}
+    )
 
 
 def pending_count(db, tenant_id: str, job_function: JobFunction) -> int:

@@ -114,6 +114,10 @@ class ReviewAction(BaseModel):
     can_decide: bool = Field(
         default=False, description="Whether the requesting person may approve this item now"
     )
+    payment_reference: str | None = Field(
+        default=None,
+        description="L3, approved by two people: the simulated bank's reference for it",
+    )
 
 
 class ReviewInboxResponse(BaseModel):

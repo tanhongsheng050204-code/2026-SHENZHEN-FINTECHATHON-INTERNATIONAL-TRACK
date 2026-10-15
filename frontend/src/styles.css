@@ -2220,3 +2220,5 @@ html{scroll-behavior:smooth;}
 .dd-clarify{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
 .dd-clarify .fb-btn{display:inline-flex;align-items:center;gap:.5rem;min-height:2.4rem}
 .dd-clarify-n{display:inline-grid;place-items:center;width:1.3rem;height:1.3rem;border-radius:99px;background:var(--bg-alt);font-size:.75rem;font-variant-numeric:tabular-nums}
+.dd-inbox-paid{margin:.2rem 0 .7rem;padding:.6rem .8rem;border-radius:8px;background:var(--accent-soft);border:1px solid var(--line);font-size:.86rem}
+.dd-inbox-paid strong{margin-right:.3rem}

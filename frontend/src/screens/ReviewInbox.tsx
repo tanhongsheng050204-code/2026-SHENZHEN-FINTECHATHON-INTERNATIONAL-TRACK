@@ -29,7 +29,7 @@ const APPROVE_EFFECT: Record<ReviewAction["autonomy_level"], string> = {
   L0: "Nothing changes: this is information only.",
   L1: "Your decision is recorded. Nothing leaves the company.",
   L2: "It may go outside the company, for example an email to a customer. Nothing goes until this approval.",
-  L3: "Money moves only after a second person checks it with an authenticator code. The transfer itself happens in your bank, outside DuitDuit.",
+  L3: "Money moves only after a second person checks it with an authenticator code. The payment then runs in DuitDuit's simulated bank; no real money moves.",
 };
 
 const LEVEL_HINT: Record<ReviewAction["autonomy_level"], string> = {
@@ -250,6 +250,11 @@ export default function ReviewInbox() {
                     <h2>{tx(selected.title)}</h2>
                     <p className="fb-inbox-summary">{tx(selected.summary)}</p>
 
+                    {selected.payment_reference && (
+                      <div className="dd-inbox-paid" role="status">
+                        <strong>{tx("Paid in the simulated bank")}</strong> {tx("Reference {ref}. No real money moved.", { ref: selected.payment_reference })}
+                      </div>
+                    )}
                     <div className="dd-inbox-effect">
                       <strong>{tx("If you approve")}</strong> {tx(APPROVE_EFFECT[selected.autonomy_level])}
                     </div>

@@ -2143,6 +2143,9 @@ export const FB_ZH: Record<string, string> = {
   "See the 90-day forecast": "查看 90 天预测",
   "Find financing for the gap": "为缺口寻找融资",
   "None of those items fits that. Say which one in other words.": "这些事项都不符合。请换个说法告诉我是哪一个。",
+  "Money moves only after a second person checks it with an authenticator code. The payment then runs in DuitDuit's simulated bank; no real money moves.": "只有在第二个人用身份验证器代码核对后，资金才会流动。付款随后在 DuitDuit 的模拟银行中执行；不会动用真实资金。",
+  "Paid in the simulated bank": "已在模拟银行付款",
+  "Reference {ref}. No real money moved.": "参考号 {ref}。没有动用真实资金。",
 };
 
 type Translate = (text: string) => string;

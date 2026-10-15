@@ -47,6 +47,8 @@ export interface ReviewAction {
   created_at: string;
   approvals: ReviewApproval[];
   can_decide: boolean;
+  /** L3, approved by two people: the simulated bank's reference. */
+  payment_reference?: string | null;
 }
 
 export interface ReviewInboxResponse {
