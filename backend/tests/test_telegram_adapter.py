@@ -29,7 +29,10 @@ def test_telegram_record_ids_are_deterministic_and_opaque(monkeypatch):
 
 def test_canonical_mapping_contains_only_fixed_provenance_keys(monkeypatch):
     monkeypatch.setattr(
-        adapter, "get_settings", lambda: SimpleNamespace(token_root_secret="test-secret")
+        adapter, "get_settings", lambda: SimpleNamespace(
+            token_root_secret="test-secret",
+            telegram_customer_tenant_id="00000000-0000-0000-0000-000000000001",
+        )
     )
     record = adapter.canonical_record(
         chat_id=123,
@@ -55,3 +58,25 @@ def test_canonical_mapping_contains_only_fixed_provenance_keys(monkeypatch):
         "filename",
         "extraction_method",
     }
+
+
+def test_a_capture_belongs_to_the_company_the_bot_is_set_up_for(monkeypatch):
+    company = "858f0c1c-42fa-52a2-91b3-80a19d816356"
+    monkeypatch.setattr(
+        adapter,
+        "get_settings",
+        lambda: SimpleNamespace(
+            token_root_secret="test-secret", telegram_customer_tenant_id=company
+        ),
+    )
+    record = adapter.canonical_record(
+        chat_id=123,
+        message_id=6,
+        record_type="customer_message",
+        occurred_at=datetime.now(UTC),
+        extracted=ExtractedContent(
+            text="Customer B pays next Friday", input_kind="text", mime_type="text/plain"
+        ),
+        stable_content_ref="text",
+    )
+    assert record.tenant_id == company

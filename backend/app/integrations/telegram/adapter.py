@@ -57,6 +57,8 @@ def canonical_record(
         ),
         source_system="telegram",
         record_type=record_type,
+        # The company the bot is set up for, the same one enrichment and status use.
+        tenant_id=get_settings().telegram_customer_tenant_id,
         text=extracted.text,
         occurred_at=occurred_at,
         metadata=metadata,
