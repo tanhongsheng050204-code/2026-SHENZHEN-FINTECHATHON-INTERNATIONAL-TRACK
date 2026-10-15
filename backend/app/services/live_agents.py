@@ -354,6 +354,11 @@ def workspace(db, principal: AuthPrincipal, job_function: JobFunction) -> Positi
         [a for a in manifests.agents() if a.job_function == job_function],
     )
     computed = _computed(db, principal, forecast)
+    if db is not None:
+        from app.services import position_skills
+
+        more = position_skills.compute(db, principal, forecast, _formatter(_sees_exact(principal)))
+        computed = {**more, **computed}
     results = []
     for card in cards:
         for skill in card.skills:

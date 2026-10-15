@@ -209,3 +209,16 @@ def test_incidents_are_for_the_owner_and_compliance_only(live_db, monkeypatch): 
     [line] = [e for e in events if e.agent_id == "compliance"]
     assert "Incidents" in line.message and "owner and Compliance" in line.message
     assert not any(ch.isdigit() for ch in line.message)
+
+
+def test_every_available_skill_in_every_workspace_is_computed(live_db, monkeypatch):  # noqa: F811
+    from app.services import live_agents
+
+    monkeypatch.setattr(cashflow, "basis_for", lambda *a: _basis(DEAL_SOON, DEAL_LATER, PAYROLL))
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    for job in JobFunction:
+        if job == JobFunction.PRODUCTION:
+            continue  # designed, not built
+        results = live_agents.workspace(live_db, owner, job).skill_results
+        missing = [r.skill_id for r in results if r.status == "planned"]
+        assert missing == [], (job, missing)
