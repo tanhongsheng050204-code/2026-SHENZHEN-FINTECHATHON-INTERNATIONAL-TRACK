@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     vault_rotation_check_seconds: int = 60
     vault_rotation_batch_size: int = 100
     gemini_api_key: str | None = None
+    # Voice transcription only; GEMINI_API_KEY also changes search, summaries and answers.
+    voice_gemini_api_key: str | None = None
     gemini_reasoning_model: str = "gemini-3.6-flash"
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_timeout_seconds: int = 12

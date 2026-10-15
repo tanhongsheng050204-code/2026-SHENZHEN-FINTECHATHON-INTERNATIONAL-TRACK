@@ -343,3 +343,19 @@ def test_invalid_provider_output_is_a_safe_unavailable_response(db, monkeypatch,
     response = _voice(_client(db))
     assert response.status_code == 503
     assert response.json() == {"detail": "voice_unavailable"}
+
+
+def test_a_voice_only_key_turns_on_voice_and_nothing_else(monkeypatch):
+    # VOICE_GEMINI_API_KEY is used for transcription only: search, summaries and
+    # answers keep their provider, so records stored before still search the same.
+    from app.services import gemini
+
+    settings = SimpleNamespace(
+        gemini_api_key="", voice_gemini_api_key="synthetic-voice-key", gemini_timeout_seconds=12
+    )
+    monkeypatch.setattr(assistant_voice, "get_settings", lambda: settings)
+    monkeypatch.setattr(gemini, "get_settings", lambda: settings)
+    assert assistant_voice.available() is True
+    with pytest.raises(RuntimeError):
+        gemini.gemini_client()
+    assert gemini.voice_client() is not None

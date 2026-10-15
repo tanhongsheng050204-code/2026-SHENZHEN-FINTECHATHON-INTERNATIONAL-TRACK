@@ -19,7 +19,7 @@ from starlette.concurrency import run_in_threadpool
 from app.config import get_settings
 from app.contracts.assistant import VoiceTranscript
 from app.security.protection import protect_text
-from app.services.gemini import gemini_client
+from app.services.gemini import voice_client as gemini_client
 from app.services.workflow_audit import write_workflow_event
 
 MAX_AUDIO_BYTES = 2_000_000
@@ -28,7 +28,8 @@ MAX_MULTIPART_OVERHEAD = 16_384
 
 
 def available() -> bool:
-    return bool(get_settings().gemini_api_key)
+    settings = get_settings()
+    return bool(getattr(settings, "voice_gemini_api_key", None) or settings.gemini_api_key)
 
 
 async def read_audio(request: Request) -> tuple[bytes, float]:

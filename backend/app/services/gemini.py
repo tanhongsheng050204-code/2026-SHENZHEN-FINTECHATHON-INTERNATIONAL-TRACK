@@ -19,3 +19,12 @@ def gemini_client():
     if not settings.gemini_api_key:
         raise RuntimeError("GEMINI_API_KEY is not configured")
     return _client(settings.gemini_api_key, settings.gemini_timeout_seconds * 1_000)
+
+
+def voice_client():
+    """The client for voice transcription: VOICE_GEMINI_API_KEY, else GEMINI_API_KEY."""
+    settings = get_settings()
+    key = getattr(settings, "voice_gemini_api_key", None) or settings.gemini_api_key
+    if not key:
+        raise RuntimeError("No Gemini key is configured for voice")
+    return _client(key, settings.gemini_timeout_seconds * 1_000)
