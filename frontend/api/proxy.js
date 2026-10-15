@@ -24,18 +24,31 @@ const HOP_BY_HOP = new Set([
 ]);
 // fetch() decodes compressed bodies, so these would describe the wrong bytes.
 const STALE_RESPONSE_HEADERS = new Set(["content-encoding", "content-length", "transfer-encoding", "connection"]);
-// Only plain path segments: no scheme, host, "..", percent-escapes or backslashes.
-const SAFE_PATH = /^[A-Za-z0-9._~\-/]*$/;
+// Each path segment is decoded (the rewrite may leave references such as
+// "payable:12" encoded once more) and must then be printable text with no slash,
+// backslash or dot-segment, so the path can only name a route on the backend.
+const SEGMENT = /^[A-Za-z0-9._~\-:@!$&'()*+,;=]*$/;
+
+function decodedSegment(raw) {
+  let segment = raw;
+  for (let round = 0; round < 2 && segment.includes("%"); round += 1) {
+    try {
+      segment = decodeURIComponent(segment);
+    } catch {
+      return null;
+    }
+  }
+  if (segment.includes("%") || !SEGMENT.test(segment) || segment === "." || segment === "..") return null;
+  return segment;
+}
 
 export function backendUrl(requestUrl, backendOrigin) {
   const url = new URL(requestUrl);
-  const path = url.searchParams.get("__fbpath") ?? "";
-  if (!SAFE_PATH.test(path) || path.split("/").some((segment) => segment === ".." || segment === ".")) {
-    return null;
-  }
+  const segments = (url.searchParams.get("__fbpath") ?? "").replace(/^\/+/, "").split("/").map(decodedSegment);
+  if (segments.some((segment) => segment === null)) return null;
   url.searchParams.delete("__fbpath");
   const target = new URL(backendOrigin);
-  target.pathname = `${target.pathname.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
+  target.pathname = `${target.pathname.replace(/\/$/, "")}/${segments.map(encodeURIComponent).join("/")}`;
   target.search = url.searchParams.toString();
   return target;
 }
