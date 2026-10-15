@@ -9,7 +9,7 @@ type Tab = { id: string; label: string; title: string; body: string };
 
 const TABS: Tab[] = [
   { id: "collections", label: "Collections", title: "Who owes what, at a glance.", body: "Every unpaid invoice in one column. Drag one to Reminder and the Collections agent drafts it for approval." },
-  { id: "inbox", label: "Review inbox", title: "Every proposal waits for a person.", body: "Agents draft. People comment, @mention a colleague and decide. Money needs two of them." },
+  { id: "inbox", label: "Review inbox", title: "Every proposal waits for a person.", body: "Each item shows what the agent prepared, the records it used and what approving does. People comment, @mention a colleague and decide. Money needs two of them." },
   { id: "automations", label: "Automations", title: "Follow-up, prepared on time.", body: "A reminder sequence moves from friendly to firm to a call, one approved step at a time." },
   { id: "ai", label: "AI connections", title: "Ask from your own AI tool.", body: "Connect Claude, or Chinese tools on DeepSeek, Qwen or Kimi, over MCP. Read-only, masked, recorded." },
 ];

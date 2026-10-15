@@ -44,7 +44,15 @@ const FAQ_ITEMS = [
   },
   {
     q: "Which languages does it support?",
-    a: "English, Bahasa Malaysia and Chinese in the interface, and goals typed in any of the three reach the right agent.",
+    a: "Every screen switches between English, Bahasa Malaysia and Chinese, including sentences the server writes such as risk notes. Questions and goals typed in any of the three reach the right agent.",
+  },
+  {
+    q: "Can I send it a receipt from my phone?",
+    a: "Yes. Send a photo, file or note to your company's DuitDuit Telegram bot. Names, phone numbers and amounts are masked before anything is stored, and the record shows up in Data sources a minute later.",
+  },
+  {
+    q: "How does my team know something is waiting?",
+    a: "DuitDuit can post one line to your Slack channel when the number of items waiting for review changes, for example “3 items wait for review (Finance 2, Owner 1)”. It never includes titles, amounts or names.",
   },
 ];
 
@@ -76,9 +84,9 @@ const PROTECTIONS = [
 ];
 
 const SHOTS = [
-  { src: "/screenshots/today.jpg", title: "Today", caption: "What needs you, with the cash gap first." },
+  { src: "/screenshots/today.jpg", title: "Today", caption: "Cash, the 90-day low point, what waits for you and why the score is what it is." },
   { src: "/screenshots/analysis.jpg", title: "Financial analysis", caption: "Profit and loss and ratios with their formulas." },
-  { src: "/screenshots/financing.jpg", title: "Financing", caption: "Matches, next steps and the scorecard." },
+  { src: "/screenshots/inbox.jpg", title: "Review inbox", caption: "What the agent prepared, the records it used and what approving does." },
 ];
 
 export default function Landing() {
@@ -191,7 +199,7 @@ export default function Landing() {
 
       <PhotoBanner src="/photos/petaling-street.webp" alt="Petaling Street market in Kuala Lumpur at night, under red lanterns" credit="Petaling Street, Kuala Lumpur. Photo: Ravin Rau, Unsplash" pos="50% 40%">
         <h2>Built for Malaysian small businesses.</h2>
-        <p>Ringgit, LHDN e-invoice checks, PDPA and EPF dates built in. Menus in English, Bahasa Melayu and 中文.</p>
+        <p>Ringgit, LHDN e-invoice checks, PDPA and EPF dates built in. Every screen in English, Bahasa Malaysia and 中文.</p>
       </PhotoBanner>
 
       <section className="lx-band" id="landing-security" aria-labelledby="lx-security-title">

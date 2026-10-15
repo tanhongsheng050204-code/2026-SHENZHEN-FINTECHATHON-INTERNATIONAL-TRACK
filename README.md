@@ -13,7 +13,7 @@
 ![Tests](https://img.shields.io/badge/tests-pytest_offline-2496ED?logo=pytest&logoColor=white)
 [![Website](https://img.shields.io/badge/website-duitduit--umber.vercel.app-black?logo=vercel&logoColor=white)](https://duitduit-umber.vercel.app/)
 
-**Live site: <https://duitduit-umber.vercel.app/>** (the API behind it runs on a team member's server; see [Build status](#build-status))
+**Live site: <https://duitduit-umber.vercel.app/>** (the API behind it runs on a team member's Google Cloud server; see [Build status](#build-status))
 
 DuitDuit is our entry for the **2026 Shenzhen International FinTech Competition
 (FinTechathon), International Track — Topic E: SME Finance Copilot**. It gives a small
@@ -27,18 +27,18 @@ passes through one protected pipeline: sensitive values are tokenized and encryp
 any AI model sees them, every answer cites its evidence and adapts to the requester's role,
 and every disclosure and decision lands in a hash-chained audit log.
 
-| Today | Financial analysis | Financing & Passport |
+| Today | Review inbox | Financial analysis |
 | --- | --- | --- |
-| ![Today: the cash gap three weeks ahead](frontend/public/screenshots/today.jpg) | ![Monthly profit and loss with ratios](frontend/public/screenshots/analysis.jpg) | ![Financing matches and credit scorecard](frontend/public/screenshots/financing.jpg) |
+| ![Today: cash, the 90-day low point, what waits and the financing score](frontend/public/screenshots/today.jpg) | ![Review inbox: what the agent prepared, the records it used and what approving does](frontend/public/screenshots/inbox.jpg) | ![Monthly profit and loss with ratios](frontend/public/screenshots/analysis.jpg) |
 
 All figures shown come from a **synthetic** Malaysian home-goods importer.
 
-**Try it:** open the live site and choose **Log in**. Once the server operator switches on
-the demo account (step 4 of the [production checklist](docs/deployment/production-checklist.md)),
-an **Open the demo company** button appears there. It signs you in as the owner of the
-synthetic company in one click, with a real password-and-authenticator session run by the
-server. Anything that would leave the company is recorded and never sent. Until then you can
-create your own company. Locally, see [Setup](#setup).
+**Try it:** open the live site and choose **Open the demo company**. It signs you in as the
+owner of the synthetic company in one click, with a real password-and-authenticator session
+run by the server; a **Demo authenticator** button shows the current code when an action asks
+for one. Anything that would leave the company is recorded and never sent. Every screen
+switches between English, Bahasa Malaysia and 中文 under **My preferences**. Locally, see
+[Setup](#setup).
 
 ---
 
@@ -102,7 +102,7 @@ a receivable — and not only as a compliance task.
 
 ### Build status
 
-Status as of 2026-10-13. The demo company and its data are synthetic and labelled as such.
+Status as of 2026-10-15. The demo company and its data are synthetic and labelled as such.
 
 | Capability | Status |
 | --- | --- |
@@ -111,11 +111,13 @@ Status as of 2026-10-13. The demo company and its data are synthetic and labelle
 | Forecast check: each day's forecast is kept on the audit chain and scored against the bank balance once a statement covers the day, with an accuracy per horizon and the largest differences | **Built and tested.** Accuracy is **not measured** yet: no real company's statements have covered a forecast day, and the synthetic demo company is deliberately never scored. |
 | Financing matching with reasons and next steps; credit scorecard; application packs; products modelled on public schemes | **Built and tested** |
 | Monthly profit and loss, ratios, "what changed", bank-line matching | **Built and tested** |
-| Ask DuitDuit assistant: four playbooks, voice input with transcript review, confirmation before every change | **Built and tested** |
-| Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested.** The Supervisor routes a goal (English, Malay or Chinese, by fixed keyword rules) to the cash-flow, collections, financing, HR & payroll, sales, payables and compliance agents. Working agents: cash flow, collections, financing, HR & payroll (payroll cash check, EPF/SOCSO/EIS/PCB due dates), sales (follow-ups on deals closing soon), payables (bill calendar, duplicate bills), compliance (incidents, notices), plus the checker agent. Agents are rule-based on purpose: they propose and a person decides. In the position workspaces, 12 of the 33 available skills compute from records; the rest say "not computed yet". Production is designed only. |
+| Ask DuitDuit assistant: four playbooks, questions about a page answered in the chat (which loans fit, which invoices need fixes), cited sources listed under each answer, voice input with transcript review, confirmation before every change | **Built and tested.** Voice input needs a speech key on the server and is off on the live site. |
+| Supervisor agents, review inbox with L1–L3 levels, maker-checker for money, earned autonomy, kill switch | **Built and tested.** The Supervisor routes a goal (English, Malay or Chinese, by fixed keyword rules) to the cash-flow, collections, financing, HR & payroll, sales, payables and compliance agents. Working agents: cash flow, collections, financing, HR & payroll (payroll cash check, EPF/SOCSO/EIS/PCB due dates), sales (follow-ups on deals closing soon), payables (bill calendar, duplicate bills), compliance (incidents, notices), plus the checker agent. Agents are rule-based on purpose: they propose and a person decides. In the position workspaces, all 33 available skills compute from the company's records (a test checks none is left uncomputed) and say plainly when the records they need are missing. Production is designed only. |
 | Financing Readiness Passport, lender and auditor links, public verification | **Built and tested** |
 | Identity: password, email code, authenticator app (AAL2), step-up for sensitive actions, backend-owned sessions | **Built and tested** with a mocked provider. **On the live site (2026-10-11):** a new company's owner signed up end to end: password, 6-digit email code, authenticator setup, then into the app. One run, done by hand by the team; not yet repeated by an automated test. |
-| One-click demo company for judges | **Built and tested** with a mocked provider. Not yet switched on in the hosted deployment; it switches on with the [production checklist](docs/deployment/production-checklist.md). |
+| One-click demo company for judges | **Live.** Switched on in the hosted deployment on 2026-10-13. Its review inbox holds the full story (cash shortfall, financing pack, quarantined supplier bank change, L3 payroll run), a duplicate bill to find, Customer C's complaint and three automations. Its password and sign-out everywhere are locked so one visitor cannot sign the others out. `python -m seed.demo_into_company` loads the same synthetic story into a named, empty company for presenting from a real sign-in; it refuses a company with records of its own and labels the company as demo data. |
+| Languages | **Built.** Every app screen switches between English, Bahasa Malaysia and Chinese, including sentences the server writes (risk notes, checker results, playbook steps). The marketing pages are English. Native-speaker review of the Malay is pending. |
+| Telegram bot and team chat | **Live.** The capture bot runs on the hosted server: `/capture`, choose a record type, send the text or file; it arrives masked in Data sources. Slack notices are switched on for one company; Slack accepted the test message on 2026-10-15. |
 | Interface redesign | **Built.** A white, hairline-framed look: a landing page with a scripted product preview, a centred sign-in, a Today screen with a greeting and an ask box, and in-app hand-offs, activity timelines and a connections board. Records (an invoice, an incident, an automation, an AI key) open in a side panel with their details and the actions a person can take, in the Attio style. |
 | Team features: comments and @mentions on review items, a collections board with disputes, promises to pay and paused customers, automations and reminder sequences with run history, saved views, customer risk notes with bands, Slack and WhatsApp notices | **Built and tested**, including as Finance and staff under PostgreSQL row-level security. Each ends in a proposal for a person to approve, or only shows information. WhatsApp is not tested against a live account. |
 | Finance and staff on the live database | **Fixed 2026-10-12.** Row-level security let only the owner and Compliance read other people's audit-chain entries, so Finance saw an empty review inbox and could not record decisions. Chain reads and such writes now use a worker session scoped to the same company; a PostgreSQL test runs these paths as Finance and staff. |
@@ -125,7 +127,7 @@ Status as of 2026-10-13. The demo company and its data are synthetic and labelle
 | AI techniques: a payment-delay model, calibrated forecast ranges (conformal prediction), anomaly detection on bills and payments, a checker agent on every review item, keyword reranking with a grounding check on answers and one more search when a sentence is not grounded (agentic retrieval), and benchmarks across companies with differential privacy | **Built and tested.** Described, with what each does not claim, in [docs/standards/ai-techniques.md](docs/standards/ai-techniques.md). On the synthetic demo company the payment model has no paid e-invoices to learn from and the forecast ranges need five scored days, so both say "not measured"; the benchmark needs five companies. Reinforcement learning and federated learning are roadmap, not built. |
 | Public site | **Built.** Attio-style Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
-| Hosted deployment | **Partly done.** The frontend is live at <https://duitduit-umber.vercel.app>, and requests to `/api` are forwarded to the API. Supabase Auth is configured: codes in every email template, sending through a dedicated Gmail account. The API still runs through a temporary tunnel on a team member's computer, whose address changes when it restarts; on 2026-10-12 it was unreachable (502). Next: move the API to a server with a fixed address that the team controls. The screens added on 2026-10-12 and the fixes of 2026-10-13 go live once the API runs the latest code. Then run `python -m seed.topic_e --allow-postgres` and `python -m seed.topic_e_original_fixtures --tenant-id <demo tenant>` once more on the hosted database (both are idempotent), and set `PREWARM_GLINER_ON_STARTUP=true`, or the first question after a restart waits 30–60 seconds while the detector loads. The demo accounts at `@finbrain-demo.test` cannot receive sign-in codes; give them real mailboxes to test Finance, Compliance and Employee on the live site. |
+| Hosted deployment | **Live.** The frontend is on Vercel at <https://duitduit-umber.vercel.app>; requests to `/api` are forwarded to the API, which runs in Docker on a team member's Google Cloud VM behind a tunnel. The proxy forwards record references such as `payable:12` (fixed 2026-10-15; actions naming one used to fail only on the live site). Uploads return once the file is protected and are summarised just after, and answers finish within the proxy's ~25 seconds. The server's free trial ends around 2026-11-17, before the finals. |
 | Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
 
 ### How the entry maps to the scoring criteria
