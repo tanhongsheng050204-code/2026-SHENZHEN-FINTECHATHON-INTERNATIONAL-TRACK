@@ -1966,6 +1966,19 @@ export const FB_MS: Record<string, string> = {
   "verified": "disahkan",
   "no longer used": "tidak digunakan lagi",
   "Add an email address and have the owner verify it first.": "Tambah alamat e-mel dan minta pemilik mengesahkannya dahulu.",
+  "Couldn't load this page right now. Try again, or reload the page.": "Halaman ini gagal dimuatkan sekarang. Cuba lagi, atau muat semula halaman.",
+  "Your session has expired — please log in again.": "Sesi anda telah tamat — sila log masuk semula.",
+  "Your role doesn't have access to this data.": "Peranan anda tidak mempunyai akses kepada data ini.",
+  "This needs a fresh code from your authenticator app. Try again and enter the code.": "Ini memerlukan kod baharu daripada aplikasi pengesah anda. Cuba lagi dan masukkan kod.",
+  "Your session needs refreshing. Reload the page and try again.": "Sesi anda perlu dimuat semula. Muat semula halaman dan cuba lagi.",
+  "Your session has ended — please sign in again.": "Sesi anda telah berakhir — sila log masuk semula.",
+  "Reading your records…": "Membaca rekod anda…",
+  "Open Financing & Passport →": "Buka Pembiayaan & Pasport →",
+  "Open e-Invoicing →": "Buka e-Invois →",
+  "Nothing is applied for here. On the page you can prepare an application pack; the owner reviews it before anything is sent.": "Tiada apa dipohon di sini. Di halaman itu anda boleh menyediakan pek permohonan; pemilik menyemaknya sebelum apa-apa dihantar.",
+  "Open an invoice on the page to fix its fields or ask the supplier for a correction.": "Buka invois di halaman itu untuk membetulkan medannya atau minta pembetulan daripada pembekal.",
+  "No invoice number": "Tiada nombor invois",
+  "Here is what your records say.": "Inilah yang ditunjukkan oleh rekod anda.",
 };
 
 type Translate = (text: string) => string;
@@ -2032,6 +2045,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Review one reminder for (.+), (.+)\. Verify the recipient, balance and timing before sending\. Nothing has been sent\.$/, (m, tr) => `Semak satu peringatan untuk ${tr(m[1])}, ${m[2]}. Sahkan penerima, baki dan masa sebelum menghantar. Tiada apa telah dihantar.`],
   [/^Review one reminder covering (\d+) (.+)\. Verify the recipient, balance and timing before sending\. Nothing has been sent\.$/, (m) => `Semak satu peringatan yang meliputi ${m[1]} perkara. Sahkan penerima, baki dan masa sebelum menghantar. Tiada apa telah dihantar.`],
   [/^The invoice is (disputed|under a promise to pay|paused): do not send a reminder\.$/, (m) => `Invois ini ${m[1] === "disputed" ? "dipertikaikan" : m[1] === "paused" ? "dijeda" : "dalam janji untuk membayar"}: jangan hantar peringatan.`],
+  [/^(.+\.) \((code: [a-z0-9_]{1,40})\)$/, (m, tr) => `${tr(m[1])} (${m[2]})`],
   // Several sentences: translate each one, keep the ones there is no Malay for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr).join(" ")],
 ];

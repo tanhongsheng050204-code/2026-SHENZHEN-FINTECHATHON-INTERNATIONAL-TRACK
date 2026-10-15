@@ -190,6 +190,11 @@ export function BusinessCsvImportCard() {
             </label>
           </div>
           <p className="fb-fine">Required fields: {IMPORT_FIELDS[schema].required.join(", ")}. Use a saved mapping if your column names differ.</p>
+          {schema === "bank_statement_v1" && (
+            <p className="fb-fine">
+              No file to hand? <a href="/samples/synthetic-bank-statement.csv" download>Download a synthetic sample bank statement</a> (19 lines, made-up figures). Import it into a test company: in the demo company it would change the cash figures.
+            </p>
+          )}
           {schema === "payroll_v1" && <p className="fb-fine">Import the complete payroll period at once. Employee names and individual salaries are protected; only run totals feed cash flow.</p>}
           {filename && <p className="fb-fine">Selected: {filename}</p>}
           <div className="fb-upload-actions">

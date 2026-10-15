@@ -2018,6 +2018,19 @@ export const FB_ZH: Record<string, string> = {
   "verified": "已核验",
   "no longer used": "已停用",
   "Add an email address and have the owner verify it first.": "请先添加邮箱地址，并由负责人核验。",
+  "Couldn't load this page right now. Try again, or reload the page.": "暂时无法加载此页面。请重试，或刷新页面。",
+  "Your session has expired — please log in again.": "您的会话已过期，请重新登录。",
+  "Your role doesn't have access to this data.": "您的角色无权访问这些数据。",
+  "This needs a fresh code from your authenticator app. Try again and enter the code.": "这需要身份验证器应用中的新代码。请重试并输入代码。",
+  "Your session needs refreshing. Reload the page and try again.": "您的会话需要刷新。请刷新页面后重试。",
+  "Your session has ended — please sign in again.": "您的会话已结束，请重新登录。",
+  "Reading your records…": "正在读取您的记录……",
+  "Open Financing & Passport →": "打开“融资与护照” →",
+  "Open e-Invoicing →": "打开“电子发票” →",
+  "Nothing is applied for here. On the page you can prepare an application pack; the owner reviews it before anything is sent.": "这里不会提交任何申请。您可以在页面上准备申请材料包；发送前由负责人审核。",
+  "Open an invoice on the page to fix its fields or ask the supplier for a correction.": "在页面上打开发票，修正其字段或请供应商更正。",
+  "No invoice number": "无发票号",
+  "Here is what your records say.": "以下是您的记录显示的内容。",
 };
 
 type Translate = (text: string) => string;
@@ -2107,6 +2120,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Nothing it cites looks unusual\.$/, () => "所引用的内容没有异常。"],
   [/^Flagged as unusual: (.+)$/, (m) => `被标记为异常：${m[1]}`],
   [/^(\d+) show exact values; the rest show ranges\. Every view is recorded\.$/, (m) => `${m[1]} 个显示精确值，其余显示区间。每次查看都会被记录。`],
+  [/^(.+\.) \((code: [a-z0-9_]{1,40})\)$/, (m, tr) => `${tr(m[1])} (${m[2]})`],
   // Several sentences: translate each one, keep the ones there is no Chinese for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr)
     .reduce((text, part) => text + (text && (/[ -~]$/.test(text) || /^[ -~]/.test(part)) ? " " : "") + part, "")],

@@ -342,7 +342,9 @@ export function friendlyLoadError(message: string): string {
   if (message === "csrf_token_invalid" || message === "csrf_origin_denied") return "Your session needs refreshing. Reload the page and try again.";
   if (message === "session_expired" || message === "session_idle_timeout" || message === "session_revoked") return "Your session has ended — please sign in again.";
   if (isNetworkError(message)) return "DuitDuit can't reach its server right now. Your data is safe. Try again in a moment.";
-  return "Couldn't load this page right now. Try again, or reload the page.";
+  // The short code (never free text) tells support which check refused the request.
+  const code = /^[a-z0-9_]{1,40}$/.test(message) ? ` (code: ${message})` : "";
+  return `Couldn't load this page right now. Try again, or reload the page.${code}`;
 }
 
 /** For the few public endpoints (shared Passport and audit-pack links): no session needed. */

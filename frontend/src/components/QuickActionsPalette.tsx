@@ -8,6 +8,8 @@ import { useUiChrome } from "../lib/uiChrome";
 interface Command {
   id: string;
   label: string;
+  /** Other words people search with, in English, whatever the label's language. */
+  words?: string;
   hint: string;
   icon?: ReactNode;
   run: () => void;
@@ -31,6 +33,27 @@ const DESTINATION_ICONS: Record<string, ReactNode> = {
   trust: <path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4" />,
   company: <path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4" />,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
+};
+
+const SEARCH_WORDS: Partial<Record<Screen, string>> = {
+  home: "today dashboard overview",
+  agents: "chat assistant question",
+  inbox: "approve approvals review proposals",
+  cashflow: "cash forecast shortfall what-if",
+  finance: "receivables revenue customers risk",
+  analysis: "profit loss p&l margin ratios",
+  collections: "collections receivables chase reminders overdue invoices",
+  signals: "anomalies unusual duplicate bills payments benchmark",
+  customers: "clients buyers contacts",
+  einvoice: "myinvois lhdn invoices tin",
+  financing: "loans credit passport lenders scorecard",
+  positions: "jobs roles workspaces",
+  ingestion: "data sources upload import telegram email bank csv",
+  team: "people members invite access",
+  autonomy: "agents kill switch stop",
+  company: "settings rules automations alerts templates keys",
+  trust: "security audit incidents",
+  settings: "preferences language theme briefing",
 };
 
 // Split so the search state lives only while the palette is open: mounting a fresh
@@ -61,6 +84,9 @@ function PaletteBody() {
     { screen: "approvals", key: "tabs.recommendations" },
     { screen: "cashflow", key: "nav.cashFinance" },
     { screen: "finance", key: "tabs.intelligence" },
+    { screen: "analysis", key: "tabs.analysis" },
+    { screen: "collections", key: "tabs.collections" },
+    { screen: "signals", key: "tabs.signals" },
     { screen: "customers", key: "nav.customers" },
     { screen: "einvoice", key: "nav.einvoicing" },
     { screen: "financing", key: "nav.financing" },
@@ -79,7 +105,8 @@ function PaletteBody() {
       id: "go-" + d.screen,
       label: t(d.key),
       hint: "Go to page",
-      icon: DESTINATION_ICONS[d.screen],
+      words: SEARCH_WORDS[d.screen],
+      icon: DESTINATION_ICONS[d.screen] ?? DESTINATION_ICONS.cashflow,
       run: () => show(d.screen),
     })),
     { id: "ask", label: "Ask DuitDuit", hint: "Open the AI assistant", icon: DESTINATION_ICONS.agents, run: () => openAsk() },
@@ -87,7 +114,8 @@ function PaletteBody() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [show, openAsk, signOut, t, role]);
 
-  const filtered = commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()));
+  const needle = query.trim().toLowerCase();
+  const filtered = commands.filter((c) => `${c.label} ${c.words ?? ""}`.toLowerCase().includes(needle));
 
   useEffect(() => {
     requestAnimationFrame(() => inputRef.current?.focus());

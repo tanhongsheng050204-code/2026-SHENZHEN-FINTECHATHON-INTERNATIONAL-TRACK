@@ -2201,3 +2201,6 @@ html{scroll-behavior:smooth;}
 .dd-contact-steps{margin:.3rem 0 .9rem;padding-left:1.2rem;color:var(--ink-soft);font-size:.86rem;line-height:1.6}
 .dd-inbox-effect{margin:.2rem 0 .9rem;padding:.6rem .8rem;border-radius:8px;background:var(--bg-alt);border:1px solid var(--line);font-size:.86rem;color:var(--ink-soft)}
 .dd-inbox-effect strong{color:var(--ink);margin-right:.3rem}
+.dd-topic-list{margin:.5rem 0 .6rem;padding-left:1.2rem}
+.dd-topic-list li{margin:.35rem 0}
+.dd-topic-list p{margin:.15rem 0 0;font-size:.86rem;color:var(--ink-soft)}
