@@ -83,3 +83,23 @@ def test_a_company_with_its_own_records_is_never_mixed_with_demo_data():
     with pytest.raises(DemoLoadError, match="company_has_records"):
         load_demo_story(db, COMPANY, NAME, dt.date(2026, 10, 9))
     assert db.get(models.SyntheticTenantSeed, COMPANY) is None
+
+
+def test_review_comments_do_not_count_as_the_company_s_own_records():
+    db = _db()
+    db.add(
+        models.TokenizedContent(
+            tenant_id=COMPANY,
+            source_record_id="duitduit:comment:1",
+            source_system="duitduit",
+            record_type="review_comment",
+            content_text="[comment]",
+            content_fingerprint="0" * 64,
+            processing_status="ready",
+        )
+    )
+    db.commit()
+
+    load_demo_story(db, COMPANY, NAME, dt.date(2026, 10, 9))
+
+    assert db.get(models.SyntheticTenantSeed, COMPANY) is not None

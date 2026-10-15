@@ -43,11 +43,14 @@ class DemoLoadError(ValueError):
 
 
 def _has_records(db, tenant_id: str) -> bool:
+    """Business records only: review comments are kept as protected records too."""
+    from app.services.query_filters import REVIEW_COMMENT_SOURCE
+
     for model in (BusinessImportBatch, EInvoiceRecord, TokenizedContent):
-        count = db.scalar(
-            select(func.count()).select_from(model).where(model.tenant_id == tenant_id)
-        )
-        if count:
+        query = select(func.count()).select_from(model).where(model.tenant_id == tenant_id)
+        if model is TokenizedContent:
+            query = query.where(TokenizedContent.source_system != REVIEW_COMMENT_SOURCE)
+        if db.scalar(query):
             return True
     return False
 
