@@ -461,7 +461,52 @@ export default function Approvals() {
             </div>
           ))}
         </div>
+        <DecisionHistory recommendations={capabilities.viewRecommendations ? recommendations : []} canSeeOutreach={askRole === "finance_ops" || askRole === "owner_director" || askRole === "compliance"} />
       </div>
     </div>
+  );
+}
+
+const DECIDED_LABEL: Record<string, string> = {
+  approved: "Approved", rejected: "Rejected", implemented: "Implemented", dismissed: "Dismissed",
+  sending: "Sending", sent: "Sent", failed: "Delivery failed", delivery_unknown: "Delivery unknown",
+  replied: "Customer replied", cancelled: "Cancelled",
+};
+
+/** What has already been decided here, newest first: approved, rejected, sent. */
+function DecisionHistory({ recommendations, canSeeOutreach }: { recommendations: ProcessRecommendation[]; canSeeOutreach: boolean }) {
+  const [outreach, setOutreach] = useState<OutreachAction[]>([]);
+  useEffect(() => {
+    let active = true;
+    if (!canSeeOutreach) return () => { active = false; };
+    void fetchOutreachActions().then((rows) => active && setOutreach(rows)).catch(() => active && setOutreach([]));
+    return () => { active = false; };
+  }, [canSeeOutreach]);
+  const rows = [
+    ...recommendations.filter((r) => r.status !== "proposed").map((r) => ({
+      key: `rec-${r.id}`, kind: "Recommendation", title: <>{r.title}</>, status: r.status, at: r.updated_at,
+    })),
+    ...outreach.filter((o) => o.status !== "draft" && o.status !== "pending_approval").map((o) => ({
+      key: `out-${o.id}`, kind: "Customer email", title: <MaskedText text={o.protected_subject} />, status: o.status,
+      at: o.sent_at ?? o.approved_at ?? o.created_at,
+    })),
+  ].sort((a, b) => b.at.localeCompare(a.at));
+  return (
+    <section className="dd-decided" aria-labelledby="dd-decided-title">
+      <h2 id="dd-decided-title">Decided</h2>
+      <p className="fb-fine">Everything approved, rejected or sent from this tab. Each decision is also on the audit trail.</p>
+      {rows.length === 0 ? <p className="fb-fine">Nothing decided yet.</p> : (
+        <ul>
+          {rows.map((row) => (
+            <li key={row.key}>
+              <span className="fb-fine">{row.kind}</span>
+              <strong>{row.title}</strong>
+              <span className={"fb-status-pill " + (row.status === "rejected" || row.status === "failed" ? "is-urgent" : "is-active")}>{DECIDED_LABEL[row.status] ?? row.status}</span>
+              <time className="fb-fine" dateTime={row.at}>{new Date(row.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</time>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

@@ -2204,3 +2204,14 @@ html{scroll-behavior:smooth;}
 .dd-topic-list{margin:.5rem 0 .6rem;padding-left:1.2rem}
 .dd-topic-list li{margin:.35rem 0}
 .dd-topic-list p{margin:.15rem 0 0;font-size:.86rem;color:var(--ink-soft)}
+.dd-decided{margin-top:1.6rem}
+.dd-decided h2{font-size:1.05rem;margin:0 0 .2rem}
+.dd-decided ul{list-style:none;margin:.6rem 0 0;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.dd-decided li{display:grid;grid-template-columns:8.5rem minmax(0,1fr) auto auto;gap:.8rem;align-items:center;padding:.6rem .9rem;border-top:1px solid var(--line)}
+.dd-decided li:first-child{border-top:0}
+@media (max-width:640px){.dd-decided li{grid-template-columns:minmax(0,1fr) auto}}
+.dd-sources-list{list-style:none;margin:.7rem 0 0;padding:0;display:grid;gap:.5rem}
+.dd-sources-list li{border:1px solid var(--line);border-radius:8px;padding:.55rem .75rem;background:var(--card)}
+.dd-sources-head{display:flex;flex-wrap:wrap;gap:.25rem .6rem;font-size:.8rem;color:var(--ink-soft)}
+.dd-sources-head strong{color:var(--ink)}
+.dd-sources-list p{margin:.3rem 0 0;font-size:.86rem;line-height:1.5}

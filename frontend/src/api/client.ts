@@ -198,7 +198,7 @@ export interface UploadCommitResponse {
   preview_digest: string;
   input_kind: string;
   schema_name: string | null;
-  status: "ready" | "partial" | "failed";
+  status: "ready" | "partial" | "failed" | "enriching";
   total_rows: number;
   valid_rows: number;
   failed_rows: number;
@@ -342,6 +342,10 @@ export function friendlyLoadError(message: string): string {
   if (message === "csrf_token_invalid" || message === "csrf_origin_denied") return "Your session needs refreshing. Reload the page and try again.";
   if (message === "session_expired" || message === "session_idle_timeout" || message === "session_revoked") return "Your session has ended — please sign in again.";
   if (isNetworkError(message)) return "DuitDuit can't reach its server right now. Your data is safe. Try again in a moment.";
+  if (message === "demo_account_locked" || message === "demo_company_read_only") {
+    return "The shared demo company can't change its team, password or sign-ins, so other visitors aren't affected. Try this in your own company.";
+  }
+  if (message === "http_504" || message === "request_failed_504") return "That took too long and the connection closed. Try again: it is usually faster the second time.";
   // The short code (never free text) tells support which check refused the request.
   const code = /^[a-z0-9_]{1,40}$/.test(message) ? ` (code: ${message})` : "";
   return `Couldn't load this page right now. Try again, or reload the page.${code}`;

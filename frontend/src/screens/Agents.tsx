@@ -1,3 +1,4 @@
+import { MaskedText } from "../components/MaskedText";
 import { WhoCanSee } from "../components/WhoCanSee";
 import { useEffect, useRef, useState } from "react";
 import { AssistantReply } from "../components/AssistantReply";
@@ -94,6 +95,11 @@ const SUGGESTIONS: { text: string; icon: React.ReactNode; work?: boolean }[] = [
 
 let msgId = 1;
 const now = () => Date.now();
+
+const SOURCE_LABEL: Record<string, string> = {
+  email: "Email", telegram: "Telegram", sales_ledger: "Sales ledger", einvoice: "e-Invoice",
+  review_inbox: "Review inbox", bank_statement: "Bank statement", manual: "Manual entry",
+};
 
 export default function Agents() {
   const {
@@ -351,7 +357,7 @@ export default function Agents() {
       );
       setUploadResult(response);
       setUploadState("complete");
-      setChips([{ label: `${response.ready_rows} protected source${response.ready_rows === 1 ? "" : "s"}` }]);
+      setChips([{ label: `${response.protected_rows} protected source${response.protected_rows === 1 ? "" : "s"}` }]);
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (requestError) {
@@ -449,20 +455,24 @@ export default function Agents() {
                             <StandaloneExposureReceipt exposure={msg.exposure} rawQuestion={msg.rawQuestion} modelQuestion={msg.modelQuestion} protectedAnswer={msg.protectedText} authorizedAnswer={msg.text} />
                           )}
                           {!!msg.citations?.length && (
-                            <details className="fb-answer-action-details">
+                            <details className="fb-answer-action-details dd-sources" open>
                               <summary className="fb-btn fb-btn-outline fb-answer-action">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-                                Inspect {msg.citations.length} cited source{msg.citations.length === 1 ? "" : "s"}
+                                Sources ({msg.citations.length})
                               </summary>
-                              <div style={{ display: "grid", gap: ".5rem", marginTop: ".8rem" }}>
+                              <ol className="dd-sources-list">
                                 {msg.citations.map((citation) => (
-                                  <div className="fb-rec-evidence" key={citation.citation_id}>
-                                    <strong>{citation.citation_id}</strong> · {citation.source_system} · {citation.record_type ?? "record"}
-                                    {citation.occurred_at ? ` · ${new Date(citation.occurred_at).toLocaleDateString()}` : ""}
-                                    <div style={{ marginTop: ".35rem" }}>{citation.protected_excerpt}</div>
-                                  </div>
+                                  <li key={citation.citation_id}>
+                                    <div className="dd-sources-head">
+                                      <strong>{citation.citation_id}</strong>
+                                      <span>{SOURCE_LABEL[citation.source_system] ?? citation.source_system.replaceAll("_", " ")}</span>
+                                      <span>{(citation.record_type ?? "record").replaceAll("_", " ")}</span>
+                                      {citation.occurred_at && <time dateTime={citation.occurred_at}>{new Date(citation.occurred_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</time>}
+                                    </div>
+                                    <p><MaskedText text={citation.protected_excerpt} /></p>
+                                  </li>
                                 ))}
-                              </div>
+                              </ol>
                             </details>
                           )}
                         </div>
@@ -544,10 +554,13 @@ export default function Agents() {
 
               {uploadResult && (
                 <div className="fb-upload-stats">
-                  <span>{uploadResult.ready_rows} ready</span>
                   <span>{uploadResult.protected_rows} protected</span>
+                  {uploadResult.status !== "enriching" && <span>{uploadResult.ready_rows} ready</span>}
                   <span>{uploadResult.failed_rows} failed</span>
                 </div>
+              )}
+              {uploadResult?.status === "enriching" && (
+                <p className="fb-fine">Saved and protected. DuitDuit is writing the summary now; the record shows in Data sources within a minute.</p>
               )}
               {uploadError && <div className="fb-upload-error" role="alert">{uploadError}</div>}
 

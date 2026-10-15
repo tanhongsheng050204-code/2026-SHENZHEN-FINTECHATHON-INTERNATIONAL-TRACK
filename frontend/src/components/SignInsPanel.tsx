@@ -25,7 +25,7 @@ export function SignInsPanel() {
         {failed && <li className="rc-list-empty">{tx("Sign-ins could not be loaded.")}</li>}
         {rows?.length === 0 && <li className="rc-list-empty">{tx("No sign-ins recorded yet.")}</li>}
         {rows?.map((row) => (
-          <li key={row.at}>
+          <li key={`${row.at}-${row.browser}-${row.system}`}>
             <div className="rc-list-main">
               <strong>{tx("{browser} on {system}", { browser: row.browser, system: row.system })}{row.new_device && <span className="rc-chip is-amber" style={{ marginLeft: ".4rem" }}>{tx("New device")}</span>}</strong>
               <span>{when(row.at)} · {row.method === "demo" ? tx("Demo sign-in") : tx("Password and emailed code")}</span>
@@ -33,6 +33,9 @@ export function SignInsPanel() {
           </li>
         ))}
       </ul>
+      {rows?.some((row) => row.method === "demo") && (
+        <p className="fb-fine">{tx("The demo company is shared, so this list includes other visitors' sign-ins, and its password and sign-out everywhere are locked.")}</p>
+      )}
       <p className="fb-fine">{tx("If a sign-in was not you, change your password and use Sign out everywhere. Only the browser type and system are kept, never your address.")}</p>
     </section>
   );
