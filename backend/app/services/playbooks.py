@@ -390,6 +390,20 @@ def _pay_everyone(db, principal):
                     "No eligible receipt or supplier shift is on record for this gap.",
                 )
             )
+        from app.services import financing_profile
+        from app.stubs.financing import matches
+
+        found = matches("MY", financing_profile.compute(db, str(principal.tenant_id), forecast))
+        eligible = [m for m in found.matches if m.eligible]
+        steps.append(
+            _step(
+                "Financing",
+                "attention",
+                f"{len(eligible)} of {len(found.matches)} financing products fit your records"
+                + (f", best fit {eligible[0].product.name}" if eligible else "")
+                + ". Ask \"Which loans can we apply for?\" to see each one's next step.",
+            )
+        )
     return steps, [], "cashflow", forecast.data_mode
 
 

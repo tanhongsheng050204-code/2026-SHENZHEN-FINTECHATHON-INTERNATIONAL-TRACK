@@ -104,6 +104,7 @@ def test_pay_everyone_is_read_only_and_reports_demo_gap_and_scenarios(db):
     assert "RM62,000.00" in steps["Inflows and outflows"]["text"]
     assert "RM0.00" in steps["Collect earlier"]["text"]
     assert "no schedule was changed" in steps["Discuss payment timing"]["text"].lower()
+    assert "Which loans can we apply for?" in steps["Financing"]["text"]
     assert result["inbox_item_ids"] == []
     assert _actions(db) == []
     assert db.scalar(select(models.PayrollRun)) is None
