@@ -1130,7 +1130,7 @@ This is a proof of concept. The following boundaries are deliberate and document
   - The app no longer loads third-party fonts or scripts; CI checks this.
   - With `VITE_AUTH_MODE=backend`, the browser never contacts `supabase.co`.
   - The deployed site is still on `vercel.app`, which is mostly blocked in mainland China, so a custom domain is needed. See [china-reachability.md](docs/deployment/china-reachability.md).
-- **Hosting**: the API runs on a team member's machine through a temporary tunnel. It is only up while that machine is on, and the address changes on restart. Moving it to Cloud Run is described in [cloud-run-and-vercel.md](docs/deployment/cloud-run-and-vercel.md).
+- **Hosting**: the hosted API is a single prototype server, not a highly available deployment. Moving it to Cloud Run is described in [cloud-run-and-vercel.md](docs/deployment/cloud-run-and-vercel.md).
 - **Shared demo company**: it starts clean every day at 03:00 (Malaysia time) while one-click demo is on. Stopped agents restart, settings return to the seeded version, and decided inbox items wait for review again. Nothing is deleted: the reset is an event on the audit chain. Alert rules and shared links are not reset.
 - **Assurance**: automated scans and adversarial tests only. There is no independent penetration test and no certification.
 - **Chinese interface**: Today, Cash & finance (forecast), Financing & Passport and the Review inbox read in Chinese, including the server's rule results, alerts and sample inbox items. The translations are machine-assisted and not yet checked by a fluent reader. Financial analysis, the other screens and the assistant's own sentences are still mostly English, and drafts to customers stay in the language they will be sent in.
