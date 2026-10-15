@@ -15,6 +15,9 @@ Two adjustments keep that one story consistent:
   settings), which is the source of months trading for financing.
 - It also saves three alert rules an owner would set: low projected cash, stock below
   reorder level and a large overdue balance per customer.
+- Customer C's complaint about INV-1047 (the review inbox's "Reply to Customer C's
+  complaint" item) arrives by email and Telegram and is linked to Customer C, so
+  Customers and Home show a customer to watch.
 """
 
 import argparse
@@ -129,6 +132,93 @@ def _demo_alert_rules(db, tenant_id: str) -> bool:
     return True
 
 
+# Customer C's complaint behind the inbox item "Reply to Customer C's complaint".
+_CUSTOMER_C = "SYNTHETIC Customer C"
+_CUSTOMER_C_RECORDS = (
+    {
+        "source_record_id": "demo:customer-c:email:001",
+        "source_system": "email",
+        "record_type": "customer_email",
+        "occurred_at": "2026-10-07T10:20:00+08:00",
+        "text": (
+            "Subject: Damaged units on INV-1047\n"
+            "Internal category: delivery_complaint. SYNTHETIC Customer C reports that 4 of 20 "
+            "units on invoice INV-1047 (RM31,000) arrived damaged; the balance stays outstanding "
+            "until replacements are confirmed. Urgent: Finance must reply today."
+        ),
+        "metadata": {"channel": "inbox", "business_unit": "finance_ops"},
+    },
+    {
+        "source_record_id": "demo:customer-c:telegram:001",
+        "source_system": "telegram",
+        "record_type": "customer_message",
+        "occurred_at": "2026-10-08T16:05:00+08:00",
+        "text": (
+            "Internal category: delivery_complaint. SYNTHETIC Customer C followed up on the "
+            "damaged units for INV-1047 and asked for a replacement date today; the RM31,000 "
+            "stays outstanding until then."
+        ),
+        "metadata": {"channel": "telegram_private", "business_unit": "customer_care"},
+    },
+)
+
+
+def _customer_c_complaint(db, tenant_id: str) -> None:
+    """Link Customer C's complaint to Customer C; skipped until topic_e.py made Customer C."""
+    from app.contracts.customization import normalize_header
+    from app.models import Customer, CustomerRecordLink
+    from app.services.business_imports import digest
+    from app.services.customer_attention import recalculate_customer_attention
+
+    identity = digest(tenant_id, "customer", normalize_header(_CUSTOMER_C))
+    customer = db.scalar(
+        select(Customer).where(
+            Customer.tenant_id == tenant_id, Customer.normalized_name == identity
+        )
+    )
+    if customer is None:
+        return
+    for record in _CUSTOMER_C_RECORDS:
+        canonical = adapt_seed_record(record).model_copy(
+            update={
+                "tenant_id": tenant_id,
+                "source_record_id": _scoped(tenant_id, record["source_record_id"]),
+            }
+        )
+        content_id = db.scalar(
+            select(TokenizedContent.id).where(
+                TokenizedContent.source_record_id == canonical.source_record_id
+            )
+        )
+        if content_id is None:
+            ingest_canonical_record(db, canonical)
+            content_id = db.scalar(
+                select(TokenizedContent.id).where(
+                    TokenizedContent.source_record_id == canonical.source_record_id
+                )
+            )
+        linked = db.scalar(
+            select(CustomerRecordLink.id).where(
+                CustomerRecordLink.tenant_id == tenant_id,
+                CustomerRecordLink.customer_id == customer.id,
+                CustomerRecordLink.tokenized_content_id == content_id,
+            )
+        )
+        if linked is None:
+            db.add(
+                CustomerRecordLink(
+                    tenant_id=tenant_id,
+                    customer_id=customer.id,
+                    tokenized_content_id=content_id,
+                    match_status="verified",
+                    confidence=1.0,
+                    match_basis="synthetic_demo_fixture",
+                )
+            )
+    db.commit()
+    recalculate_customer_attention(db, tenant_id, customer.id)
+
+
 # Sample items the review inbox shows for the demo story; the reminder send waits on
 # the drafts being approved, so it is not seeded.
 _NOT_SEEDED = {"act_send_reminders"}
@@ -194,6 +284,7 @@ def seed_original_fixtures(db, tenant_id: str) -> bool:
         )
         if exists is None:
             ingest_canonical_record(db, canonical)
+    _customer_c_complaint(db, tenant_id)
     _demo_inbox(db, tenant_id)
     return rules_saved
 

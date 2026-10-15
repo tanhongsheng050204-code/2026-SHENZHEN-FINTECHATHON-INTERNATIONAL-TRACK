@@ -221,3 +221,32 @@ def test_the_demo_company_gets_its_review_inbox_story_once():
         )
     ).all()
     assert len(proposals) == len(items)  # the second run added nothing
+
+
+def test_customer_c_complains_about_inv_1047_and_needs_attention_once():
+    from app.contracts.customization import normalize_header
+    from app.models import Customer, CustomerRecordLink
+    from app.services.business_imports import digest
+    from app.services.customer_attention import latest_attention
+
+    db = _db()
+    customer = Customer(
+        tenant_id=SYNTHETIC_ID,
+        normalized_name=digest(SYNTHETIC_ID, "customer", normalize_header("SYNTHETIC Customer C")),
+        canonical_name="[ORG_1]",
+        primary_name_token="[ORG_1]",
+        profile_origin="manual",
+    )
+    db.add(customer)
+    db.commit()
+
+    seed_original_fixtures(db, SYNTHETIC_ID)
+    seed_original_fixtures(db, SYNTHETIC_ID)
+
+    links = db.scalars(
+        select(CustomerRecordLink).where(CustomerRecordLink.customer_id == customer.id)
+    ).all()
+    assert len(links) == 2
+    assert {link.match_status for link in links} == {"verified"}
+    attention = latest_attention(db, SYNTHETIC_ID, customer.id)
+    assert attention is not None and attention.priority != "healthy"
