@@ -15,6 +15,7 @@ Two adjustments keep that one story consistent:
   settings), which is the source of months trading for financing.
 - It also saves three alert rules an owner would set: low projected cash, stock below
   reorder level and a large overdue balance per customer.
+- Three automations an owner would switch on (each only prepares review items).
 - Customer C's complaint about INV-1047 (the review inbox's "Reply to Customer C's
   complaint" item) arrives by email and Telegram and is linked to Customer C, so
   Customers and Home show a customer to watch.
@@ -131,6 +132,54 @@ def _demo_alert_rules(db, tenant_id: str) -> bool:
         )
     return True
 
+
+# Automations an owner would switch on; each only prepares review items.
+_DEMO_AUTOMATIONS = (
+    ("invoice_due_within_days", 7, "draft_reminder", "finance"),
+    ("cash_shortfall_within_days", 30, "ask_review", "owner"),
+    ("bill_due_within_days", 7, "ask_review", "finance"),
+)
+
+
+def _demo_automations(db, tenant_id: str) -> None:
+    """Save them as the company's owner, once; skipped until an owner exists."""
+    from uuid import UUID
+
+    from app.auth.principal import AuthPrincipal
+    from app.contracts.collaboration import AutomationRequest
+    from app.contracts.common import JobFunction
+    from app.models import AuthUserRole
+    from app.schemas import UserRole
+    from app.services import automations
+
+    if automations.automations(db, tenant_id):
+        return
+    owner_id = db.scalar(
+        select(AuthUserRole.user_id)
+        .where(
+            AuthUserRole.tenant_id == tenant_id,
+            AuthUserRole.user_role == UserRole.OWNER_DIRECTOR.value,
+            AuthUserRole.active.is_(True),
+        )
+        .order_by(AuthUserRole.created_at)
+        .limit(1)
+    )
+    if owner_id is None:
+        return
+    owner = AuthPrincipal(
+        user_id=UUID(str(owner_id)),
+        email=None,
+        role=UserRole.OWNER_DIRECTOR,
+        tenant_id=UUID(tenant_id),
+    )
+    for trigger, days, action, reviewer in _DEMO_AUTOMATIONS:
+        automations.save(
+            db,
+            owner,
+            AutomationRequest(
+                trigger=trigger, days=days, action=action, reviewer=JobFunction(reviewer)
+            ),
+        )
 
 # Customer C's complaint behind the inbox item "Reply to Customer C's complaint".
 _CUSTOMER_C = "SYNTHETIC Customer C"
@@ -285,6 +334,7 @@ def seed_original_fixtures(db, tenant_id: str) -> bool:
         if exists is None:
             ingest_canonical_record(db, canonical)
     _customer_c_complaint(db, tenant_id)
+    _demo_automations(db, tenant_id)
     _demo_inbox(db, tenant_id)
     return rules_saved
 

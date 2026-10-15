@@ -250,3 +250,21 @@ def test_customer_c_complains_about_inv_1047_and_needs_attention_once():
     assert {link.match_status for link in links} == {"verified"}
     attention = latest_attention(db, SYNTHETIC_ID, customer.id)
     assert attention is not None and attention.priority != "healthy"
+
+
+def test_the_demo_company_has_three_automations_once():
+    from app.services import automations
+
+    db = _db()
+    _with_seed_marker(db)
+    _with_owner(db)
+
+    seed_original_fixtures(db, SYNTHETIC_ID)
+    seed_original_fixtures(db, SYNTHETIC_ID)
+
+    saved = automations.automations(db, SYNTHETIC_ID)
+    assert sorted((a.trigger, a.action) for a in saved) == [
+        ("bill_due_within_days", "ask_review"),
+        ("cash_shortfall_within_days", "ask_review"),
+        ("invoice_due_within_days", "draft_reminder"),
+    ]
