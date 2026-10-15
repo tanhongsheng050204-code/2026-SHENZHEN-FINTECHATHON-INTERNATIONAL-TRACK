@@ -170,3 +170,10 @@ def test_a_question_about_a_page_is_answered_before_it_opens():
     loans = _ask("Which loans can we apply for?")
     assert (loans["kind"], loans["screen"], loans["answer_here"]) == ("navigate", "financing", True)
     assert _ask("Open financing")["answer_here"] is False
+
+
+def test_reconcile_opens_reconciliation_in_three_languages():
+    for text in ("reconcile September", "Open reconciliation", "对账", "penyesuaian bank"):
+        plan = _ask(text)
+        assert (plan["kind"], plan["screen"]) == ("navigate", "reconciliation"), text
+    assert _ask("reconcile September", UserRole.GENERAL_EMPLOYEE)["kind"] == "refuse"

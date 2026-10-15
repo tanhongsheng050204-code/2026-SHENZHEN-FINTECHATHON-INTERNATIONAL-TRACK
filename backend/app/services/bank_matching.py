@@ -55,16 +55,16 @@ def last_month(as_of: dt.date) -> tuple[dt.date, dt.date]:
     return (end - dt.timedelta(days=1)).replace(day=1), end
 
 
-def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal]]]:
+def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal, str]]]:
     m = models
     debits = [
-        (row.due_date, row.amount_myr)
+        (row.due_date, row.amount_myr, "Supplier bill")
         for row in db.scalars(
             select(m.Payable).where(m.Payable.tenant_id == tenant_id, m.Payable.status == "paid")
         )
     ]
     debits += [
-        (row.expected_payment, row.amount_myr)
+        (row.expected_payment, row.amount_myr, "Purchase order")
         for row in db.scalars(
             select(m.PurchaseOrder).where(
                 m.PurchaseOrder.tenant_id == tenant_id, m.PurchaseOrder.status == "paid"
@@ -72,7 +72,7 @@ def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal]]]:
         )
     ]
     debits += [
-        (row.pay_date, row.total_gross + row.employer_contributions)
+        (row.pay_date, row.total_gross + row.employer_contributions, f"Payroll {row.period}")
         for row in db.scalars(
             select(m.PayrollRun).where(
                 m.PayrollRun.tenant_id == tenant_id, m.PayrollRun.status == "paid"
@@ -80,7 +80,7 @@ def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal]]]:
         )
     ]
     credits = [
-        (row.expected_payment_date, row.amount)
+        (row.expected_payment_date, row.amount, "Sale received")
         for row in db.scalars(
             select(m.SalesPipeline).where(
                 m.SalesPipeline.tenant_id == tenant_id, m.SalesPipeline.stage == "paid"
@@ -88,7 +88,7 @@ def _records(db, tenant_id: str) -> dict[str, list[tuple[dt.date, Decimal]]]:
         )
     ]
     credits += [
-        (row.payout_date, row.net)
+        (row.payout_date, row.net, "Marketplace payout")
         for row in db.scalars(
             select(m.MarketplacePayout).where(
                 m.MarketplacePayout.tenant_id == tenant_id,
@@ -104,9 +104,19 @@ def match(db, tenant_id: str, as_of: dt.date) -> Result:
     return match_between(db, tenant_id, start, end)
 
 
-def match_between(db, tenant_id: str, start: dt.date, end: dt.date) -> Result:
-    """Bank lines posted from start up to (not including) end, matched to records."""
-    lines = db.scalars(
+@dataclass(frozen=True)
+class Line:
+    id: int
+    posted_on: dt.date
+    direction: str
+    amount: Decimal
+    description_token: str
+    matched_to: str | None
+
+
+def lines_between(db, tenant_id: str, start: dt.date, end: dt.date) -> list[Line]:
+    """Each bank line posted from start up to (not including) end, with its match."""
+    rows = db.scalars(
         select(models.BankTransaction)
         .where(
             models.BankTransaction.tenant_id == tenant_id,
@@ -116,21 +126,32 @@ def match_between(db, tenant_id: str, start: dt.date, end: dt.date) -> Result:
         .order_by(models.BankTransaction.posted_on, models.BankTransaction.id)
     ).all()
     available = _records(db, tenant_id)
-    matched = 0
-    unmatched: list[Unmatched] = []
-    for line in lines:
+    result: list[Line] = []
+    for line in rows:
         side = _SIDE.get(line.direction, line.direction)
         pool = available.get(side, [])
         candidates = [
             (abs((day - line.posted_on).days), index)
-            for index, (day, amount) in enumerate(pool)
+            for index, (day, amount, _label) in enumerate(pool)
             if amount == line.amount and abs((day - line.posted_on).days) <= WINDOW_DAYS
         ]
-        if candidates:
-            pool.pop(min(candidates)[1])
-            matched += 1
-        else:
-            unmatched.append(Unmatched(line.posted_on, side, line.amount))
+        label = pool.pop(min(candidates)[1])[2] if candidates else None
+        result.append(
+            Line(line.id, line.posted_on, side, line.amount, line.description_token, label)
+        )
+    return result
+
+
+def match_between(db, tenant_id: str, start: dt.date, end: dt.date) -> Result:
+    """Bank lines posted from start up to (not including) end, matched to records."""
+    lines = lines_between(db, tenant_id, start, end)
     return Result(
-        period=start.strftime("%Y-%m"), lines=len(lines), matched=matched, unmatched=unmatched
+        period=start.strftime("%Y-%m"),
+        lines=len(lines),
+        matched=sum(1 for line in lines if line.matched_to),
+        unmatched=[
+            Unmatched(line.posted_on, line.direction, line.amount)
+            for line in lines
+            if not line.matched_to
+        ],
     )

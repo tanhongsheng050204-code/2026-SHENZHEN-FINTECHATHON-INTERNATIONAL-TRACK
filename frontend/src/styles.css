@@ -2215,3 +2215,5 @@ html{scroll-behavior:smooth;}
 .dd-sources-head{display:flex;flex-wrap:wrap;gap:.25rem .6rem;font-size:.8rem;color:var(--ink-soft)}
 .dd-sources-head strong{color:var(--ink)}
 .dd-sources-list p{margin:.3rem 0 0;font-size:.86rem;line-height:1.5}
+.dd-recon-month{display:flex;align-items:center;gap:.8rem;margin:0 0 1rem}
+.dd-recon-month strong{min-width:9rem;text-align:center}

@@ -51,6 +51,11 @@ SCREENS: dict[str, tuple[str, tuple[UserRole, ...], tuple[str, ...]]] = {
         ("analysis", "profit", "profit and loss", "p&l", "margin", "margins", "expenses"),
     ),
     "financing": ("Financing & Passport", _FINANCE_READ, ("financing", "loan", "passport")),
+    "reconciliation": (
+        "Reconciliation",
+        _FINANCE_READ,
+        ("reconciliation", "reconcile", "bank lines", "penyesuaian", "对账"),
+    ),
     "einvoice": (
         "e-Invoicing",
         _FINANCE_READ,
@@ -92,6 +97,7 @@ _TOPIC_SCREENS = (
         "einvoice",
     ),
 )
+_RECONCILE = re.compile(r"\breconcil\w*|\bpenyesuaian\b|对账", re.IGNORECASE)
 _BRIEFING = re.compile(
     r"\b(briefing|brief me|what needs me|needs? my attention|what should i do|"
     r"what do i need to do|on my plate|good morning)\b",
@@ -258,6 +264,8 @@ def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
             message=f"Preparing {playbooks.TITLES[playbook].lower()}. "
             "External actions will wait for review in the inbox.",
         )
+    if _RECONCILE.search(text):
+        return _navigate(principal, "reconciliation", "rules")
     for pattern, screen in _TOPIC_SCREENS:
         if pattern.search(text):
             plan = _navigate(principal, screen, "rules")

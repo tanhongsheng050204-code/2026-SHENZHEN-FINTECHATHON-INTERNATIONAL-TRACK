@@ -2117,6 +2117,24 @@ export const FB_ZH: Record<string, string> = {
   "That took too long and the connection closed. Try again: it is usually faster the second time.": "耗时太久，连接已关闭。请重试：第二次通常更快。",
   "The demo company is shared, so this list includes other visitors' sign-ins, and its password and sign-out everywhere are locked.": "演示公司是共享的，因此此列表包含其他访客的登录记录，其密码和“在所有设备上退出”功能已锁定。",
   "Saved and protected. DuitDuit is writing the summary now; the record shows in Data sources within a minute.": "已保存并受保护。DuitDuit 正在撰写摘要；记录会在一分钟内显示在“数据来源”中。",
+  "Each bank line for the month, with the record it matches. Lines with no record go to Finance to explain; nothing is changed here.": "本月每一笔银行流水及其匹配的记录。没有对应记录的流水交给财务说明；这里不会修改任何内容。",
+  "← Previous month": "← 上个月",
+  "Next month →": "下个月 →",
+  "Bank lines": "银行流水",
+  "Matched": "已匹配",
+  "To explain": "待说明",
+  "No record": "无记录",
+  "No bank lines for this month. Import a bank statement on Data sources to reconcile it.": "本月没有银行流水。请在“数据来源”导入银行对账单后再对账。",
+  "In review inbox →": "在审核收件箱中 →",
+  "Sending…": "发送中……",
+  "Ask Finance to explain": "请财务说明",
+  "A line matches a settled record in the same direction, for the same amount to the cent, at most {n} days apart. Nothing is matched on a guess.": "流水与方向相同、金额精确到分、日期相差不超过 {n} 天的已结清记录匹配。不会靠猜测匹配。",
+  "Supplier bill": "供应商账单",
+  "Purchase order": "采购订单",
+  "Sale received": "已收销售款",
+  "Marketplace payout": "电商平台回款",
+  "Money in, no record": "收入，无对应记录",
+  "Money out, no record": "支出，无对应记录",
 };
 
 type Translate = (text: string) => string;
@@ -2219,6 +2237,8 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Ask "Which loans can we apply for\?" to see each one's next step\.$/, () => "问“我们可以申请哪些贷款？”即可看到每个产品的下一步。"],
   [/^Last import: (\d{1,2} \w{3} \d{4})\.$/, (m) => `最近一次导入：${m[1]}。`],
   [/^(\d+) items? still open in your review inbox\.$/, (m) => `审核收件箱中还有 ${m[1]} 项未处理。`],
+  [/^Explain a bank line: (RM[\d,.]+) (in|out) on (\d{1,2} \w{3})$/, (m) => `说明一笔银行流水：${m[3]} ${m[2] === "in" ? "收入" : "支出"} ${m[1]}`],
+  [/^Payroll (\d{4}-\d{2})$/, (m) => `${m[1]} 工资`],
   // Several sentences: translate each one, keep the ones there is no Chinese for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr)
     .reduce((text, part) => text + (text && (/[ -~]$/.test(text) || /^[ -~]/.test(part)) ? " " : "") + part, "")],

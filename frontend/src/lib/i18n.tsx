@@ -26,6 +26,7 @@ const FB_I18N: Record<string, Record<Lang, string>> = {
   "tabs.posture": { en: "Security posture", ms: "Postur keselamatan", zh: "安全态势" },
   "tabs.audit": { en: "Audit & access", ms: "Audit & akses", zh: "审计与权限" },
   "tabs.signals": { en: "Unusual activity", ms: "Aktiviti luar biasa", zh: "异常活动" },
+  "tabs.reconciliation": { en: "Reconciliation", ms: "Penyesuaian", zh: "对账" },
   "tabs.securityActivity": { en: "Security activity", ms: "Aktiviti keselamatan", zh: "安全动态" },
   "nav.inbox": { en: "Review inbox", ms: "Peti semakan", zh: "审核收件箱" },
   "nav.positions": { en: "Positions", ms: "Jawatan", zh: "岗位" },

@@ -2065,6 +2065,24 @@ export const FB_MS: Record<string, string> = {
   "That took too long and the connection closed. Try again: it is usually faster the second time.": "Itu mengambil masa terlalu lama dan sambungan ditutup. Cuba lagi: biasanya lebih pantas kali kedua.",
   "The demo company is shared, so this list includes other visitors' sign-ins, and its password and sign-out everywhere are locked.": "Syarikat demo dikongsi, jadi senarai ini termasuk log masuk pelawat lain, dan kata laluan serta log keluar di semua tempat dikunci.",
   "Saved and protected. DuitDuit is writing the summary now; the record shows in Data sources within a minute.": "Disimpan dan dilindungi. DuitDuit sedang menulis ringkasan; rekod muncul di Sumber data dalam seminit.",
+  "Each bank line for the month, with the record it matches. Lines with no record go to Finance to explain; nothing is changed here.": "Setiap baris bank bagi bulan itu, dengan rekod yang sepadan. Baris tanpa rekod dihantar kepada Kewangan untuk diterangkan; tiada apa diubah di sini.",
+  "← Previous month": "← Bulan sebelumnya",
+  "Next month →": "Bulan seterusnya →",
+  "Bank lines": "Baris bank",
+  "Matched": "Sepadan",
+  "To explain": "Untuk diterangkan",
+  "No record": "Tiada rekod",
+  "No bank lines for this month. Import a bank statement on Data sources to reconcile it.": "Tiada baris bank untuk bulan ini. Import penyata bank di Sumber data untuk menyesuaikannya.",
+  "In review inbox →": "Dalam peti semakan →",
+  "Sending…": "Menghantar…",
+  "Ask Finance to explain": "Minta Kewangan menerangkan",
+  "A line matches a settled record in the same direction, for the same amount to the cent, at most {n} days apart. Nothing is matched on a guess.": "Satu baris sepadan dengan rekod yang selesai dalam arah yang sama, jumlah yang sama hingga sen, paling banyak {n} hari berbeza. Tiada padanan dibuat secara tekaan.",
+  "Supplier bill": "Bil pembekal",
+  "Purchase order": "Pesanan belian",
+  "Sale received": "Jualan diterima",
+  "Marketplace payout": "Bayaran pasaran dalam talian",
+  "Money in, no record": "Wang masuk, tiada rekod",
+  "Money out, no record": "Wang keluar, tiada rekod",
 };
 
 type Translate = (text: string) => string;
@@ -2144,6 +2162,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Ask "Which loans can we apply for\?" to see each one's next step\.$/, () => "Tanya \u201cPinjaman mana yang boleh kami mohon?\u201d untuk melihat langkah seterusnya bagi setiap satu."],
   [/^Last import: (\d{1,2} \w{3} \d{4})\.$/, (m) => `Import terakhir: ${m[1]}.`],
   [/^(\d+) items? still open in your review inbox\.$/, (m) => `${m[1]} perkara masih terbuka dalam peti semakan anda.`],
+  [/^Explain a bank line: (RM[\d,.]+) (in|out) on (\d{1,2} \w{3})$/, (m) => `Terangkan baris bank: ${m[1]} ${m[2] === "in" ? "masuk" : "keluar"} pada ${m[3]}`],
   // Several sentences: translate each one, keep the ones there is no Malay for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr).join(" ")],
 ];

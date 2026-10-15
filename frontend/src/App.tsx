@@ -66,12 +66,13 @@ const Team = lazy(() => fresh(() => import("./screens/Team")));
 const Trust = lazy(() => fresh(() => import("./screens/Trust")));
 const SecurityActivity = lazy(() => fresh(() => import("./screens/SecurityActivity")));
 const Signals = lazy(() => fresh(() => import("./screens/Signals")));
+const Reconciliation = lazy(() => fresh(() => import("./screens/Reconciliation")));
 const CompanySettings = lazy(() => fresh(() => import("./screens/CompanySettings")));
 const SharedView = lazy(() => fresh(() => import("./screens/SharedView")));
 
 // Money pages that would otherwise show the demo company's figures to a company
 // that has none of its own yet.
-const NEEDS_RECORDS = new Set(["home", "cashflow", "analysis", "collections", "signals", "financing", "positions", "inbox", "finance"]);
+const NEEDS_RECORDS = new Set(["home", "cashflow", "analysis", "collections", "signals", "reconciliation", "financing", "positions", "inbox", "finance"]);
 
 function Screens() {
   const { screen, show, setAskRole } = useAppState();
@@ -133,6 +134,7 @@ function Screens() {
     case "trust": return <Trust />;
     case "activity": return <SecurityActivity />;
     case "signals": return <Signals />;
+    case "reconciliation": return <Reconciliation />;
     case "company": return <CompanySettings />;
     default: return <EnglishOnly><Landing /></EnglishOnly>;
   }

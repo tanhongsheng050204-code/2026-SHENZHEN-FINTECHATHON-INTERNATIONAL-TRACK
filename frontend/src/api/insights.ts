@@ -67,3 +67,36 @@ export interface PaymentModelResponse {
 export async function fetchPaymentModel(): Promise<PaymentModelResponse> {
   return parse<PaymentModelResponse>(await authenticatedFetch("/cashflow/payment-model"));
 }
+
+export interface ReconciliationLine {
+  ref: string;
+  posted_on: string;
+  direction: "credit" | "debit";
+  amount: string;
+  description: string;
+  status: "matched" | "unmatched";
+  matched_to: string | null;
+  review_action_id: string | null;
+}
+
+export interface ReconciliationResponse {
+  data_mode: DataMode;
+  period: string;
+  label: string;
+  lines: number;
+  matched: number;
+  window_days: number;
+  items: ReconciliationLine[];
+}
+
+export async function fetchReconciliation(period?: string): Promise<ReconciliationResponse> {
+  const query = period ? `?period=${encodeURIComponent(period)}` : "";
+  return parse<ReconciliationResponse>(await authenticatedFetch(`/reconciliation${query}`));
+}
+
+export async function explainBankLine(ref: string): Promise<string> {
+  const body = await parse<{ action_id: string }>(
+    await authenticatedFetch(`/reconciliation/${encodeURIComponent(ref)}/explain`, { method: "POST" }),
+  );
+  return body.action_id;
+}
