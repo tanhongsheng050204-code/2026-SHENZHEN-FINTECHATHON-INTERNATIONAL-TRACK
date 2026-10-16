@@ -793,6 +793,8 @@ queue.
 
 ## Architecture
 
+![DuitDuit architecture: capture, protect, agents propose, people decide, results, on a tamper-evident audit chain](docs/media/architecture.png)
+
 A React 19 single-page app talks only to its own site; an edge function forwards `/api` to a
 FastAPI backend, which owns sign-in, the privacy engine and every agent. Data lives in
 Supabase Postgres 17 with pgvector and forced row-level security. Morpheus and Gemini see
