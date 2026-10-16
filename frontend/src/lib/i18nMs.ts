@@ -2226,7 +2226,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) left for a person to explain\.$/, (m) => `${m[1]} ditinggalkan untuk diterangkan oleh seseorang.`],
   [/^Worth (RM[\d,.]+), before anyone paid\.$/, (m) => `Bernilai ${m[1]}, sebelum sesiapa membayar.`],
   [/^(\d+) unsafe requests? blocked or quarantined\.$/, (m) => `${m[1]} permintaan tidak selamat disekat atau dikuarantin.`],
-  [/^Customers owe (RM[\d,.]+) on (\d+) open invoices?\.$/, (m) => `Pelanggan berhutang ${m[1]} pada ${m[2]} invois terbuka.`],
+  [/^Customers owe (RM ?[\d,.]+) on (\d+) open invoices?\.$/, (m) => `Pelanggan berhutang ${m[1]} pada ${m[2]} invois terbuka.`],
   [/^(\d+) (?:is|are) overdue\.$/, (m) => `${m[1]} telah tertunggak.`],
   [/^(\d+) days overdue$/, (m) => `Tertunggak ${m[1]} hari`],
   [/^Due (\d{4}-\d{2}-\d{2})$/, (m) => `Tamat tempoh ${m[1]}`],

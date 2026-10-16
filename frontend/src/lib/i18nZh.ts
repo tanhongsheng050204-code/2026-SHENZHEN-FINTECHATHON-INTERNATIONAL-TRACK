@@ -2300,7 +2300,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) left for a person to explain\.$/, (m) => `${m[1]} 笔留待人工说明。`],
   [/^Worth (RM[\d,.]+), before anyone paid\.$/, (m) => `金额 ${m[1]}，在付款之前发现。`],
   [/^(\d+) unsafe requests? blocked or quarantined\.$/, (m) => `${m[1]} 个不安全请求被拦截或隔离。`],
-  [/^Customers owe (RM[\d,.]+) on (\d+) open invoices?\.$/, (m) => `客户在 ${m[2]} 张未结发票上共欠 ${m[1]}。`],
+  [/^Customers owe (RM ?[\d,.]+) on (\d+) open invoices?\.$/, (m) => `客户在 ${m[2]} 张未结发票上共欠 ${m[1]}。`],
   [/^(\d+) (?:is|are) overdue\.$/, (m) => `${m[1]} 张已逾期。`],
   [/^(\d+) days overdue$/, (m) => `逾期 ${m[1]} 天`],
   [/^Due (\d{4}-\d{2}-\d{2})$/, (m) => `${m[1]} 到期`],

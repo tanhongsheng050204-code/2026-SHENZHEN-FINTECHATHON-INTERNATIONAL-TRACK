@@ -30,3 +30,7 @@ test("a masked customer's number reads in Chinese and Malay", () => {
   assert.equal(msFor("Customer #7"), "Pelanggan #7");
   assert.equal(zhFor("Payment reminder for customer #8"), "给 客户 #8 的付款提醒");
 });
+
+test("the receivables total translates with the app's spaced ringgit format", () => {
+  assert.equal(zhFor("Customers owe RM 353,500.00 on 10 open invoices."), "客户在 10 张未结发票上共欠 RM 353,500.00。");
+});
