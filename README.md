@@ -47,7 +47,7 @@ All figures shown in this README come from a **synthetic** Malaysian home-goods 
 
 ## At a glance
 
-DuitDuit (Malay slang for "money") is our entry for the 2026 Shenzhen International FinTech Competition (International AI Track, direction E: Small-business Finance Assistant: cash flow, reconciliation and operational recommendations), under the theme "AI as a Financial Participant".
+DuitDuit (from "duit", Malay for money) is our entry for the 2026 Shenzhen International FinTech Competition (International AI Track, direction E: Small-business Finance Assistant: cash flow, reconciliation and operational recommendations), under the theme "AI as a Financial Participant".
 
 - **Why it matters:** Malaysia's roughly 1.09 million MSMEs contribute 39.7% of GDP and 48.7% of employment (DOSM 2025), yet SMEs wait an average of 64 days to be paid (Experian 2025), and the financing gap is estimated at RM90 billion. See [Why it matters](#why-it-matters-the-market-and-the-business-case).
 - **What it does:** forecasts 90 days of cash flow and warns of a shortfall early; reconciles bank lines one by one; chases receivables; matches financing products and prepares the application pack; answers questions such as "Can we make payroll this month?".
