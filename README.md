@@ -38,22 +38,22 @@ All figures shown in this README come from a **synthetic** Malaysian home-goods 
 
 ## Contents
 
-- [中文简介](#中文简介) · [Two-minute tour](#two-minute-tour) · [Why it matters](#why-it-matters-the-market-and-the-business-case) · [Track E requirements → evidence](#track-e-requirements--evidence) · [Scoring criteria → evidence](#scoring-criteria--evidence) · [Try it in five minutes](#try-it-in-five-minutes)
+- [At a glance](#at-a-glance) · [Two-minute tour](#two-minute-tour) · [Why it matters](#why-it-matters-the-market-and-the-business-case) · [Track E requirements → evidence](#track-e-requirements--evidence) · [Scoring criteria → evidence](#scoring-criteria--evidence) · [Try it in five minutes](#try-it-in-five-minutes)
 - [The entry: Topic E](#the-entry-topic-e) · [Build status](#build-status) · [Submission map](#submission-map)
 - [How it works](#how-it-works) · [Features](#features) · [Security and privacy](#security-and-privacy) · [Architecture](#architecture)
 - [Testing and evaluation](#testing-and-evaluation) · [Setup, running and deployment](#setup-running-and-deployment) · [Documentation](#documentation) · [Scope and known limitations](#scope-and-known-limitations)
 
 ---
 
-## 中文简介
+## At a glance
 
-DuitDuit（"钱钱"）是参加 2026 深圳国际金融科技大赛（国际 AI 赛道，方向 E：小微企业财务助手——现金流、对账与经营建议）的作品，主题为"AI 作为金融参与者"。
+DuitDuit (Malay slang for "money") is our entry for the 2026 Shenzhen International FinTech Competition (International AI Track, direction E: Small-business Finance Assistant: cash flow, reconciliation and operational recommendations), under the theme "AI as a Financial Participant".
 
-- **为什么重要：** 马来西亚约 109 万家中小微企业贡献了 39.7% 的 GDP 和 48.7% 的就业（DOSM 2025），但中小企业平均要等 64 天才能收到货款（Experian 2025），融资缺口估计达 900 亿令吉。详见 [Why it matters](#why-it-matters-the-market-and-the-business-case)。
-- **能做什么：** 预测 90 天现金流并提前提示资金缺口；逐笔对账银行流水；催收应收账款；匹配融资产品并准备申请材料；回答"这个月能发得起工资吗？"之类的问题。
-- **怎样保证安全：** AI 只提出建议，所有会改变记录或对外发送的操作都进入"审核收件箱"，由人确认；涉及资金的操作需要两个不同的人批准并输入验证码，且只在模拟银行中执行，不动用真实资金。敏感信息在交给任何 AI 模型之前已被令牌化并加密；每个决定都写入哈希链审计日志。
-- **如何体验：** 打开 <https://duitduit-umber.vercel.app/>（在中国大陆请使用 VPN 访问，`vercel.app` 域名在大陆无法直接打开；演示视频展示了全部功能），点击 **Open the demo company**；在 **My preferences** 中可切换为中文界面。
-- **如何验证：** 57 个离线评测任务（27 个功能任务、30 个对抗任务）全部通过；后端测试见 [Testing](#testing-and-evaluation)。演示公司及其数据均为合成数据。
+- **Why it matters:** Malaysia's roughly 1.09 million MSMEs contribute 39.7% of GDP and 48.7% of employment (DOSM 2025), yet SMEs wait an average of 64 days to be paid (Experian 2025), and the financing gap is estimated at RM90 billion. See [Why it matters](#why-it-matters-the-market-and-the-business-case).
+- **What it does:** forecasts 90 days of cash flow and warns of a shortfall early; reconciles bank lines one by one; chases receivables; matches financing products and prepares the application pack; answers questions such as "Can we make payroll this month?".
+- **How it stays safe:** the AI only proposes. Anything that changes records or goes outside the company lands in a review inbox for a person to confirm. Money needs two different people to approve with a verification code, and runs only on a simulated bank, never real funds. Sensitive values are tokenized and encrypted before any AI model sees them, and every decision is written to a hash-chained audit log.
+- **How to try it:** open <https://duitduit-umber.vercel.app/> (in mainland China please use a VPN, because `vercel.app` addresses are blocked there; the demo video shows every feature), then choose **Open the demo company**. **My preferences** switches the app to Bahasa Malaysia or Chinese.
+- **How it is verified:** all 57 offline evaluation tasks pass (27 functional, 30 adversarial); backend tests are in [Testing](#testing-and-evaluation). The demo company and its data are synthetic.
 
 ## Two-minute tour
 
