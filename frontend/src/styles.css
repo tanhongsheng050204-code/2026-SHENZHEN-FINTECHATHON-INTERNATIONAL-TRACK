@@ -2217,6 +2217,7 @@ html{scroll-behavior:smooth;}
 .dd-sources-list p{margin:.3rem 0 0;font-size:.86rem;line-height:1.5}
 .dd-recon-month{display:flex;align-items:center;gap:.8rem;margin:0 0 1rem}
 .dd-recon-month strong{min-width:9rem;text-align:center}
+@media (max-width:520px){.dd-recon-month{flex-wrap:wrap;gap:.5rem}.dd-recon-month strong{order:-1;flex-basis:100%;min-width:0;text-align:left}}
 .dd-clarify{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}
 .dd-clarify .fb-btn{display:inline-flex;align-items:center;gap:.5rem;min-height:2.4rem}
 .dd-clarify-n{display:inline-grid;place-items:center;width:1.3rem;height:1.3rem;border-radius:99px;background:var(--bg-alt);font-size:.75rem;font-variant-numeric:tabular-nums}

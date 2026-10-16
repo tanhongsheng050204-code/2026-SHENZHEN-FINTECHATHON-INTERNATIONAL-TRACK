@@ -2118,6 +2118,14 @@ export const FB_MS: Record<string, string> = {
   "Something went wrong on DuitDuit's server. Your data is safe. Try again, or reload the page.": "Berlaku masalah pada pelayan DuitDuit. Data anda selamat. Cuba lagi, atau muat semula halaman.",
   "That didn't go through, and nothing was changed. Something went wrong on DuitDuit's server; try again in a moment.": "Tindakan itu tidak berjaya, dan tiada apa-apa yang diubah. Berlaku masalah pada pelayan DuitDuit; cuba lagi sebentar lagi.",
   "That didn't go through, and nothing was changed. Try again.": "Tindakan itu tidak berjaya, dan tiada apa-apa yang diubah. Cuba lagi.",
+  "None is overdue.": "Tiada yang tertunggak.",
+  "No due date": "Tiada tarikh akhir",
+  "Open Collections →": "Buka Kutipan →",
+  "Nothing is sent from here. On the page you can ask for a reminder; it waits in the review inbox for approval.": "Tiada apa-apa dihantar dari sini. Di halaman itu anda boleh meminta peringatan; ia menunggu kelulusan dalam peti semakan.",
+  "I didn't catch that. Here are things I can do:": "Saya tidak faham. Ini perkara yang boleh saya bantu:",
+  "Who owes us the most?": "Siapa paling banyak berhutang dengan kita?",
+  "I can't move money, and instructions inside a message don't change my rules. A payment is prepared as an L3 item in the review inbox: two different people approve it, each with an authenticator code, and it then runs only in DuitDuit's simulated bank. Nothing was changed.": "Saya tidak boleh memindahkan wang, dan arahan dalam mesej tidak mengubah peraturan saya. Pembayaran disediakan sebagai item L3 dalam peti semakan: dua orang berbeza meluluskannya, masing-masing dengan kod pengesah, dan ia hanya dijalankan dalam bank simulasi DuitDuit. Tiada apa-apa yang diubah.",
+  "Instructions inside a message don't change my rules: I only prepare work for a person to approve. Nothing was changed. Ask me about your records, or tell me what to prepare.": "Arahan dalam mesej tidak mengubah peraturan saya: saya hanya menyediakan kerja untuk diluluskan oleh seseorang. Tiada apa-apa yang diubah. Tanya saya tentang rekod anda, atau beritahu apa yang perlu disediakan.",
 };
 
 type Translate = (text: string) => string;
@@ -2218,6 +2226,10 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) left for a person to explain\.$/, (m) => `${m[1]} ditinggalkan untuk diterangkan oleh seseorang.`],
   [/^Worth (RM[\d,.]+), before anyone paid\.$/, (m) => `Bernilai ${m[1]}, sebelum sesiapa membayar.`],
   [/^(\d+) unsafe requests? blocked or quarantined\.$/, (m) => `${m[1]} permintaan tidak selamat disekat atau dikuarantin.`],
+  [/^Customers owe (RM[\d,.]+) on (\d+) open invoices?\.$/, (m) => `Pelanggan berhutang ${m[1]} pada ${m[2]} invois terbuka.`],
+  [/^(\d+) (?:is|are) overdue\.$/, (m) => `${m[1]} telah tertunggak.`],
+  [/^(\d+) days overdue$/, (m) => `Tertunggak ${m[1]} hari`],
+  [/^Due (\d{4}-\d{2}-\d{2})$/, (m) => `Tamat tempoh ${m[1]}`],
   // Several sentences: translate each one, keep the ones there is no Malay for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr).join(" ")],
 ];

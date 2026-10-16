@@ -174,8 +174,12 @@ export function registerStepUpHandler(handler: StepUpHandler | null): void {
   stepUpHandler = handler;
 }
 
+/** Fired when the app asks for an authenticator code (the demo authenticator opens). */
+export const STEP_UP_EVENT = "dd-step-up-requested";
+
 export async function requestStepUp(): Promise<boolean> {
   if (!stepUpHandler) return false;
+  window.dispatchEvent(new Event(STEP_UP_EVENT));
   // Several requests failing at once share one prompt.
   pendingStepUp ??= stepUpHandler().finally(() => { pendingStepUp = null; });
   return pendingStepUp;

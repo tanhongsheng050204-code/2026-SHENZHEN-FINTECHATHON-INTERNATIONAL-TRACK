@@ -51,6 +51,7 @@ SCREENS: dict[str, tuple[str, tuple[UserRole, ...], tuple[str, ...]]] = {
         ("analysis", "profit", "profit and loss", "p&l", "margin", "margins", "expenses"),
     ),
     "financing": ("Financing & Passport", _FINANCE_READ, ("financing", "loan", "passport")),
+    "collections": ("Collections", _FINANCE_READ, ("collections", "collections board")),
     "reconciliation": (
         "Reconciliation",
         _FINANCE_READ,
@@ -135,6 +136,51 @@ _GOAL = re.compile(
 )
 # Questions whose full answer is a page: the financing matches with their reasons, and
 # the e-invoice readiness checks. A search of the records finds unrelated text for them.
+# Questions about what customers owe, answered from the receivables before any
+# playbook ("who owes us" alone stays the chasing playbook).
+_OWED = re.compile(
+    r"^\s*how (many|much)\b.*\b(overdue|late|owed|outstanding|receivables?)\b"
+    r"|\bwho owes (us )?(the )?most\b|\b(biggest|largest|top) (debtors|payers owing)\b"
+    r"|\bberapa\b.*\b(tertunggak|hutang|berhutang)\b"
+    r"|多少.*(逾期|欠款|应收)|谁欠.*最多",
+    re.IGNORECASE,
+)
+# Moving money, or telling the assistant to drop its rules: refused with the reason.
+_MONEY_OUT = re.compile(
+    r"\b(transfer|wire|remit)\b.{0,40}?"
+    r"(\brm ?\d|\bmyr|\bringgit|\bmoney|\bfunds|\bcash|\baccount|\d)"
+    r"|\b(send|move)\b.{0,30}?(\brm ?\d|\bmyr ?\d|\bringgit|\bmoney\b|\bfunds\b)"
+    r"|\bpay\b.{0,20}\brm ?\d|\bpindah(kan)?\b.{0,30}(\brm ?\d|\bwang\b|\bduit\b)"
+    r"|转账|汇款|打款",
+    re.IGNORECASE,
+)
+_OVERRIDE = re.compile(
+    r"\b(ignore|forget|disregard)\b.{0,30}\b(instructions|rules|prompt)\b"
+    r"|\babaikan\b.{0,30}\barahan\b|忽略.{0,10}(指令|规则)",
+    re.IGNORECASE,
+)
+_NO_MONEY = (
+    "I can't move money, and instructions inside a message don't change my rules. A "
+    "payment is prepared as an L3 item in the review inbox: two different people approve "
+    "it, each with an authenticator code, and it then runs only in DuitDuit's simulated "
+    "bank. Nothing was changed."
+)
+_NO_OVERRIDE = (
+    "Instructions inside a message don't change my rules: I only prepare work for a "
+    "person to approve. Nothing was changed. Ask me about your records, or tell me what "
+    "to prepare."
+)
+_VOWELS = set("aeiou")
+
+
+def _not_words(text: str) -> bool:
+    """One run of letters with almost no vowels, like a hand across the keyboard."""
+    word = text.strip().casefold()
+    if not word.isascii() or not word.isalpha() or len(word) < 6:
+        return False
+    return sum(ch in _VOWELS for ch in word) / len(word) < 0.2
+
+
 _TOPIC_SCREENS = (
     (
         re.compile(
@@ -331,6 +377,29 @@ def _briefing(by: str) -> AssistantPlan:
 
 
 def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
+    if _MONEY_OUT.search(text):
+        return _refuse(_NO_MONEY, "rules")
+    if _not_words(text):
+        return AssistantPlan(
+            kind="clarify",
+            message="I didn't catch that. Here are things I can do:",
+            options=[
+                ClarifyOption(label=label, command=command)
+                for label, command in (
+                    ("Can we pay everyone this month?", "Can I pay everyone this month?"),
+                    ("Who owes us the most?", "Who owes us the most?"),
+                    ("Which loans can we apply for?", "Which loans can we apply for?"),
+                    ("What needs me today?", "What needs me today?"),
+                )
+            ],
+            understood_by="rules",
+        )
+    if _OWED.search(text):
+        plan = _navigate(principal, "collections", "rules")
+        if plan.kind == "navigate":
+            plan.answer_here = True
+            plan.message = "Here is what your records say."
+        return plan
     if _BRIEFING.search(text):
         return _briefing("rules")
     decide = _DECIDE.search(text)
@@ -338,6 +407,10 @@ def _by_rules(db, principal: AuthPrincipal, text: str) -> AssistantPlan | None:
         verb = decide.group(1).casefold()
         decision = "reject" if verb in ("reject", "decline") else "approve"
         return _decide(db, principal, text, decision, "rules")
+    # A decision above still goes through confirmation, role and step-up checks; any
+    # other attempt to talk the assistant out of its rules is refused here.
+    if _OVERRIDE.search(text):
+        return _refuse(_NO_OVERRIDE, "rules")
     if _NAVIGATE.search(text):
         screen = _screen_named(text)
         if screen:

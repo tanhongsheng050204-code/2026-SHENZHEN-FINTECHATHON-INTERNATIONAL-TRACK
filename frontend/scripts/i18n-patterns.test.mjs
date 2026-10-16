@@ -18,3 +18,9 @@ test("a month inside a server label is localised too", () => {
   assert.equal(zhFor("Bank lines reconciled, September 2026"), "已对账的银行流水（2026年9月）");
   assert.equal(msFor("Bank lines reconciled, August 2026"), "Baris bank disesuaikan, Ogos 2026");
 });
+
+test("the receivables answer reads in Chinese and Malay", () => {
+  assert.equal(zhFor("Customers owe RM353,500.00 on 10 open invoices."), "客户在 10 张未结发票上共欠 RM353,500.00。");
+  assert.equal(msFor("3 are overdue."), "3 telah tertunggak.");
+  assert.equal(zhFor("Who owes us the most?"), "谁欠我们最多？");
+});

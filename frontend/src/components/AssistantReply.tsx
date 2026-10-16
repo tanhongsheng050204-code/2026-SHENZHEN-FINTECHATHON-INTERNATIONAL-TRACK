@@ -49,7 +49,7 @@ export function AssistantReply({ plan, onNavigate, onChoose }: { plan: Assistant
     return () => window.clearTimeout(timer);
   }, [plan, show, onNavigate]);
 
-  if (plan.kind === "navigate" && plan.answer_here && (plan.screen === "financing" || plan.screen === "einvoice")) {
+  if (plan.kind === "navigate" && plan.answer_here && (plan.screen === "financing" || plan.screen === "einvoice" || plan.screen === "collections")) {
     return <TopicAnswer screen={plan.screen} onNavigate={onNavigate} />;
   }
   if (plan.kind === "clarify") {

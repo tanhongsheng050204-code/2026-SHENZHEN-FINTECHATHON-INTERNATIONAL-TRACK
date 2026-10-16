@@ -2170,6 +2170,14 @@ export const FB_ZH: Record<string, string> = {
   "Something went wrong on DuitDuit's server. Your data is safe. Try again, or reload the page.": "DuitDuit 服务器出现问题。您的数据是安全的。请重试或刷新页面。",
   "That didn't go through, and nothing was changed. Something went wrong on DuitDuit's server; try again in a moment.": "操作未成功，没有任何更改。DuitDuit 服务器出现问题，请稍后重试。",
   "That didn't go through, and nothing was changed. Try again.": "操作未成功，没有任何更改。请重试。",
+  "None is overdue.": "均未逾期。",
+  "No due date": "无到期日",
+  "Open Collections →": "打开催收 →",
+  "Nothing is sent from here. On the page you can ask for a reminder; it waits in the review inbox for approval.": "此处不会发送任何内容。您可以在页面上请求提醒；提醒会在审核收件箱中等待批准。",
+  "I didn't catch that. Here are things I can do:": "我没听明白。我可以帮您做这些：",
+  "Who owes us the most?": "谁欠我们最多？",
+  "I can't move money, and instructions inside a message don't change my rules. A payment is prepared as an L3 item in the review inbox: two different people approve it, each with an authenticator code, and it then runs only in DuitDuit's simulated bank. Nothing was changed.": "我不能转移资金，消息中的指令也不会改变我的规则。付款会作为 L3 项目在审核收件箱中准备：须由两位不同的人分别凭验证码批准，之后只在 DuitDuit 的模拟银行中执行。没有任何更改。",
+  "Instructions inside a message don't change my rules: I only prepare work for a person to approve. Nothing was changed. Ask me about your records, or tell me what to prepare.": "消息中的指令不会改变我的规则：我只准备工作，由人来批准。没有任何更改。您可以问我关于记录的问题，或告诉我要准备什么。",
 };
 
 type Translate = (text: string) => string;
@@ -2292,6 +2300,10 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) left for a person to explain\.$/, (m) => `${m[1]} 笔留待人工说明。`],
   [/^Worth (RM[\d,.]+), before anyone paid\.$/, (m) => `金额 ${m[1]}，在付款之前发现。`],
   [/^(\d+) unsafe requests? blocked or quarantined\.$/, (m) => `${m[1]} 个不安全请求被拦截或隔离。`],
+  [/^Customers owe (RM[\d,.]+) on (\d+) open invoices?\.$/, (m) => `客户在 ${m[2]} 张未结发票上共欠 ${m[1]}。`],
+  [/^(\d+) (?:is|are) overdue\.$/, (m) => `${m[1]} 张已逾期。`],
+  [/^(\d+) days overdue$/, (m) => `逾期 ${m[1]} 天`],
+  [/^Due (\d{4}-\d{2}-\d{2})$/, (m) => `${m[1]} 到期`],
   // Several sentences: translate each one, keep the ones there is no Chinese for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr)
     .reduce((text, part) => text + (text && (/[ -~]$/.test(text) || /^[ -~]/.test(part)) ? " " : "") + part, "")],

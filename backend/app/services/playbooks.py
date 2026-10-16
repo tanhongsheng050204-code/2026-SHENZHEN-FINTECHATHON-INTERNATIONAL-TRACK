@@ -62,7 +62,9 @@ _PHRASES = {
     r"|which customers (are|is) (overdue|late)|overdue customers|who (is|are) (overdue|late)"
     r"|who has(n't| not) paid)\b"
     r"|催收|催款|谁欠我们",
-    "pay_everyone": r"\b(can (i|we) pay everyone this month|can (i|we) make payroll)\b"
+    "pay_everyone": r"\b(can (i|we) pay everyone this month|can (i|we) make payroll"
+    r"|boleh(kah)? (saya|kami|kita) bayar (gaji|semua( orang)?)"
+    r"|cukup (duit|wang|tunai) (untuk )?(bayar )?gaji)\b"
     r"|付清所有款项|发得出工资|能付工资|能发工资|发工资",
     "month_end": r"\b(close the month|month[ -]end( checklist)?)\b|月结|月末结账",
 }

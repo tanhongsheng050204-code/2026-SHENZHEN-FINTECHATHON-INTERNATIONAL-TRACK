@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchDemoCode } from "../api/session";
+import { fetchDemoCode, STEP_UP_EVENT } from "../api/session";
 import "./DemoAuthenticator.css";
 
 /**
@@ -7,11 +7,20 @@ import "./DemoAuthenticator.css";
  * beside a laptop. The server returns a code only to the demo session, so for every
  * other account this renders nothing.
  */
+const OPEN_KEY = "dd-demo-auth-open";
+
 export function DemoAuthenticator() {
   const [code, setCode] = useState<string | null>(null);
   const [left, setLeft] = useState(0);
-  // On a phone it would cover the page, so it starts as a small button there.
-  const [open, setOpen] = useState(() => !window.matchMedia?.("(max-width: 600px)").matches);
+  // Open, it covers part of the page, so it starts as a small button and opens when
+  // an action asks for a code. The visitor's last choice is remembered.
+  const [open, setOpenState] = useState(() => {
+    try { return localStorage.getItem(OPEN_KEY) === "1"; } catch { return false; }
+  });
+  const setOpen = (value: boolean) => {
+    setOpenState(value);
+    try { localStorage.setItem(OPEN_KEY, value ? "1" : "0"); } catch { /* storage blocked */ }
+  };
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -33,6 +42,12 @@ export function DemoAuthenticator() {
       active = false;
       window.clearTimeout(timer);
     };
+  }, []);
+
+  useEffect(() => {
+    const opened = () => setOpenState(true);
+    window.addEventListener(STEP_UP_EVENT, opened);
+    return () => window.removeEventListener(STEP_UP_EVENT, opened);
   }, []);
 
   useEffect(() => {
