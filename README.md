@@ -79,6 +79,30 @@ Still screens:
 
 ## Why it matters: the market and the business case
 
+> **Malaysia's 1.09 million small businesses produce 39.7% of GDP, employ almost half the
+> country, and wait 64 days to be paid. DuitDuit gives each of them a finance team that
+> sees the cash gap weeks ahead, gets them paid sooner, and proves their numbers to the
+> bank, without ever moving a ringgit on its own.**
+
+### A week in the life (illustrative)
+
+Aisyah runs a small home-goods importer in Klang. It is 9 October. She has RM116,400 in
+the bank, customers owe her RM353,500, payroll of RM62,000 is due this month and a supplier
+in Shenzhen wants CNY 60,000. Her "finance department" is a spreadsheet she updates at night.
+
+| | Without DuitDuit | With DuitDuit |
+| --- | --- | --- |
+| **The cash gap** | She finds out on 1 November, when the balance falls RM29,440 below the RM50,000 she keeps for emergencies | Warned **23 days ahead** on her Today screen, with the day, the amount and why |
+| **Getting paid** | Scrolls WhatsApp to remember who owes what, writes each reminder by hand | Agents rank who to chase by amount × days late and draft the reminders; she approves them in one inbox |
+| **Closing the gap** | Asks the bank for an overdraft, at short notice, with scattered records | Sees that collecting one later invoice early closes **all RM29,440**, as a what-if, before anything changes |
+| **Month-end** | Ticks bank lines against invoices by hand | **9 of 10** lines matched to their records automatically; the odd one goes to Finance to explain |
+| **A suspicious bill** | Pays a duplicate supplier bill without noticing | **RM48,300** of unusual and duplicate bills flagged before anyone pays |
+| **The bank meeting** | Prints statements and hopes | Shows which loans she qualifies for and why, and shares a Passport the bank can verify |
+| **"Approve every payment"** | One compromised account or a convincing message can move money | Refused: every payment needs two different people and a fresh code, and runs only in the simulated bank |
+
+_Aisyah is an illustration. Every figure in her week is the synthetic demo company's, as
+shown in the clips above._
+
 ### The market
 
 Small businesses carry the Malaysian economy, and they wait the longest to be paid.
@@ -91,6 +115,9 @@ Small businesses carry the Malaysian economy, and they wait the longest to be pa
 | How long they wait to be paid | **64 days** on average for SMEs, against **58** for large companies; in transport and logistics, SMEs wait **26 days** longer | [Experian, State of Credit 2025](https://www.experian.com.my/2025/05/21/experian-malaysias-state-of-credit-2025-reveals-sme-resilience-but-cash-flow-strains-persist/) |
 | The funding they cannot get | An estimated **RM90 billion** MSME financing gap | [The Edge](https://theedgemalaysia.com/node/697990) |
 | Financing applications turned down | Roughly **1 in 5**: the approval rate for MSME financing was **81.5%** | [OECD, *Financing SMEs and Entrepreneurs 2026*](https://www.oecd.org/en/publications/financing-smes-and-entrepreneurs-2026_bb7fc5c4-en/malaysia_ebf7a4e9-en.html) |
+| They want AI, but not blind | **81%** of MSMEs surveyed already use some AI; **82%** say they need more help to use it confidently (Xero, 1,033 MSMEs) | [Malaysia SME, Nov 2025](https://www.malaysiasme.com.my/?p=8627) |
+| Their records are going digital anyway | **230,000+** taxpayers on LHDN e-invoicing, **1.5 billion** e-invoices issued (June 2026) | [Bernama](https://bernama.com/en/general/news.php?id=2570738) |
+| The finance hire they cannot afford | An account executive in Kuala Lumpur costs about **RM4,500 a month** (salary aggregator, indicative) | [AJobThing](https://www.ajobthing.com/resources/recruitment-tools/salary-comparison-tool/account-executive-salary-in-kuala-lumpur) |
 | The cost of mishandling customer data | Fines of up to **RM1 million** and up to 3 years' prison under the amended PDPA (from 1 January 2025); breach notification to the Commissioner is mandatory (from 1 June 2025) | [Rajah & Tann Asia](https://www.rajahtannasia.com/?p=154128), [DFDL](https://www.dfdl.com/?p=62326) |
 
 Banks name insufficient cash flow and high debt as common reasons for turning SMEs down
@@ -124,21 +151,43 @@ working for the owner and never instead of them. It enforces all three protectio
 3. Every disclosure, recommendation, and state change lands in **tamper-evident,
    hash-chained audit logs**.
 
-### What it is worth to one business
+### How DuitDuit helps an MSME
 
-Measured by DuitDuit on its **synthetic** demo company, an importer with RM116,400 in the
-bank, from the same records its screens use (the *What DuitDuit did for you* panel):
+| Pain, in Malaysia | What DuitDuit does | Result on the demo company |
+| --- | --- | --- |
+| **Cash surprises.** SMEs wait 64 days to be paid, so a gap appears before the money does | A 90-day forecast against the owner's minimum, best and worst cases, alerts and a morning briefing | Shortfall seen **23 days ahead** |
+| **Late payers.** Chasing is manual and awkward | Collections ranked by amount × days late, reminder drafts, sequences and promises to pay, all approved by a person | Reminder drafts ready to approve; **nothing sent without approval** |
+| **Month-end.** Bank lines are ticked off by hand | Each line matched to its record by direction, exact amount and date; the rest go to Finance | **9 of 10** reconciled |
+| **Fraud and mistakes.** Duplicate and unusual bills get paid | Anomaly detection and a checker agent on every item | **RM48,300** flagged before payment |
+| **Financing.** 1 in 5 applications are turned down; the gap is RM90 billion | Products matched rule by rule, the smallest step to qualify, an application pack, a Passport a lender can verify | **4 of 8** products fit, best fit import trade financing |
+| **Data risk.** RM1 million PDPA fines; staff see too much | Tokenized vault, role-aware masks, breach register with the PDPA checklist | **93** records protected before any AI saw them |
+| **Trusting AI.** 82% of MSMEs want help to use AI confidently | Agents only propose; two people approve money; every step on the audit chain | **RM0** moved by an agent on its own |
 
-| Outcome | On the demo company |
+### What that is worth, in ringgit
+
+Worked on the synthetic demo company's own figures, with the arithmetic shown:
+
+- **Every day sooner customers pay frees about RM8,300.** The company invoiced RM249,400 in
+  September, about RM8,300 a day; collecting one day sooner turns one more day of that into
+  cash.
+- **The RM29,440 gap is closed without borrowing.** Collecting one later invoice before the
+  shortfall day covers it, so there is no emergency overdraft to arrange.
+- **RM48,300 of bills are checked before they are paid**, rather than recovered from a
+  supplier afterwards.
+- **One agent team instead of one hire.** An account executive costs about RM4,500 a month
+  in Kuala Lumpur; DuitDuit's agents prepare the work and the owner's team decides.
+
+### Pilot goals
+
+For the first pilot companies, these are **targets, not results**:
+
+| Goal | Target |
 | --- | --- |
-| A cash shortfall seen before it happens | **23 days ahead**: cash would fall **RM29,440** below the owner's minimum |
-| The part of that gap the agents' proposals close | **RM29,440 of RM29,440**, by collecting one later invoice before the shortfall day |
-| Bank lines reconciled without a person | **9 of 10** in September; the tenth goes to Finance to explain |
-| Unusual and duplicate bills caught before payment | **RM48,300** flagged |
-| Money moved by an agent on its own | **RM0**: every payment needs two different people |
-
-These are one synthetic company's results, not a study of real businesses. Time saved is
-not measured on real users; the panel shows only an estimate, and labels it as one.
+| Cash shortfalls warned of in advance | Every one, at least 14 days ahead |
+| Bank lines reconciled without a person | 90% |
+| Days to collect | 7 days fewer within three months |
+| Money moved without two people approving | Never |
+| Customer personal data sent to an AI provider in clear | Never |
 
 ### Who pays (a proposal)
 
