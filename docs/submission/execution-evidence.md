@@ -1,9 +1,29 @@
 # DuitDuit — Execution Evidence
 
-Updated 2026-10-11 after the one-click demo company and ZAP scans; earlier: 2026-10-10 after the playbooks, voice input, assistant security evaluation and demo-script rewrite. Historical
+Updated 2026-10-17 with the final local run before submission; earlier: 2026-10-11 after the one-click demo company and ZAP scans; 2026-10-10 after the playbooks, voice input, assistant security evaluation and demo-script rewrite. Historical
 figures below describe the earlier contract pass. The assistant evidence is below;
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
+
+## Final local run before submission: Oct 17
+
+Added since Oct 11, each with its own tests:
+- **Reconciliation tab:** each September bank line with the record it matches; the unmatched line becomes a question for Finance (evaluation task F26).
+- **Clarification and correction:** an unclear request gets numbered choices; the next message picks one or corrects the request, in English, Malay and Chinese (F27).
+- **Simulated bank:** an L3 payment runs once on a sandbox ledger, only after a maker and a different checker with fresh authenticator codes (`tests/test_sandbox_bank.py`, ADV-25). No real bank is connected.
+- **Assistant refusals:** "transfer RM50,000" and requests to skip approval are refused in the chat; nothing is proposed.
+- **New-device email:** a sign-in from a new device also emails the person (browser, system and time only). A live email is **not measured** yet.
+- **Quarantined comments on PostgreSQL:** migration `202610160001` allows the `quarantined` status; `tests/test_migration_constraints.py` checks every status the code writes against the migrations.
+- **Sign-in activity under row-level security:** `tests/test_sign_in_postgres.py` runs against a disposable migrated PostgreSQL and is skipped without one.
+- **Fixes from a screen-by-screen audit of the live site (Oct 16):** friendly load and action errors instead of raw messages, month and date names in Malay and Chinese, a collections answer in the chat, and the demo authenticator opening when a step-up is asked for.
+
+| Check | Command | Result actually run |
+| --- | --- | --- |
+| Full backend suite (SQLite) | `backend/`: `python -m pytest -p no:cacheprovider -W ignore` | **850 passed, 14 skipped** (the skipped tests need a disposable PostgreSQL) |
+| Offline evaluation | `backend/`: `python -m eval.run <output dir>` | **57 passed, 0 failed, 0 skipped** (27 functional, 30 adversarial) |
+| Frontend | `npx tsc -b`, `npm run build`, `npm run lint`, hardening check | Passed; 0 errors, 14 existing warnings |
+| Frontend script tests | `frontend/`: `node --experimental-strip-types --test scripts/*.test.mjs` | **32 passed** |
+| Hosted run of the same suites | — | **Not measured**: the suites run offline, not against the hosted database |
 
 ## One-click demo company and ZAP scans: Oct 11 local verification
 

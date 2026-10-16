@@ -1,7 +1,7 @@
 # DuitDuit — Security Self-Assessment
 
 2026 Shenzhen International FinTech Competition · International Track · Topic E: SME Finance Copilot
-Draft updated 2026-10-10 for assistant security evaluation. Every control below carries its real status; nothing is claimed beyond it.
+Updated 2026-10-17 before submission; first drafted 2026-10-10 for the assistant security evaluation. Every control below carries its real status; nothing is claimed beyond it.
 
 ## Status words
 
@@ -114,6 +114,10 @@ providers and disposable SQLite databases containing persisted synthetic proposa
 | `ADV-19` | Company B cannot put a hold on company A's invoice (404); A's board is unchanged |
 | `ADV-20` | A disputed invoice 40 days overdue gets no reminder from a sequence; the run history records it as on hold |
 | `ADV-21` | A sign-in record keeps the browser family and system, never the IP address or browser string |
+| `ADV-22` | The checker agent fails a reminder for a disputed invoice |
+| `ADV-23` | No cross-company benchmark is released below five companies, and only one release a day |
+| `ADV-24` | An answer with a figure no source holds is reported as not grounded |
+| `ADV-25` | An induced transfer cannot run: no payment from an instruction, an agent call or one approver; the simulated bank pays once after the maker and a different checker |
 
 Additional tests check hostile/invalid model picks, private provider exceptions,
 recent-MFA enforcement and distinct L3 maker/checker approvals. Injected faults
@@ -182,17 +186,18 @@ DuitDuit is not certified under any standard, and we do not claim partnerships w
 - A company on its own records gets a persisted review inbox, real review records and persisted autonomy grants, all on its audit chain. A company on the demo data still sees sample inbox items and sample agent metrics, labelled as such.
 - ZAP scans are automated passive and baseline checks, not a penetration test. No independent penetration test has been done.
 - The shared demo company resets itself daily at 03:00 Malaysia time (`DEMO_DAILY_RESET`); changes judges make stay until the next reset.
-- New-device alerts are shown in the app's security feed; they are not emailed yet.
+- New-device alerts are shown in the app's security feed and emailed to the person (browser, system and time only). A live email on the hosted server is not confirmed yet.
 - AI connection keys are bearer keys, not OAuth tokens. The MCP specification moves remote servers to OAuth; that is on the roadmap.
 - Guardrails are deterministic patterns. The offline adversarial evaluation passes its scripted cases; this does not prove coverage of paraphrased or novel injections.
 - Passport anchors appear only where the anchor files are deployed with the backend; the public verification endpoint has not been validated against hosted PostgreSQL row-level security.
-- The backend is currently reached through a temporary tunnel; production needs a fixed HTTPS hostname under the app's parent domain.
+- The API runs in Docker and is reached through the frontend's `/api` proxy on Vercel. `vercel.app` is mostly blocked in mainland China; a custom domain is still needed, and reachability from inside China is not measured.
+- Payments run only on a simulated bank ledger; no real bank is connected.
 
 ## 10. Evidence
 
 - Assistant security: the six `A-*` tasks above and `tests/test_assistant_security.py`; current local suite and evaluation counts are in `execution-evidence.md`.
-- Backend contract tests: 387 passing at commit `569e7bf` (FastAPI TestClient; role, rule and safety-floor cases).
-- API contract: `docs/api/topic-e-contract.json` (54 operations), with a test that fails if it drifts from the code.
+- Backend suite: 850 passed, 14 skipped on 2026-10-17 (FastAPI TestClient; role, rule and safety-floor cases); offline evaluation 57 of 57 tasks, 30 of them adversarial. Details in `execution-evidence.md`.
+- API contract: `docs/api/topic-e-contract.json` (55 operations), with a test that fails if it drifts from the code.
 - Frontend: TypeScript build and lint pass on every commit; sign-in, step-up and every Topic E page exercised in a browser against simulated responses.
 - Audit-chain anchors: `audit-anchors/` (daily workflow `anchor-audit-chain.yml`).
 - Dynamic scans: `docs/submission/evidence/zap-2026-10-11/` (OWASP ZAP baseline and API scan reports), repeated by the CI `dast` job.
