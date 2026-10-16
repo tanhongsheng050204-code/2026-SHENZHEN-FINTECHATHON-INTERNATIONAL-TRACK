@@ -2304,6 +2304,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) (?:is|are) overdue\.$/, (m) => `${m[1]} 张已逾期。`],
   [/^(\d+) days overdue$/, (m) => `逾期 ${m[1]} 天`],
   [/^Due (\d{4}-\d{2}-\d{2})$/, (m) => `${m[1]} 到期`],
+  [/^[Cc]ustomer #(\d+)$/, (m) => `客户 #${m[1]}`],
   // Several sentences: translate each one, keep the ones there is no Chinese for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr)
     .reduce((text, part) => text + (text && (/[ -~]$/.test(text) || /^[ -~]/.test(part)) ? " " : "") + part, "")],

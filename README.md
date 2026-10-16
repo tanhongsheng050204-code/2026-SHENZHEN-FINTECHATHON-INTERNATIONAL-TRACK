@@ -958,7 +958,7 @@ scripted tasks (27 functional, 30 adversarial) offline and writes `output/eval-r
 Latest local results (2026-10-16):
 - backend: **850 passed, 14 skipped** (the skipped tests need PostgreSQL, which CI provides; the PostgreSQL tests also pass against a local migrated database);
 - evaluation: **57 of 57**;
-- frontend: type-check and build pass, lint shows 0 errors, and 30 script tests pass (proxy, permissions, translations, error messages).
+- frontend: type-check and build pass, lint shows 0 errors, and 31 script tests pass (proxy, permissions, translations, error messages).
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,
 approval journeys, Supabase SQL checks) is in

@@ -2230,6 +2230,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^(\d+) (?:is|are) overdue\.$/, (m) => `${m[1]} telah tertunggak.`],
   [/^(\d+) days overdue$/, (m) => `Tertunggak ${m[1]} hari`],
   [/^Due (\d{4}-\d{2}-\d{2})$/, (m) => `Tamat tempoh ${m[1]}`],
+  [/^[Cc]ustomer #(\d+)$/, (m) => `Pelanggan #${m[1]}`],
   // Several sentences: translate each one, keep the ones there is no Malay for.
   [/[.!?]\s+[A-Z(\d]/, (m, tr) => m.input.split(/(?<=[.!?])\s+(?=[A-Z(\d])/).map(tr).join(" ")],
 ];

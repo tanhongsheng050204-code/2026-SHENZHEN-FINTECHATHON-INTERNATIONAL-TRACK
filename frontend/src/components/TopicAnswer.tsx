@@ -6,7 +6,7 @@ import { fetchEinvoiceReadiness, friendlyLoadError, type EinvoiceReadinessRespon
 import { errorCode, fetchFinancingMatches, type FinancingMatchesResponse } from "../api/topicE";
 import { fetchBoard, type CollectionsBoard } from "../api/collaboration";
 import { useAppState } from "../lib/appState";
-import { formatRm } from "../lib/customerAggregation";
+import { displayCase, formatRm, isPlaceholderName } from "../lib/customerAggregation";
 
 type Topic = "financing" | "einvoice" | "collections";
 
@@ -73,7 +73,7 @@ export function TopicAnswer({ screen, onNavigate }: { screen: Topic; onNavigate?
           <ol className="dd-topic-list">
             {largest.map((card) => (
               <li key={card.ref}>
-                <strong>{card.customer_label}</strong>
+                <strong>{isPlaceholderName(card.customer_label) ? (card.customer_id ? `Customer #${card.customer_id}` : "Protected customer") : displayCase(card.customer_label)}</strong>
                 <span className="fb-inbox-muted"> · {formatRm(Number(card.amount))}</span>
                 <p>{card.days_overdue > 0 ? `${card.days_overdue} days overdue` : card.due_date ? `Due ${card.due_date}` : "No due date"}{card.hold ? ` · on hold (${card.hold.kind})` : ""}</p>
               </li>

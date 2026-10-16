@@ -24,3 +24,9 @@ test("the receivables answer reads in Chinese and Malay", () => {
   assert.equal(msFor("3 are overdue."), "3 telah tertunggak.");
   assert.equal(zhFor("Who owes us the most?"), "谁欠我们最多？");
 });
+
+test("a masked customer's number reads in Chinese and Malay", () => {
+  assert.equal(zhFor("Customer #7"), "客户 #7");
+  assert.equal(msFor("Customer #7"), "Pelanggan #7");
+  assert.equal(zhFor("Payment reminder for customer #8"), "给 客户 #8 的付款提醒");
+});
