@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12, FastAPI 0.141, Pydantic 2.13, pytest 8, ruff 0.16 — versions pinned by `backend/uv.lock`.
 
-**Spec:** `FINBRAIN_SIX_DOCUMENTS.md` at the repository root — PRD sections B, C, F and G; TRD architecture and security; App Flow screen inventory; Backend Schema authorization rules. The program design spec v1 (`docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md`) still describes the finance core. Read them with this plan.
+**Spec:** `DUITDUIT_SIX_DOCUMENTS.md` at the repository root — PRD sections B, C, F and G; TRD architecture and security; App Flow screen inventory; Backend Schema authorization rules. The program design spec v1 (`docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md`) still describes the finance core. Read them with this plan.
 
 **Owner and deadline:** B2, merged by end of day **Oct 9** — the contract freeze in the implementation plan (task M1.1).
 
@@ -288,7 +288,7 @@ Expected: collection error — `ModuleNotFoundError: No module named 'app.contra
 """Pydantic contracts for the Topic E SME Finance Copilot API.
 
 Shapes freeze at the end of 2026-10-09. Change one only with the frontend owner's
-agreement; see FINBRAIN_SIX_DOCUMENTS.md at the repository root.
+agreement; see DUITDUIT_SIX_DOCUMENTS.md at the repository root.
 """
 ```
 
@@ -2202,7 +2202,7 @@ class JourneyResponse(BaseModel):
 """Stub agent registry, runs, autonomy, kill switch and journey for the demo company.
 
 Workstream B2 replaces it with the agent runtime (manifests, skills, cash signals).
-Skill lists follow FINBRAIN_SIX_DOCUMENTS.md: W1 skills are "available", W2 skills
+Skill lists follow DUITDUIT_SIX_DOCUMENTS.md: W1 skills are "available", W2 skills
 are "planned". Nothing is persisted: promotions and kill-switch changes are echoed back.
 """
 

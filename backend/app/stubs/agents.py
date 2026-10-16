@@ -1,7 +1,7 @@
 """Stub agent registry, runs, autonomy, kill switch and journey for the demo company.
 
 Workstream B2 replaces it with the agent runtime (manifests, skills, cash signals).
-Skill lists follow FINBRAIN_SIX_DOCUMENTS.md: W1 skills are "available", W2 skills
+Skill lists follow DUITDUIT_SIX_DOCUMENTS.md: W1 skills are "available", W2 skills
 are "planned". Promotions are echoed back. Kill switches are implemented by
 app.services.agent_security.
 """

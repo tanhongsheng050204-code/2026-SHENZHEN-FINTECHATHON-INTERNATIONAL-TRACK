@@ -35,7 +35,7 @@ All figures shown in this README come from a **synthetic** Malaysian home-goods 
 
 ## Contents
 
-- [中文简介](#中文简介) · [Two-minute tour](#two-minute-tour) · [Track E requirements → evidence](#track-e-requirements--evidence) · [Scoring criteria → evidence](#scoring-criteria--evidence) · [Try it in five minutes](#try-it-in-five-minutes)
+- [中文简介](#中文简介) · [Two-minute tour](#two-minute-tour) · [Why it matters](#why-it-matters-the-market-and-the-business-case) · [Track E requirements → evidence](#track-e-requirements--evidence) · [Scoring criteria → evidence](#scoring-criteria--evidence) · [Try it in five minutes](#try-it-in-five-minutes)
 - [The entry: Topic E](#the-entry-topic-e) · [Build status](#build-status) · [Submission map](#submission-map)
 - [How it works](#how-it-works) · [Features](#features) · [Security and privacy](#security-and-privacy) · [Architecture](#architecture)
 - [Testing and evaluation](#testing-and-evaluation) · [Setup, running and deployment](#setup-running-and-deployment) · [Documentation](#documentation) · [Scope and known limitations](#scope-and-known-limitations)
@@ -46,6 +46,7 @@ All figures shown in this README come from a **synthetic** Malaysian home-goods 
 
 DuitDuit（"钱钱"）是参加 2026 深圳国际金融科技大赛（国际 AI 赛道，方向 E：小微企业财务助手——现金流、对账与经营建议）的作品，主题为"AI 作为金融参与者"。
 
+- **为什么重要：** 马来西亚约 109 万家中小微企业贡献了 39.7% 的 GDP 和 48.7% 的就业（DOSM 2025），但中小企业平均要等 64 天才能收到货款（Experian 2025），融资缺口估计达 900 亿令吉。详见 [Why it matters](#why-it-matters-the-market-and-the-business-case)。
 - **能做什么：** 预测 90 天现金流并提前提示资金缺口；逐笔对账银行流水；催收应收账款；匹配融资产品并准备申请材料；回答"这个月能发得起工资吗？"之类的问题。
 - **怎样保证安全：** AI 只提出建议，所有会改变记录或对外发送的操作都进入"审核收件箱"，由人确认；涉及资金的操作需要两个不同的人批准并输入验证码，且只在模拟银行中执行，不动用真实资金。敏感信息在交给任何 AI 模型之前已被令牌化并加密；每个决定都写入哈希链审计日志。
 - **如何体验：** 打开 <https://duitduit-umber.vercel.app/>，点击 **Open the demo company**；在 **My preferences** 中可切换为中文界面。
@@ -75,6 +76,83 @@ Still screens:
 | Today | Review inbox | Financial analysis |
 | --- | --- | --- |
 | ![Today: cash, the 90-day low point, what waits and the financing score](frontend/public/screenshots/today.jpg) | ![Review inbox: what the agent prepared, the records it used and what approving does](frontend/public/screenshots/inbox.jpg) | ![Monthly profit and loss with ratios](frontend/public/screenshots/analysis.jpg) |
+
+## Why it matters: the market and the business case
+
+### The market
+
+Small businesses carry the Malaysian economy, and they wait the longest to be paid.
+
+| | Figure | Source |
+| --- | --- | --- |
+| MSMEs in Malaysia | **≈1.09 million** establishments, about 98% of them micro or small | [OECD, *Financing SMEs and Entrepreneurs 2026*](https://www.oecd.org/en/publications/financing-smes-and-entrepreneurs-2026_bb7fc5c4-en/malaysia_ebf7a4e9-en.html), citing DOSM |
+| Their share of the economy (2025) | **RM689.8 billion**, **39.7%** of GDP, growing **5.7%** a year, faster than the economy's 5.2% | [DOSM, MSMEs Performance 2025](https://www.dosm.gov.my/portal-main/release-content/micro-small--medium-enterprises-msmes-performance-2025) |
+| Their share of jobs (2025) | **8.09 million** people, **48.7%** of all employment | [DOSM, MSMEs Performance 2025](https://www.dosm.gov.my/portal-main/release-content/micro-small--medium-enterprises-msmes-performance-2025) |
+| How long they wait to be paid | **64 days** on average for SMEs, against **58** for large companies; in transport and logistics, SMEs wait **26 days** longer | [Experian, State of Credit 2025](https://www.experian.com.my/2025/05/21/experian-malaysias-state-of-credit-2025-reveals-sme-resilience-but-cash-flow-strains-persist/) |
+| The funding they cannot get | An estimated **RM90 billion** MSME financing gap | [The Edge](https://theedgemalaysia.com/node/697990) |
+| Financing applications turned down | Roughly **1 in 5**: the approval rate for MSME financing was **81.5%** | [OECD, *Financing SMEs and Entrepreneurs 2026*](https://www.oecd.org/en/publications/financing-smes-and-entrepreneurs-2026_bb7fc5c4-en/malaysia_ebf7a4e9-en.html) |
+| The cost of mishandling customer data | Fines of up to **RM1 million** and up to 3 years' prison under the amended PDPA (from 1 January 2025); breach notification to the Commissioner is mandatory (from 1 June 2025) | [Rajah & Tann Asia](https://www.rajahtannasia.com/?p=154128), [DFDL](https://www.dfdl.com/?p=62326) |
+
+Banks name insufficient cash flow and high debt as common reasons for turning SMEs down
+([The Star](https://www.thestar.com.my/business/smebiz/2019/04/01/understanding-sme-financing-in-malaysia/)).
+The businesses that most need financing are the ones least able to prove they deserve it.
+
+### The problem
+
+Small Malaysian businesses run their finances from Gmail, WhatsApp and Telegram chats,
+spreadsheets, invoices and bank exports. They see cash problems late, chase payments by
+hand, and find financing hard to get because their records are scattered, private and hard
+to verify. A business owner is their own CFO, collections clerk and bookkeeper, usually at
+night. Generic AI chatbots can read that information, but they create three unacceptable
+risks for a business handling customer personal data:
+
+| Risk | Consequence |
+| --- | --- |
+| **Data leakage** | Customer names, phone numbers, and invoice amounts are pasted into external AI services, now with fines of up to RM1 million under the amended PDPA |
+| **No access control** | Every employee sees everything the model knows |
+| **No accountability** | Answers have no evidence, actions have no approval, nothing is auditable, so a lender cannot rely on them |
+
+### The solution
+
+DuitDuit gives every small business the finance team it cannot afford to hire: agents that
+watch the cash, reconcile the bank, chase what is owed and prepare the financing case,
+working for the owner and never instead of them. It enforces all three protections as
+**architecture, not policy**:
+
+1. Sensitive values are **detected, tokenized, and encrypted before any external model call**.
+2. Every answer is **role-aware** and backed by **inspectable evidence citations**.
+3. Every disclosure, recommendation, and state change lands in **tamper-evident,
+   hash-chained audit logs**.
+
+### What it is worth to one business
+
+Measured by DuitDuit on its **synthetic** demo company, an importer with RM116,400 in the
+bank, from the same records its screens use (the *What DuitDuit did for you* panel):
+
+| Outcome | On the demo company |
+| --- | --- |
+| A cash shortfall seen before it happens | **23 days ahead**: cash would fall **RM29,440** below the owner's minimum |
+| The part of that gap the agents' proposals close | **RM29,440 of RM29,440**, by collecting one later invoice before the shortfall day |
+| Bank lines reconciled without a person | **9 of 10** in September; the tenth goes to Finance to explain |
+| Unusual and duplicate bills caught before payment | **RM48,300** flagged |
+| Money moved by an agent on its own | **RM0**: every payment needs two different people |
+
+These are one synthetic company's results, not a study of real businesses. Time saved is
+not measured on real users; the panel shows only an estimate, and labels it as one.
+
+### Who pays (a proposal)
+
+| Customer | What they get | Proposed model |
+| --- | --- | --- |
+| Small business | Forecast, alerts, reconciliation, analysis, review inbox, assistant | Monthly subscription, with a free tier for one user |
+| Lender or bank | Verified Passports and pre-qualified, consented applicants | Fee per completed application |
+| Accounting firm | Several client companies and audit packs | Per-client seat |
+
+The lender side is the flywheel: every business that keeps its books in DuitDuit becomes a
+verifiable, lower-cost applicant, which is exactly what the RM90 billion gap lacks. Prices,
+willingness to pay and unit economics are **not measured**; a first pilot would measure them.
+
+---
 
 ## Track E requirements → evidence
 
@@ -225,7 +303,7 @@ See [Scoring criteria → evidence](#scoring-criteria--evidence) above.
 
 | Deliverable | Where it lives |
 | --- | --- |
-| Technical documentation | This README, the [program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) and the [six documents](FINBRAIN_SIX_DOCUMENTS.md) |
+| Technical documentation | This README, the [program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) and the [six documents](DUITDUIT_SIX_DOCUMENTS.md) |
 | Presentation deck | Exported to PDF by Oct 19 |
 | Demo video | By Oct 19: an MP4, plus a mirror reachable from mainland China. Script: [demo-script.md](docs/submission/demo-script.md) |
 | Source code, deployment instructions and tests | This repository: [Setup](#setup), [Deployment](#deployment), [Testing](#testing-and-evaluation) and the [production checklist](docs/deployment/production-checklist.md) |
@@ -234,7 +312,7 @@ See [Scoring criteria → evidence](#scoring-criteria--evidence) above.
 
 ### Program documents
 
-- [The six documents](FINBRAIN_SIX_DOCUMENTS.md) — PRD, TRD, app flow, UI/UX brief, backend
+- [The six documents](DUITDUIT_SIX_DOCUMENTS.md) — PRD, TRD, app flow, UI/UX brief, backend
   schema and implementation plan covering every SME position and company customization. Where
   it differs from the spec below, it wins.
 - [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md)
@@ -278,34 +356,7 @@ values are restored only inside the backend, only for authorized roles, one audi
 at a time.
 
 <details>
-<summary><b>Why: the problem, the solution and the business benefits</b></summary>
-
-### Overview
-
-#### The problem
-
-Small Malaysian businesses run their finances from Gmail, WhatsApp and Telegram chats,
-spreadsheets, invoices and bank exports. They see cash problems late, chase payments by
-hand, and find financing hard to get because their records are scattered, private and hard
-to verify. Generic AI chatbots can read that information, but they create three
-unacceptable risks for a business handling customer personal data:
-
-| Risk | Consequence |
-| --- | --- |
-| **Data leakage** | Customer names, phone numbers, and invoice amounts are pasted into external AI services |
-| **No access control** | Every employee sees everything the model knows |
-| **No accountability** | Answers have no evidence, actions have no approval, nothing is auditable |
-
-#### The solution
-
-DuitDuit enforces all three protections as **architecture, not policy**:
-
-1. Sensitive values are **detected, tokenized, and encrypted before any external model call**.
-2. Every answer is **role-aware** and backed by **inspectable evidence citations**.
-3. Every disclosure, recommendation, and state change lands in **tamper-evident,
-   hash-chained audit logs**.
-
-#### Business benefits
+<summary><b>Business benefits, feature by feature</b></summary>
 
 | Benefit | How DuitDuit delivers it |
 | --- | --- |
@@ -513,7 +564,7 @@ single-use. Unauthorized roles receive format-shaped masks (`RM2.5K–5K`,
 
 - RLS is enabled **and forced** on all 34 tables; `anon`/`authenticated` grants are
   revoked — the Supabase Data API is dark.
-- `finbrain_app` and `finbrain_worker` are non-`BYPASSRLS` roles; policies read
+- The application and worker database roles are non-`BYPASSRLS`; policies read
   transaction-scoped `app.*` settings, and the vault policy enforces the per-token role
   allowlist *inside the database*.
 - Audit tables reject `UPDATE` / `DELETE` via triggers.
@@ -547,9 +598,9 @@ Exact-value disclosure is governed independently per entity type (the vault ACL 
 bank account numbers require `finance_ops` or above, card numbers are compliance-only,
 while names and phones are visible to all authenticated roles.
 
-Four demonstration accounts are provisioned for evaluation —
-`employee@`, `finance@`, `compliance@`, `owner@finbrain-demo.test`
-(see [CUSTOMER_OUTREACH_GUIDE.md](./CUSTOMER_OUTREACH_GUIDE.md) for credentials and setup).
+Four demonstration accounts, one each for an employee, Finance, Compliance and the owner,
+are provisioned for evaluation (see [CUSTOMER_OUTREACH_GUIDE.md](./CUSTOMER_OUTREACH_GUIDE.md)
+for credentials and setup).
 
 </details>
 
@@ -805,14 +856,14 @@ sequenceDiagram
     alt stale role claim
         B-->>U: 403 stale_user_role_claim
     else valid
-        B->>D: SET app.* context · SET ROLE finbrain_app
+        B->>D: SET app.* context · SET ROLE (application role)
         B-->>U: response under forced row-level security
     end
 ```
 
 The frontend holds only the Supabase publishable key; the database password, service-role
 key, and token secrets never leave the backend. Background workers run the same code as
-`finbrain_worker` with worker-scoped context.
+the worker database role with worker-scoped context.
 
 </details>
 
@@ -913,7 +964,7 @@ python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
 Use `uv run --active --no-sync …` afterward so uv does not replace the inherited build.
-Demo scripts detect the root `.venv` automatically; override with `FINBRAIN_PYTHON`.
+Demo scripts detect the root `.venv` automatically; override with `DUITDUIT_PYTHON`.
 
 </details>
 
@@ -953,7 +1004,7 @@ GEMINI_API_KEY=<your-key>              # omit to run in offline-demo mode
 GEMINI_REASONING_MODEL=gemini-3.6-flash
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 ALLOW_OFFLINE_DEMO=true
-DATABASE_URL=sqlite:///./finbrain.db
+DATABASE_URL=sqlite:///./duitduit.db
 LOG_LEVEL=INFO
 ```
 
@@ -1138,8 +1189,8 @@ preserve live-ingested Gmail records.
 #### Backend — Google Cloud (Docker)
 
 ```powershell
-docker build -t finbrain-backend -f Dockerfile .
-docker run --rm -p 8000:8000 --env-file backend\.env finbrain-backend
+docker build -t duitduit-backend -f Dockerfile .
+docker run --rm -p 8000:8000 --env-file backend\.env duitduit-backend
 ```
 
 The container runs the API as the main process plus auto-restarting loops for each enabled
@@ -1257,7 +1308,7 @@ The day number moves one day sooner each day, because the forecast counts from t
 
 | Document | Contents |
 | --- | --- |
-| [The six documents](./FINBRAIN_SIX_DOCUMENTS.md) | Topic E master document: PRD, TRD, app flow, UI/UX brief, backend schema, implementation plan, contradictions resolved and decisions log |
+| [The six documents](./DUITDUIT_SIX_DOCUMENTS.md) | Topic E master document: PRD, TRD, app flow, UI/UX brief, backend schema, implementation plan, contradictions resolved and decisions log |
 | [Program design spec](docs/superpowers/specs/2026-10-08-fintechathon-topic-e-sme-finance-copilot-design.md) | FinTechathon 2026 Topic E: positioning, scope tiers, agents, finance engine, security, China reachability, schedule, demo script, claims policy |
 | [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md) | Test-first plan that serves the frozen Topic E API contract as stub endpoints |
 | [Plan 2: Identity and security](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md) | Backend session/MFA protocol, Team, settings persistence and guardrails |

@@ -1,7 +1,8 @@
 function Get-DemoPythonRuntime {
   param([Parameter(Mandatory)][string]$RepoRoot)
 
-  $configuredPython = [Environment]::GetEnvironmentVariable("FINBRAIN_PYTHON")
+  $configuredPython = [Environment]::GetEnvironmentVariable("DUITDUIT_PYTHON")
+  if (-not $configuredPython) { $configuredPython = [Environment]::GetEnvironmentVariable("FINBRAIN_PYTHON") }
   if (-not [string]::IsNullOrWhiteSpace($configuredPython)) {
     $candidate = if ([System.IO.Path]::IsPathRooted($configuredPython)) {
       $configuredPython
@@ -10,13 +11,13 @@ function Get-DemoPythonRuntime {
     }
     $candidate = [System.IO.Path]::GetFullPath($candidate)
     if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
-      throw "FINBRAIN_PYTHON does not point to an existing Python executable."
+      throw "DUITDUIT_PYTHON does not point to an existing Python executable."
     }
     return [pscustomobject]@{
       executable = $candidate
       arguments = @()
       devArguments = @()
-      description = "FINBRAIN_PYTHON (direct; dependency sync disabled)"
+      description = "DUITDUIT_PYTHON (direct; dependency sync disabled)"
     }
   }
 
@@ -32,7 +33,7 @@ function Get-DemoPythonRuntime {
 
   $uvCommand = Get-Command uv -ErrorAction SilentlyContinue
   if (-not $uvCommand) {
-    throw "Python is unavailable: create the root .venv, set FINBRAIN_PYTHON, or install uv on PATH."
+    throw "Python is unavailable: create the root .venv, set DUITDUIT_PYTHON, or install uv on PATH."
   }
   return [pscustomobject]@{
     executable = $uvCommand.Source
