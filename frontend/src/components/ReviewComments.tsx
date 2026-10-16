@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { addComment, fetchComments, type ReviewComment } from "../api/collaboration";
-import { ApiError, friendlyLoadError } from "../api/client";
+import { ApiError, friendlyActionError } from "../api/client";
 import type { JobFunction } from "../api/topicE";
 import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
@@ -59,10 +59,10 @@ export function ReviewComments({ actionId }: { actionId: string }) {
       setText("");
       setMentions([]);
     } catch (e) {
-      const code = e instanceof ApiError ? e.code : "";
+      const code = e instanceof ApiError ? e.code : e instanceof Error ? e.message : "";
       setError(code === "comment_quarantined"
         ? tx("That comment reads like an instruction to the AI, so it was blocked. Rephrase it as a note to people.")
-        : friendlyLoadError(code));
+        : friendlyActionError(code));
     } finally {
       setBusy(false);
     }

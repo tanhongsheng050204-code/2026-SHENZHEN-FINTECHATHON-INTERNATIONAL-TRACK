@@ -237,7 +237,7 @@ export function FinanceDashboard({ greeting, customers, customersFailed }: { gre
           {owed && <span className="fd-kpi-note">{tx("{n} open invoices", { n: owed.count })}</span>}
         </button>
         <button type="button" className="fd-card fd-kpi" onClick={() => show("analysis")}>
-          <span className="fd-kpi-label">{last ? tx("Net result, {month}", { month: last.label }) : tx("Last month")}</span>
+          <span className="fd-kpi-label">{last ? tx("Net result, {month}", { month: tx(last.label) }) : tx("Last month")}</span>
           {last ? <strong>{ringgit(last.net_result)}</strong> : notLoaded("analysis") ? errorNote : <Loading />}
           {last && <span className="fd-badge">{tx("Profit and loss")}</span>}
           {last && <span className="fd-kpi-note">{tx("Revenue {amount}", { amount: ringgit(last.revenue) })}</span>}

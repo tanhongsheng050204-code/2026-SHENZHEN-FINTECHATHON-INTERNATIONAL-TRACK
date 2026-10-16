@@ -1,5 +1,6 @@
 import { accessToken, supabase } from "../auth/supabase";
-import { isNetworkError, trackedFetch } from "../lib/connectivity";
+import { trackedFetch } from "../lib/connectivity";
+export { friendlyActionError, friendlyLoadError } from "./errors";
 import { authMode, isStepUpRequired, requestStepUp, sessionFetch } from "./session";
 
 export type Role =
@@ -330,25 +331,6 @@ export async function parse<T>(response: Response): Promise<T> {
     );
   }
   return response.json() as Promise<T>;
-}
-
-// Internal plumbing codes (thrown by accessToken() when there's no session)
-// leak straight into `Error.message` — translate the ones we know about
-// instead of showing a snake_case string on an initial page load.
-export function friendlyLoadError(message: string): string {
-  if (message === "authentication_required") return "Your session has expired — please log in again.";
-  if (message === "insufficient_role") return "Your role doesn't have access to this data.";
-  if (message === "step_up_required") return "This needs a fresh code from your authenticator app. Try again and enter the code.";
-  if (message === "csrf_token_invalid" || message === "csrf_origin_denied") return "Your session needs refreshing. Reload the page and try again.";
-  if (message === "session_expired" || message === "session_idle_timeout" || message === "session_revoked") return "Your session has ended — please sign in again.";
-  if (isNetworkError(message)) return "DuitDuit can't reach its server right now. Your data is safe. Try again in a moment.";
-  if (message === "demo_account_locked" || message === "demo_company_read_only") {
-    return "The shared demo company can't change its team, password or sign-ins, so other visitors aren't affected. Try this in your own company.";
-  }
-  if (message === "http_504" || message === "request_failed_504") return "That took too long and the connection closed. Try again: it is usually faster the second time.";
-  // The short code (never free text) tells support which check refused the request.
-  const code = /^[a-z0-9_]{1,40}$/.test(message) ? ` (code: ${message})` : "";
-  return `Couldn't load this page right now. Try again, or reload the page.${code}`;
 }
 
 /** For the few public endpoints (shared Passport and audit-pack links): no session needed. */

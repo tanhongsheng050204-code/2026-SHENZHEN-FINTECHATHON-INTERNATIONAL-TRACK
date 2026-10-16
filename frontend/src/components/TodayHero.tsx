@@ -192,7 +192,7 @@ export function TodayHero({ greeting }: { greeting: string }) {
         </button>
         {seesAnalysis && (
           <button type="button" className="th-tile" onClick={() => show("analysis")}>
-            <span className="th-tile-label">{last ? tx("Net result, {month}", { month: last.label }) : tx("Last month")}</span>
+            <span className="th-tile-label">{last ? tx("Net result, {month}", { month: tx(last.label) }) : tx("Last month")}</span>
             <span className={"th-tile-value" + (last && Number(last.net_result) < 0 ? " is-down" : "") + (!last && failed.has("analysis") ? " is-attn" : "")}>
               {last ? ringgit(last.net_result) : failed.has("analysis") ? notLoaded : "…"}
             </span>

@@ -155,6 +155,8 @@ jobs:
         run: node scripts/check-web-hardening.mjs
       - name: Microphone permission policy regressions
         run: node --test scripts/permissions-policy.test.mjs
+      - name: Proxy, translation and error-message regressions
+        run: node --experimental-strip-types --test scripts/proxy.test.mjs scripts/i18n-patterns.test.mjs scripts/errors.test.mjs
 
   dast:
     name: OWASP ZAP scans (frontend baseline + API)

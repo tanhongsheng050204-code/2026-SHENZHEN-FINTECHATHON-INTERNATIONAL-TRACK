@@ -39,6 +39,4 @@ export async function trackedFetch(input: string, init?: RequestInit): Promise<R
 }
 
 /** True for the browser's own "could not connect" errors. */
-export function isNetworkError(message: string): boolean {
-  return /failed to fetch|networkerror|load failed|network request failed|request_failed_50[234]/i.test(message);
-}
+export { isNetworkError } from "../api/errors";

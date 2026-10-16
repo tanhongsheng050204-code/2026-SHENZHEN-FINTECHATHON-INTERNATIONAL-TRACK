@@ -12,7 +12,7 @@ import { useI18n } from "../lib/i18n";
 import { JOB_LABELS } from "../lib/jobFunctions";
 import { CheckerPanel } from "../components/CheckerPanel";
 import { takeInboxFocus } from "../lib/inboxFocus";
-import { ApiError, friendlyLoadError } from "../api/client";
+import { ApiError, friendlyActionError, friendlyLoadError } from "../api/client";
 import {
   decidableCount,
   decideReviewAction,
@@ -159,8 +159,8 @@ export default function ReviewInbox() {
       setReviewInboxCount(decidableCount(next));
       setEditing(false);
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : "";
-      setDecisionError(DECISION_ERRORS[code] ? tx(DECISION_ERRORS[code]) : friendlyLoadError(code));
+      const code = error instanceof ApiError ? error.code : error instanceof Error ? error.message : "";
+      setDecisionError(DECISION_ERRORS[code] ? tx(DECISION_ERRORS[code]) : friendlyActionError(code));
     } finally {
       setBusy(false);
     }

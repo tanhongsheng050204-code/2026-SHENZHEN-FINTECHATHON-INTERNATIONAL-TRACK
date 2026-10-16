@@ -2164,12 +2164,25 @@ export const FB_ZH: Record<string, string> = {
   "The likely balance stays above your minimum.": "预计余额保持在最低余额之上。",
   "Import a bank statement and bills to forecast cash.": "导入银行对账单和账单即可预测现金。",
   "No bank lines for last month.": "上个月没有银行流水。",
+  "Too many requests in a short time. Wait a minute, then try again.": "短时间内请求过多。请稍等一分钟再试。",
+  "This item no longer exists, or has moved. Reload the page to see the latest.": "此项目已不存在或已移动。请刷新页面查看最新内容。",
+  "Someone changed this at the same time. Reload the page to see the latest.": "有人同时修改了此项目。请刷新页面查看最新内容。",
+  "Something went wrong on DuitDuit's server. Your data is safe. Try again, or reload the page.": "DuitDuit 服务器出现问题。您的数据是安全的。请重试或刷新页面。",
+  "That didn't go through, and nothing was changed. Something went wrong on DuitDuit's server; try again in a moment.": "操作未成功，没有任何更改。DuitDuit 服务器出现问题，请稍后重试。",
+  "That didn't go through, and nothing was changed. Try again.": "操作未成功，没有任何更改。请重试。",
 };
 
 type Translate = (text: string) => string;
 
 /** Server sentences with figures in them. Captured parts are translated again. */
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) => string]> = [
+  // "September 2026" and "08 Nov", as the server writes months and days.
+  [/^(January|February|March|April|May|June|July|August|September|October|November|December) (\d{4})$/,
+    (m) => `${m[2]}年${MONTHS.indexOf(m[1]) + 1}月`],
+  [/^(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)$/,
+    (m) => `${MONTHS.findIndex((name) => name.startsWith(m[2].slice(0, 3))) + 1}月${Number(m[1])}日`],
   [/^(.+): not on record \(required\)$/, (m, tr) => `${tr(m[1])}：无记录（必需）`],
   [/^(.+): not on record \(requires (at least|at most) (.+)\)$/, (m, tr) => `${tr(m[1])}：无记录（要求${m[2] === "at least" ? "至少" : "至多"} ${tr(m[3])}）`],
   [/^(.+): (yes|no) \(required\)$/, (m, tr) => `${tr(m[1])}：${m[2] === "yes" ? "是" : "否"}（必需）`],
@@ -2191,7 +2204,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
     `预计余额 ${m[1]}，比最低余额 ${m[3]} 少 ${m[2]}。` + (m[4] ? `当天到期：${m[4].split(" and ").map((part) => part.replace(/^(.+) \((RM[\d,.]+)\)$/, (_, label: string, amount: string) => `${tr(label)}（${amount}）`)).join("、")}。` : "")],
   [/^Likely balance (RM[\d,.]+) against a (RM[\d,.]+) minimum on day (\d+)\.$/, (m) => `第 ${m[3]} 天预计余额 ${m[1]}，低于最低余额 ${m[2]}。`],
   [/^Review (\d+) reminder drafts?$/, (m) => `审核 ${m[1]} 份催款提醒草稿`],
-  [/^Payment reminder for (.+)$/, (m) => `给 ${m[1]} 的付款提醒`],
+  [/^Payment reminder for (.+)$/, (m, tr) => `给 ${tr(m[1])} 的付款提醒`],
   [/^(.+) Covers the (RM[\d,.]+) gap\.$/, (m, tr) => `${tr(m[1])} 可覆盖 ${m[2]} 的缺口。`],
   [/^Supplier bill due (.+)$/, (m) => `供应商账单 ${m[1]} 到期`],
   [/^Invoice expected (.+)$/, (m) => `预计 ${m[1]} 收款的发票`],
@@ -2216,7 +2229,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Friendly reminder for (.+)$/, (m, tr) => `给 ${tr(m[1])} 的友好提醒`],
   [/^Firm reminder for (.+)$/, (m, tr) => `给 ${tr(m[1])} 的正式提醒`],
   [/^Call the customer about (.+)$/, (m, tr) => `就 ${tr(m[1])} 致电客户`],
-  [/^Invoice due (.+)$/, (m) => `${m[1]} 到期的发票`],
+  [/^Invoice due (.+)$/, (m, tr) => `${tr(m[1])}到期的发票`],
   [/^(.+) is (\d+) days overdue$/, (m, tr) => `${tr(m[1])} 已逾期 ${m[2]} 天`],
   [/^Cash falls below your minimum in (\d+) days$/, (m) => `${m[1]} 天后现金低于最低余额`],
   [/^Supplier bill due in (\d+) days: (.+)$/, (m, tr) => `供应商账单 ${m[1]} 天后到期：${tr(m[2])}`],
@@ -2270,7 +2283,7 @@ export const FB_ZH_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Payroll (\d{4}-\d{2})$/, (m) => `${m[1]} 工资`],
   [/^(\d+) items fit that\. Which one do you want to (approve|reject)\?$/, (m) => `有 ${m[1]} 项符合。您想${m[2] === "approve" ? "批准" : "拒绝"}哪一项？`],
   [/^(\d+) days ahead$/, (m) => `提前 ${m[1]} 天`],
-  [/^Bank lines reconciled, (\w+ \d{4})$/, (m) => `已对账的银行流水（${m[1]}）`],
+  [/^Bank lines reconciled, (\w+ \d{4})$/, (m, tr) => `已对账的银行流水（${tr(m[1])}）`],
   [/^(\d+) of (\d+)$/, (m) => `${m[2]} 笔中的 ${m[1]} 笔`],
   [/^(RM[\d,.]+) of (RM[\d,.]+)$/, (m) => `${m[2]} 中的 ${m[1]}`],
   [/^(\d+) flagged$/, (m) => `${m[1]} 项被标记`],

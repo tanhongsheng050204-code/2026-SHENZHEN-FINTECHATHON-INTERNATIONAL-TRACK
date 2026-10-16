@@ -2112,12 +2112,27 @@ export const FB_MS: Record<string, string> = {
   "The likely balance stays above your minimum.": "Baki dijangka kekal di atas minimum anda.",
   "Import a bank statement and bills to forecast cash.": "Import penyata bank dan bil untuk meramal tunai.",
   "No bank lines for last month.": "Tiada baris bank untuk bulan lepas.",
+  "Too many requests in a short time. Wait a minute, then try again.": "Terlalu banyak permintaan dalam masa singkat. Tunggu seminit, kemudian cuba lagi.",
+  "This item no longer exists, or has moved. Reload the page to see the latest.": "Item ini sudah tiada atau telah dipindahkan. Muat semula halaman untuk melihat yang terkini.",
+  "Someone changed this at the same time. Reload the page to see the latest.": "Seseorang telah mengubah item ini pada masa yang sama. Muat semula halaman untuk melihat yang terkini.",
+  "Something went wrong on DuitDuit's server. Your data is safe. Try again, or reload the page.": "Berlaku masalah pada pelayan DuitDuit. Data anda selamat. Cuba lagi, atau muat semula halaman.",
+  "That didn't go through, and nothing was changed. Something went wrong on DuitDuit's server; try again in a moment.": "Tindakan itu tidak berjaya, dan tiada apa-apa yang diubah. Berlaku masalah pada pelayan DuitDuit; cuba lagi sebentar lagi.",
+  "That didn't go through, and nothing was changed. Try again.": "Tindakan itu tidak berjaya, dan tiada apa-apa yang diubah. Cuba lagi.",
 };
 
 type Translate = (text: string) => string;
 
 /** Server sentences with figures in them. Captured parts are translated again. */
+const BULAN: Record<string, string> = {
+  January: "Januari", February: "Februari", March: "Mac", April: "April", May: "Mei", June: "Jun",
+  July: "Julai", August: "Ogos", September: "September", October: "Oktober", November: "November",
+  December: "Disember",
+};
+
 export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) => string]> = [
+  // "August 2026", as the server writes a month.
+  [/^(January|February|March|April|May|June|July|August|September|October|November|December) (\d{4})$/,
+    (m) => `${BULAN[m[1]]} ${m[2]}`],
   [/^(.+): not on record \(required\)$/, (m, tr) => `${tr(m[1])}: tiada dalam rekod (wajib)`],
   [/^(.+): (yes|no) \(required\)$/, (m, tr) => `${tr(m[1])}: ${m[2] === "yes" ? "ya" : "tidak"} (wajib)`],
   [/^(\d+) months?$/, (m) => `${m[1]} bulan`],
@@ -2131,7 +2146,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Worst case goes negative on day (\d+)$/, (m) => `Kes terburuk menjadi negatif pada hari ${m[1]}`],
   [/^Likely balance (RM[\d,.]+) against a (RM[\d,.]+) minimum on day (\d+)\.$/, (m) => `Baki dijangka ${m[1]} berbanding minimum ${m[2]} pada hari ${m[3]}.`],
   [/^Review (\d+) reminder drafts?$/, (m) => `Semak ${m[1]} draf peringatan`],
-  [/^Payment reminder for (.+)$/, (m) => `Peringatan bayaran untuk ${m[1]}`],
+  [/^Payment reminder for (.+)$/, (m, tr) => `Peringatan bayaran untuk ${tr(m[1])}`],
   [/^Supplier bill due (.+)$/, (m) => `Bil pembekal tamat tempoh ${m[1]}`],
   [/^Invoice expected (.+)$/, (m) => `Invois dijangka ${m[1]}`],
   [/^Payroll (\d{4}-\d{2})$/, (m) => `Gaji ${m[1]}`],
@@ -2194,7 +2209,7 @@ export const FB_MS_PATTERNS: Array<[RegExp, (m: RegExpExecArray, tr: Translate) 
   [/^Explain a bank line: (RM[\d,.]+) (in|out) on (\d{1,2} \w{3})$/, (m) => `Terangkan baris bank: ${m[1]} ${m[2] === "in" ? "masuk" : "keluar"} pada ${m[3]}`],
   [/^(\d+) items fit that\. Which one do you want to (approve|reject)\?$/, (m) => `${m[1]} perkara sepadan. Yang mana satu anda mahu ${m[2] === "approve" ? "luluskan" : "tolak"}?`],
   [/^(\d+) days ahead$/, (m) => `${m[1]} hari lebih awal`],
-  [/^Bank lines reconciled, (\w+ \d{4})$/, (m) => `Baris bank disesuaikan, ${m[1]}`],
+  [/^Bank lines reconciled, (\w+ \d{4})$/, (m, tr) => `Baris bank disesuaikan, ${tr(m[1])}`],
   [/^(\d+) of (\d+)$/, (m) => `${m[1]} daripada ${m[2]}`],
   [/^(RM[\d,.]+) of (RM[\d,.]+)$/, (m) => `${m[1]} daripada ${m[2]}`],
   [/^(\d+) flagged$/, (m) => `${m[1]} ditanda`],
