@@ -67,7 +67,7 @@ copy running the current code. Nothing is sped up.
 | **Two-person payment in the simulated bank** | **Bank reconciliation** |
 | ![Finance already approved the payroll run; the owner approves and the payment runs in the simulated bank with a SIM reference](docs/media/two-person-payment.gif) | ![September's bank lines matched to records one by one; the unmatched line goes to Finance](docs/media/reconciliation.gif) |
 | Finance approved first (maker); the owner approves second (checker). Only then does the payment run, once, on a sandbox ledger. No real money moves. | 9 of 10 lines match a record; the line with no record becomes a question for Finance in the review inbox. |
-| **A prompt injection is refused** | **English, Bahasa Malaysia, 中文** |
+| **A prompt injection is refused** | **English, Bahasa Malaysia, Chinese** |
 | ![A comment telling the AI to approve every payment is blocked](docs/media/injection-blocked.gif) | ![The Today screen switches from English to Bahasa Malaysia to Chinese](docs/media/languages.gif) |
 | Text that tries to instruct the AI is quarantined, never stored as a comment, and never reaches an agent. | Every app screen, including sentences the server writes. |
 | **How agents are routed** | **Measured value** |
@@ -264,7 +264,7 @@ that would leave the company is recorded and never sent.
 6. **Cash & finance → Reconciliation:** 9 of 10 September lines matched; send the last one to
    Finance.
 7. **Financing & Passport:** which loans fit and why; share a Passport and verify it.
-8. **My preferences:** switch to Bahasa Malaysia or 中文.
+8. **My preferences:** switch to Bahasa Malaysia or Chinese.
 
 The day number moves one day sooner each day, because the forecast counts from today. The
 full five-minute script is [docs/submission/demo-script.md](docs/submission/demo-script.md). To run it on your own machine, see
@@ -440,7 +440,7 @@ at a time.
 | **Collections and teamwork** | A collections board, automations and reminder sequences, comments and @mentions, saved views, customer risk notes, Slack and WhatsApp notices | Customers, Review inbox |
 | **Capture** | Gmail, the Telegram capture bot, protected uploads, CSV importers, local OCR, LHDN e-invoices | Data sources, e-Invoicing |
 | **Trust and compliance** | Tokenized vault, role-aware disclosure, hash-chained and externally anchored audit, PDPA rights, an incident register, sign-in activity, AI connections (MCP) with scoped keys | Trust & audit, Company settings |
-| **Languages** | Every app screen in English, Bahasa Malaysia and 中文 | My preferences |
+| **Languages** | Every app screen in English, Bahasa Malaysia and Chinese | My preferences |
 
 Each feature, with its details and the benefit, is in the tables below.
 
@@ -1367,7 +1367,7 @@ The day number moves one day sooner each day, because the forecast counts from t
 | [Plan 1: Topic E API contract](docs/superpowers/plans/2026-10-08-topic-e-api-contract.md) | Test-first plan that serves the frozen Topic E API contract as stub endpoints |
 | [Plan 2: Identity and security](docs/superpowers/plans/2026-10-08-topic-e-identity-security.md) | Backend session/MFA protocol, Team, settings persistence and guardrails |
 | [Plan 3: Synthetic tenant and importers](docs/superpowers/plans/2026-10-09-topic-e-importers.md) | Eight mapped CSV schemas, tenant persistence, protected payroll and local synthetic seed |
-| [Demo script](docs/submission/demo-script.md) / [Chinese subtitle draft](docs/submission/subtitles-zh-draft.md) | Five-minute video script, with a draft of Chinese subtitles awaiting review |
+| [Demo script](docs/submission/demo-script.md) | Five-minute video script |
 | [Deck additions](docs/submission/deck-additions.md) | Draft slides: fit with open financial infrastructure, a proposed business model (untested), and what is not done yet |
 | [Security self-assessment](docs/submission/security-self-assessment.md) / [OWASP agentic mapping](docs/standards/owasp-agentic-mapping.md) / [Threat model](docs/standards/threat-model.md) | Controls, their status and residual risk |
 | [Execution evidence](docs/submission/execution-evidence.md) / [Accessibility](docs/submission/accessibility.md) | Measured results, each with the command that produced it |
