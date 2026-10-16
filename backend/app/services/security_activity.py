@@ -20,6 +20,7 @@ import hashlib
 import hmac
 import re
 import secrets
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -31,6 +32,7 @@ from app.services.workflow_audit import chain_scalars, write_workflow_event
 
 SIGN_IN, NEW_DEVICE = "sign_in_recorded", "sign_in_new_device"
 SIGN_INS = (SIGN_IN, NEW_DEVICE)
+ALERT = "new_device_alert"
 DEVICE_COOKIE = "finbrain_device"
 DEVICE_COOKIE_DAYS = 400
 _DEVICE_ID = re.compile(r"^[A-Za-z0-9_-]{32}$")
@@ -159,6 +161,66 @@ def record_sign_in(db: Session, row, request, response, *, method: str) -> bool:
         tenant_id=row.tenant_id,
     )
     return new_device
+
+
+def alert_new_device(
+    db: Session,
+    tenant_id: str,
+    user_id: str,
+    email: str | None,
+    browser: str,
+    system: str,
+    now: dt.datetime | None = None,
+) -> bool:
+    """Email the person that their account was just signed in from a new device.
+
+    The email names the browser family, the system and the time, never an address.
+    The chain records only that an alert went out and whether it was delivered; the
+    shared demo company records it without sending.
+    """
+    from app.auth import demo
+    from app.services import briefing_push
+
+    settings = get_settings()
+    when = _aware(now or dt.datetime.now(dt.UTC)).astimezone(
+        ZoneInfo(settings.application_timezone)
+    )
+    simulated = demo.is_demo_tenant(tenant_id)
+    sent = False
+    if email and not simulated:
+        body = (
+            "Your DuitDuit account was just signed in from a device it has not seen before:\n\n"
+            f"  {browser} on {system}, {when:%d %b %Y, %H:%M} ({settings.application_timezone})\n\n"
+            "If this was you, there is nothing to do.\n"
+            "If it was not, change your password now and sign out everywhere under "
+            "My preferences, then tell your company's owner.\n"
+        )
+        try:
+            briefing_push._send_email(email, "DuitDuit: a sign-in from a new device", body)
+            sent = True
+        except Exception:
+            sent = False
+    payload: dict = {"channel": "email", "sent": sent}
+    if simulated:
+        payload["simulated"] = True
+    write_workflow_event(
+        db,
+        event_type=ALERT,
+        actor_role="system",
+        actor_ref="security-alerts",
+        resource_type="auth_user",
+        resource_id=user_id,
+        event_payload=payload,
+        tenant_id=tenant_id,
+    )
+    db.commit()
+    return sent
+
+
+def alert_in_background(bind, tenant_id: str, user_id: str, email, browser, system) -> None:
+    """Send the alert after the sign-in response, on its own session."""
+    with Session(bind=bind) as db:
+        alert_new_device(db, tenant_id, user_id, email, browser, system)
 
 
 def sign_ins(db: Session, tenant_id: str, user_id: str) -> list[SignIn]:

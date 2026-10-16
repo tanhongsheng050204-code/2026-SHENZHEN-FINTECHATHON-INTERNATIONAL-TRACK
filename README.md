@@ -338,7 +338,7 @@ Status as of 2026-10-16. The demo company and its data are synthetic and labelle
 | Server errors on the live site | **Fixed 2026-10-13.** A test run of the live site found most screens failing with 500 after about 10 seconds. Each request held one database connection while its audit-chain read opened a second, and with two connections in total, a few requests at once waited on each other until they all timed out. The chain sessions now have their own pool (`DATABASE_TRUSTED_POOL_SIZE`); reproduced and verified locally on PostgreSQL with row-level security (26 screens' requests at once: 16 failed before, none after). Also fixed the same day: an Employee asking about a bank account crashed Ask DuitDuit (a vault row hidden from that role was inserted again); "assigned approval owner" was tokenized as a person and "Sample Horizon Retail" lost "Retail" to clear text; the demo seed stopped before the protected records, so Ask DuitDuit had nothing to search; Today showed "All clear" when its data failed to load; a refresh opened the landing page. The live site shows these fixes once the API is redeployed and the demo seeds are run again. |
 | Injected review comments on PostgreSQL | **Fixed 2026-10-16.** A comment that tries to instruct the AI is quarantined, but the database's check on `tokenized_content` did not allow the `quarantined` status, so on PostgreSQL the comment failed with a server error instead of the refusal message (SQLite tests did not catch it). Migration `202610160001` allows the status, and a test now checks that every status the code writes is allowed by the migrations. Found while recording the README clips. |
 | AI connections (MCP) | **Built and tested.** Claude Code, Claude Desktop or any MCP client with a company key can read the forecast, forecast check, review inbox, collections board and financing matches. Each key reads only the tools the owner chose and expires (90 days by default); the owner sees when it was last used and for what. Read-only, masked labels, every call recorded, keys revocable. Not yet tried with ChatGPT, and keys are not OAuth tokens yet. |
-| Security activity and PDPA: sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, portability exports | **Built and tested.** New-device warnings show in the app; they are not emailed yet. Notices are drafted for a person to send; DuitDuit does not decide the legal thresholds. Sign-in recording is tested on SQLite and with a mocked provider, not yet on the hosted database. |
+| Security activity and PDPA: sign-in activity with new-device warnings, a security feed, an incident register with the amended PDPA's checklist, a named data protection officer, portability exports | **Built and tested.** A sign-in from a new device shows in the app and also emails the person: browser, system and time only, never an address (simulated for the demo company; needs the server's email settings). Notices are drafted for a person to send; DuitDuit does not decide the legal thresholds. Sign-in recording and new-device warnings are tested on SQLite and on PostgreSQL with row-level security, locally; not yet on the hosted database. |
 | AI techniques: a payment-delay model, calibrated forecast ranges (conformal prediction), anomaly detection on bills and payments, a checker agent on every review item, keyword reranking with a grounding check on answers and one more search when a sentence is not grounded (agentic retrieval), and benchmarks across companies with differential privacy | **Built and tested.** Described, with what each does not claim, in [docs/standards/ai-techniques.md](docs/standards/ai-techniques.md). On the synthetic demo company the payment model has no paid e-invoices to learn from and the forecast ranges need five scored days, so both say "not measured"; the benchmark needs five companies. Reinforcement learning and federated learning are roadmap, not built. |
 | Public site | **Built.** Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
@@ -508,7 +508,7 @@ finance-copilot capabilities and their status are listed under
 | E-invoice readiness | MyInvois-oriented scoring, LHDN-style invoice PDF, official payment receipt, owner UIN issuance | Submission blockers surface before LHDN rejects them |
 | PDPA subject rights | Token-level access export and crypto-shredding erasure, both audited; a portability export of one customer's records as JSON for Compliance, after step-up | Data-subject requests are one audited operation |
 | Incident register and data protection officer | Compliance records a breach as kinds and numbers, works the amended PDPA's checklist (contained, assessed, Commissioner notified, people affected notified when significant harm is likely, closed), and gets notices drafted in the review inbox; the owner names the data protection officer from the team | A breach is handled the same way every time, with a record |
-| Sign-in activity and security feed | Each sign-in kept with browser family, system and a device id from an HttpOnly cookie (never the IP address); new devices, AI keys, role changes, kill switches, settings, shared links, exports and incidents in one feed for the owner and Compliance | Account takeover and risky changes are visible, not buried |
+| Sign-in activity and security feed | Each sign-in kept with browser family, system and a device id from an HttpOnly cookie (never the IP address); new devices, AI keys, role changes, kill switches, settings, shared links, exports and incidents in one feed for the owner and Compliance; a sign-in from a new device also emails the person | Account takeover and risky changes are visible, not buried |
 
 </details>
 
@@ -956,9 +956,9 @@ Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It 
 scripted tasks (27 functional, 30 adversarial) offline and writes `output/eval-report.md`.
 
 Latest local results (2026-10-16):
-- backend: **842 passed, 13 skipped** (the skipped tests need PostgreSQL, which CI provides; the 12 PostgreSQL tests also pass against a local migrated database);
+- backend: **845 passed, 14 skipped** (the skipped tests need PostgreSQL, which CI provides; the PostgreSQL tests also pass against a local migrated database);
 - evaluation: **57 of 57**;
-- frontend: type-check and build pass, and lint shows 0 errors.
+- frontend: type-check and build pass, lint shows 0 errors, and 29 script tests pass (proxy, permissions, translations, error messages).
 
 The complete manual verification procedure (live Gmail, Telegram, persona disclosure,
 approval journeys, Supabase SQL checks) is in
@@ -1442,7 +1442,6 @@ This is a proof of concept. The following boundaries are deliberate and document
   testing.
 - **Deferred connectors**: WhatsApp Business, banking APIs, Google Drive/SharePoint.
   Scanned-image OCR runs locally (RapidOCR); cloud OCR providers are deferred.
-- **The web-search control** in the chat UI is visual only.
 - **Reachability from mainland China**:
   - The app no longer loads third-party fonts or scripts; CI checks this.
   - With `VITE_AUTH_MODE=backend`, the browser never contacts `supabase.co`.

@@ -1,7 +1,7 @@
 from datetime import timedelta
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -260,7 +260,11 @@ def invitation(
 
 @router.post("/email/verify", response_model=SessionResponse)
 def verify_email(
-    body: CodeRequest, request: Request, response: Response, db: Session = Depends(get_db)
+    body: CodeRequest,
+    request: Request,
+    response: Response,
+    background: BackgroundTasks,
+    db: Session = Depends(get_db),
 ):
     row = resolve_session(db, request)
     if row.email_verified:
@@ -275,8 +279,21 @@ def verify_email(
     accept_tokens(row, result, email=email)
     row.email_verified = True
     bind_membership(db, row)
-    security_activity.record_sign_in(db, row, request, response, method="password_and_email_code")
+    new_device = security_activity.record_sign_in(
+        db, row, request, response, method="password_and_email_code"
+    )
     db.commit()
+    if new_device:
+        browser, system = security_activity.describe_agent(request.headers.get("user-agent", ""))
+        background.add_task(
+            security_activity.alert_in_background,
+            db.get_bind(),
+            row.tenant_id,
+            row.user_id,
+            email,
+            browser,
+            system,
+        )
     return _view(db, row)
 
 

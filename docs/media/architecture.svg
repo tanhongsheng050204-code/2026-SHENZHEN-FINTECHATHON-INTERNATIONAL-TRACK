@@ -206,7 +206,7 @@
   <g font-size="15" fill="#10241F">
     <text x="60" y="806" font-weight="700">Proven offline, every commit</text>
     <text x="60" y="834" fill="#5A6B66">57 / 57 evaluation tasks (27 functional, 30 adversarial: induced transfer, data extraction, privilege escalation, prompt injection)</text>
-    <text x="60" y="858" fill="#5A6B66">842 backend tests · OWASP ZAP 0 failures · WCAG 2.1 AA 0 violations</text>
+    <text x="60" y="858" fill="#5A6B66">845 backend tests · OWASP ZAP 0 failures · WCAG 2.1 AA 0 violations</text>
   </g>
   <text x="1540" y="900" font-size="12.5" fill="#7E918B" text-anchor="end">All demo figures are synthetic.</text>
 </svg>

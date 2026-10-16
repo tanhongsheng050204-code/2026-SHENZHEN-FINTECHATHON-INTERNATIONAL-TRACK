@@ -250,3 +250,109 @@ def test_many_sign_ins_cannot_push_security_events_out_of_the_feed(db):
 
     kinds = [e["kind"] for e in _client(db).get("/security/activity").json()["events"]]
     assert kinds == ["api_key_created"]
+
+
+def _verify_code(db, monkeypatch, *, device=None, user_agent=CHROME_WINDOWS):
+    """Sign the owner in through the email-code route; returns the emails sent."""
+    from fastapi import Response
+
+    from app.auth.provider import provider
+    from app.auth.sessions import COOKIE, create_session
+    from app.config import get_settings
+    from app.models import AuthUserRole
+    from app.routes.auth import router as auth_router
+    from app.services import briefing_push
+
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    if db.get(AuthUserRole, (str(owner.user_id), str(TENANT_A))) is None:
+        db.add(
+            AuthUserRole(
+                user_id=str(owner.user_id),
+                tenant_id=str(TENANT_A),
+                user_role="owner_director",
+                job_functions=["owner"],
+                active=True,
+            )
+        )
+        db.commit()
+    sent = []
+    monkeypatch.setattr(briefing_push, "_send_email", lambda *args: sent.append(args))
+    monkeypatch.setattr(get_settings(), "auth_cookie_secure", False)
+    monkeypatch.setattr(
+        "app.auth.sessions._verified",
+        lambda _: {"sub": str(owner.user_id), "email": "owner@example.invalid"},
+    )
+    monkeypatch.setattr(
+        provider, "call", lambda *a, **kw: {"access_token": "fictional", "refresh_token": "r"}
+    )
+    response = Response()
+    _, csrf = create_session(db, response, {"email": "owner@example.invalid"}, "signin")
+    db.commit()
+    handle = response.headers["set-cookie"].split(";", 1)[0].split("=", 1)[1]
+    app = FastAPI()
+    app.include_router(auth_router)
+    app.dependency_overrides[get_db] = lambda: db
+    client = TestClient(app)
+    client.cookies.set(COOKIE, handle)
+    if device:
+        client.cookies.set(security_activity.DEVICE_COOKIE, device)
+    result = client.post(
+        "/auth/email/verify",
+        json={"code": "123456"},
+        headers={
+            "origin": get_settings().cors_origin_list[0],
+            "x-csrf-token": csrf,
+            "user-agent": user_agent,
+            "x-forwarded-for": "203.0.113.7",
+        },
+    )
+    assert result.status_code == 200, result.text
+    return sent
+
+
+def test_a_sign_in_from_a_new_device_emails_the_person(db, monkeypatch):
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    _signed_in(db, owner, device=LAPTOP)
+    db.commit()
+
+    sent = _verify_code(db, monkeypatch, device=PHONE, user_agent=SAFARI_IPHONE)
+
+    [(to, subject, body)] = sent
+    assert to == "owner@example.invalid"
+    assert "new device" in subject.lower()
+    assert "Safari" in body and "iOS" in body
+    assert "203.0.113" not in body and "Mozilla" not in body
+    [alert] = db.scalars(
+        select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "new_device_alert")
+    ).all()
+    assert alert.event_payload == {"channel": "email", "sent": True}
+
+
+def test_a_known_device_or_a_first_sign_in_sends_no_email(db, monkeypatch):
+    assert _verify_code(db, monkeypatch, device=LAPTOP) == []
+    assert _verify_code(db, monkeypatch, device=LAPTOP) == []
+
+
+def test_a_failed_alert_email_is_recorded_and_sign_in_still_works(db, monkeypatch):
+    from app.services import briefing_push
+
+    owner = principal(UserRole.OWNER_DIRECTOR)
+    _signed_in(db, owner, device=LAPTOP)
+    db.commit()
+
+    def fail(*_):
+        raise RuntimeError("email_not_configured")
+
+    sent = _verify_code(db, monkeypatch, device=PHONE)
+    assert len(sent) == 1
+    monkeypatch.setattr(briefing_push, "_send_email", fail)
+    security_activity.alert_new_device(
+        db, str(TENANT_A), str(owner.user_id), "owner@example.invalid", "Chrome", "Windows"
+    )
+    sent_flags = [
+        e.event_payload["sent"]
+        for e in db.scalars(
+            select(WorkflowAuditEntry).where(WorkflowAuditEntry.event_type == "new_device_alert")
+        )
+    ]
+    assert sent_flags == [True, False]
