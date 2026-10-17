@@ -74,6 +74,14 @@ copy running the current code. Nothing is sped up.
 | ![The landing page's agent route map: the supervisor routes a question to four agents, and three proposals wait in the review inbox](docs/media/agent-map.gif) | ![What DuitDuit did for you: the cash gap seen 23 days ahead, bank lines reconciled, payments run after two approvals](docs/media/value.gif) |
 | The supervisor sends a question only to the agents it needs; their output is proposals, never actions. | Each figure is computed from the company's records; the one estimate says so. |
 
+**Telegram capture bot**, recorded on a phone against the live bot:
+
+<p align="center">
+  <img src="docs/media/telegram-capture.gif" width="300" alt="On Telegram, /capture, choose Transaction note, send a payment message; the bot shows a protected preview with the name, amount, bank account and phone replaced by tokens, then Confirm and ingest stores it as Record protected and Record ready">
+</p>
+
+`/capture`, pick a record type and send the message. Before anything is stored, the name, amount, bank account and phone become tokens; the original text is never saved. **Confirm and ingest** protects it, and it arrives masked in Data sources.
+
 Still screens:
 
 | Today | Review inbox | Financial analysis |
