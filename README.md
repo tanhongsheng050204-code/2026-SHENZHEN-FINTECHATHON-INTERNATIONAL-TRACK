@@ -321,7 +321,7 @@ a receivable — and not only as a compliance task.
 
 ### Build status
 
-Status as of 2026-10-16. The demo company and its data are synthetic and labelled as such.
+Status as of 2026-10-18. The demo company and its data are synthetic and labelled as such.
 
 | Capability | Status |
 | --- | --- |
@@ -351,7 +351,7 @@ Status as of 2026-10-16. The demo company and its data are synthetic and labelle
 | Public site | **Built.** Product and Resources menus; Pricing (marked as a proposal, not on sale), Changelog (from the commit history) and Help pages. |
 | Phone layout and accessibility | **Measured:** no sideways scrolling on 18 screens at 375 px. axe WCAG 2.1 AA finds 0 violations on 20 pages in both themes, and Lighthouse accessibility scores 100 on eight screens. |
 | Hosted deployment | **Live.** The frontend is on Vercel at <https://duitduit-umber.vercel.app>; requests to `/api` are forwarded to the API, which runs in Docker. The proxy forwards record references such as `payable:12` (fixed 2026-10-15; actions naming one used to fail only on the live site). Uploads return once the file is protected and are summarised just after, and answers finish within the proxy's ~25 seconds. |
-| Reachable from mainland China | **Pending.** Needs a custom domain, because `vercel.app` is mostly blocked there. Not measured from inside China yet. |
+| Reachable from mainland China | **Through a VPN.** `vercel.app` is mostly blocked in mainland China, so judges there are asked to use a VPN, and the demo video shows every feature. A custom domain is planned if DuitDuit reaches the finals. Not measured from inside China yet. |
 
 </details>
 
@@ -963,7 +963,7 @@ models, or call an AI provider. Coverage spans:
 Evaluation harness (from `backend/`): `uv run python -m eval.run ../output`. It runs 57
 scripted tasks (27 functional, 30 adversarial) offline and writes `output/eval-report.md`.
 
-Latest local results (2026-10-16):
+Latest local results (2026-10-17):
 - backend: **850 passed, 14 skipped** (the skipped tests need PostgreSQL, which CI provides; the PostgreSQL tests also pass against a local migrated database);
 - evaluation: **57 of 57**;
 - frontend: type-check and build pass, lint shows 0 errors, and 32 script tests pass (proxy, permissions, translations, error messages).
@@ -1294,7 +1294,7 @@ The full list, with checks for each step, is in the
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 54-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
+| `ci.yml` | push to main, pull requests, manual | Five jobs: backend (`ruff` + full `pytest` + the 57-task evaluation); PostgreSQL (applies every migration to a disposable database and tests row-level security); supply chain (`pip-audit`, `npm audit`, gitleaks, SBOM); frontend (type-check, lint, build, web-hardening check); and DAST (OWASP ZAP baseline and API scans against the build served with production headers). |
 | `anchor-audit-chain.yml` | daily 00:00 UTC + manual | Writes each tenant's audit-chain tail to `audit-anchors/<date>.json` and commits it — tamper evidence outside the database trust boundary. Requires the `PRODUCTION_DATABASE_URL` repository secret (read-only). |
 
 </details>
@@ -1453,7 +1453,7 @@ This is a proof of concept. The following boundaries are deliberate and document
 - **Reachability from mainland China**:
   - The app no longer loads third-party fonts or scripts; CI checks this.
   - With `VITE_AUTH_MODE=backend`, the browser never contacts `supabase.co`.
-  - The deployed site is still on `vercel.app`, which is mostly blocked in mainland China, so a custom domain is needed. See [china-reachability.md](docs/deployment/china-reachability.md).
+  - The deployed site is still on `vercel.app`, which is mostly blocked in mainland China; judges there are asked to use a VPN, and a custom domain is planned for the finals. See [china-reachability.md](docs/deployment/china-reachability.md).
 - **Hosting**: the hosted API is a single prototype server, not a highly available deployment. Moving it to Cloud Run is described in [cloud-run-and-vercel.md](docs/deployment/cloud-run-and-vercel.md).
 - **Shared demo company**: it starts clean every day at 03:00 (Malaysia time) while one-click demo is on. Stopped agents restart, settings return to the seeded version, and decided inbox items wait for review again. Nothing is deleted: the reset is an event on the audit chain. Alert rules and shared links are not reset.
 - **Assurance**: automated scans and adversarial tests only. There is no independent penetration test and no certification.
