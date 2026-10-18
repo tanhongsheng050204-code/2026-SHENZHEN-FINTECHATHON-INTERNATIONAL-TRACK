@@ -16,6 +16,34 @@ All data shown in the demonstration is synthetic and labelled as such.
 
 ---
 
+## At a glance: permission tiers and known risks
+
+The two items the competition asks for are summarised here; the sections below give the detail.
+
+**People: four roles, assigned only by the backend** (section 2)
+
+| Role | Can see | Can decide |
+| --- | --- | --- |
+| `general_employee` | Work for their own job functions; amounts as bands, customer email and phone masked; the cash screen is refused | Nothing that changes records or leaves the company |
+| `finance_ops` | Finance records, the review inbox for finance items | Approves first (the maker) on money items; fixes e-invoices; records collection holds |
+| `owner_director` | Everything in the company; exact values after a recent authenticator check, each disclosure audited | Approves external actions (L2) and is the second approver (the checker) on money (L3); kill switch, autonomy grants, AI keys, after step-up |
+| `compliance` | Every review item and the audit chains, read-only; the security feed and incident register | Incidents and data-protection records, not payments |
+
+**Agents: an autonomy ladder** (section 4)
+
+| Tier | What an agent may do | Who must approve |
+| --- | --- | --- |
+| L0 | Watch and report | Nobody |
+| L1 | Draft (reminders, notes) | The person who holds that position |
+| L2 | External actions (send a message, share a Passport) | The owner |
+| L3 | Move money (simulated bank only) | A maker who holds the position, then the owner as a different person, with a fresh authenticator code; the draft cannot be edited between them; never delegable |
+
+Proof of the L3 rule running: [sandbox operation logs](evidence/sandbox-2026-10-18/) (an L3 payroll paid once with reference `SIM-…`; an employee, the same person twice, a rejected item, a half-approved item and an L2 item all move no money; audit chain verified intact).
+
+**Known risks:** section 9 below and the running register in [known-risks.md](../standards/known-risks.md).
+
+---
+
 ## 1. What we protect
 
 | Asset | Why it matters | Main protections |

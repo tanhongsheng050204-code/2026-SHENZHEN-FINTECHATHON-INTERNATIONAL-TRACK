@@ -5,6 +5,10 @@ figures below describe the earlier contract pass. The assistant evidence is belo
 Plan 2/3 evidence is recorded in `docs/REMAINING_WORK.md` and
 `docs/deployment/plan-2-3-review.md`.
 
+## Simulated bank operation logs: Oct 18
+
+[evidence/sandbox-2026-10-18/](evidence/sandbox-2026-10-18/) holds the operation log, the sandbox ledger and the hash-chained audit log from one offline run of the two-person payment: an L3 payroll paid once (`SIM-975AA7E173`) after Finance and then the owner approved; an employee, the same person twice, a rejected item, a half-approved item and an L2 item moved no money; the audit chain verified intact. Regenerate with `python -m scripts.export_sandbox_evidence <dir>` in `backend/`.
+
 ## Final local run before submission: Oct 17
 
 Added since Oct 11, each with its own tests:

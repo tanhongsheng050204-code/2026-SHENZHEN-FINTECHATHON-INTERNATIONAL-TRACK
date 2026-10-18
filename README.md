@@ -367,8 +367,8 @@ See [Scoring criteria → evidence](#scoring-criteria--evidence) above.
 | Presentation deck | Exported to PDF by Oct 19 |
 | Demo video | By Oct 19: an MP4, plus a mirror reachable from mainland China. Script: [demo-script.md](docs/submission/demo-script.md) |
 | Source code, deployment instructions and tests | This repository: [Setup](#setup), [Deployment](#deployment), [Testing](#testing-and-evaluation) and the [production checklist](docs/deployment/production-checklist.md) |
-| Security self-assessment | [security-self-assessment.md](docs/submission/security-self-assessment.md) |
-| Execution evidence | [execution-evidence.md](docs/submission/execution-evidence.md), [accessibility.md](docs/submission/accessibility.md), [ZAP reports](docs/submission/evidence/zap-2026-10-11/) and the CI evaluation report |
+| Security self-assessment | [security-self-assessment.md](docs/submission/security-self-assessment.md): permission tiers and known risks at the top |
+| Execution evidence | [execution-evidence.md](docs/submission/execution-evidence.md), [simulated bank operation logs](docs/submission/evidence/sandbox-2026-10-18/), [accessibility.md](docs/submission/accessibility.md), [ZAP reports](docs/submission/evidence/zap-2026-10-11/) and the CI evaluation report |
 
 ### Program documents
 

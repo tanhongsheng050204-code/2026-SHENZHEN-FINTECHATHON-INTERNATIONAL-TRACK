@@ -1,0 +1,9 @@
+[
+  {
+    "action_id": "act_31928ea19c61",
+    "amount": "38400.00",
+    "reference": "SIM-975AA7E173",
+    "executed_at": "2026-10-18T09:20:31.417596+00:00",
+    "ledger": "duitduit-simulated-bank"
+  }
+]

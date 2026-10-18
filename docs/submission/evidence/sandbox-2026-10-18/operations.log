@@ -1,0 +1,20 @@
+2026-10-18T09:20:31.337+00:00  agent proposes               act_31928ea19c61 L3 RM38400.00 -> review inbox (agent cannot execute)
+2026-10-18T09:20:31.366+00:00  Employee approves            act_31928ea19c61 HTTP 409 -> maker_approval_required
+2026-10-18T09:20:31.394+00:00  Finance approves             act_31928ea19c61 HTTP 200 -> awaiting_second_approval
+2026-10-18T09:20:31.395+00:00  ledger after maker           0 payments (nothing runs on one approval)
+2026-10-18T09:20:31.405+00:00  Finance approves             act_31928ea19c61 HTTP 409 -> same_person_cannot_approve_twice
+2026-10-18T09:20:31.406+00:00  ledger after same person     0 payments (maker cannot also be checker)
+2026-10-18T09:20:31.419+00:00  Owner approves               act_31928ea19c61 HTTP 200 -> approved ref=SIM-975AA7E173
+2026-10-18T09:20:31.421+00:00  simulated bank executes      act_31928ea19c61 -> SIM-975AA7E173
+2026-10-18T09:20:31.422+00:00  simulated bank re-run        act_31928ea19c61 -> SIM-975AA7E173 (same reference; ledger still 1 payment)
+2026-10-18T09:20:31.424+00:00  agent proposes               act_beff7c2fa275 L3 RM14800.00 -> review inbox (agent cannot execute)
+2026-10-18T09:20:31.436+00:00  Finance rejects              act_beff7c2fa275 HTTP 200 -> rejected
+2026-10-18T09:20:31.438+00:00  agent proposes               act_f9c38a7dd6b9 L3 RM9200.00 -> review inbox (agent cannot execute)
+2026-10-18T09:20:31.451+00:00  Finance approves             act_f9c38a7dd6b9 HTTP 200 -> awaiting_second_approval
+2026-10-18T09:20:31.452+00:00  agent proposes               act_302a2c7e34e8 L2 RM0.00 -> review inbox (agent cannot execute)
+2026-10-18T09:20:31.463+00:00  Owner approves               act_302a2c7e34e8 HTTP 200 -> approved
+2026-10-18T09:20:31.464+00:00  simulated bank attempt       act_beff7c2fa275 -> None
+2026-10-18T09:20:31.465+00:00  simulated bank attempt       act_f9c38a7dd6b9 -> None
+2026-10-18T09:20:31.466+00:00  simulated bank attempt       act_302a2c7e34e8 -> None
+2026-10-18T09:20:31.467+00:00  final ledger                 1 payment(s)
+2026-10-18T09:20:31.467+00:00  audit chain verified         10 entries, intact=True
