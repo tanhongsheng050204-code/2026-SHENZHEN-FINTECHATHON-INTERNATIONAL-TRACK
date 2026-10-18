@@ -1,0 +1,55 @@
+{
+  "anchored_at": "2026-10-18T03:55:48+00:00",
+  "anchors": [
+    {
+      "chain": "disclosure",
+      "tail_hash": "genesis",
+      "tenant_id": null
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "6922caa6b2ad4ff8dd7ff5149e98a0fb8d0593415b9fa81713b7a6e99ff5b722",
+      "tenant_id": null
+    },
+    {
+      "chain": "disclosure",
+      "tail_hash": "d5f6737d129f09f7e54b4775265e502d37ca9268cfb81d12df10d992d5842bb7",
+      "tenant_id": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "55561f2f29a2c0ddf082db0ab317f9c0477d1e77ab2775b0cfe4da2ba4880d1d",
+      "tenant_id": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "chain": "disclosure",
+      "tail_hash": "1c4e11162c28728bba2e360d29451719f0a969828042c5910e7e7b5d511626ef",
+      "tenant_id": "858f0c1c-42fa-52a2-91b3-80a19d816356"
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "af02e1444f3eef4e3d17e376f75cca740c981e895d83f50bfaa2fda714b7bb05",
+      "tenant_id": "858f0c1c-42fa-52a2-91b3-80a19d816356"
+    },
+    {
+      "chain": "disclosure",
+      "tail_hash": "1a90ec9e97c96bcc2975f14bad10eb8ded5dfe4fa0c0d1d1513009ae5aa3ec3c",
+      "tenant_id": "eafc5787-8b41-4d65-8303-18ead169b94e"
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "e4cc1b4d00ec618dcb4d31d91df611904feccf77e21ce501b929f12739430d97",
+      "tenant_id": "eafc5787-8b41-4d65-8303-18ead169b94e"
+    },
+    {
+      "chain": "disclosure",
+      "tail_hash": "genesis",
+      "tenant_id": "43ca9f7b-21df-4588-89c2-ccaedb83acbe"
+    },
+    {
+      "chain": "workflow",
+      "tail_hash": "2d0f63436c37b5173799f2c551711a2a94efd8b4abcc8274abd41a79cce18d3d",
+      "tenant_id": "43ca9f7b-21df-4588-89c2-ccaedb83acbe"
+    }
+  ]
+}
